@@ -165,6 +165,55 @@ svg.gallows .part.on{visibility:visible}
 .wtable th{color:var(--muted);font-weight:400;text-align:left;padding:4px 2px;border-bottom:1px solid #3a2e2c}
 .wtable td{padding:6px 2px;border-bottom:1px solid #2e2524}
 .wtable td.n,.wtable th.n{text-align:right;white-space:nowrap}
+/* Seekarte */
+.mapwrap{position:relative;border:1px solid var(--line);border-radius:6px;overflow:auto;-webkit-overflow-scrolling:touch;
+  height:62vh;min-height:360px;background:#030303}
+.mapwrap svg{display:block;width:max(100%,700px);height:auto}
+.mlabel{font-family:var(--sans);font-size:21px;font-weight:700;fill:#ece6e1;paint-order:stroke;stroke:#050404;stroke-width:5px;stroke-linejoin:round;pointer-events:none}
+.island{cursor:pointer}
+.island .land{fill:#2b1f1c;stroke:#b3202a;stroke-width:3}
+.island.cap .land{fill:#3a1f1c}
+.island.target .land{stroke:#ffc940}
+.route{fill:none;stroke:#b3202a;stroke-width:3;stroke-dasharray:10 10;opacity:.75}
+.buoy{fill:#b3202a;stroke:#ece6e1;stroke-width:2}
+.buoy.off{fill:#050404;stroke:#6b4a48}
+.flag{fill:#d7263d}
+.repeat{font-size:26px}
+.kopf{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.kopf .next{color:#d4656c}
+.icard{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  width:min(92%,440px);background:#0d0a0a;border:1px solid var(--line);border-radius:8px;padding:14px 16px;z-index:25;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:8px}
+.icard .bojen{display:flex;gap:6px}
+.icard .bojen span{width:22px;height:22px;border-radius:50%;border:2px solid var(--line)}
+.icard .bojen span.on{background:var(--line)}
+/* Memory: Wort und Schlussliste */
+.memwrap{position:relative}
+.memword{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#0d0a0a;border:2px solid var(--ok);
+  border-radius:8px;padding:14px 26px;font-size:2.2rem;font-weight:700;color:var(--ok);z-index:5;pointer-events:none;white-space:nowrap}
+.memlist{position:absolute;inset:-6px;background:rgba(5,4,4,.97);border:1px solid var(--ok);border-radius:8px;z-index:6;
+  display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 16px;text-align:center;overflow:auto}
+.memlist>*{flex-shrink:0}
+.memlist>:first-child{margin-top:auto}.memlist>:last-child{margin-bottom:auto}
+.memlist ul{list-style:none;margin:0;padding:0;font-size:1.5rem;line-height:1.45;overflow-wrap:anywhere}
+.memlist .btn{width:auto;min-width:160px;justify-content:center}
+/* Menü (Start) */
+.menu{display:flex;flex-direction:column;gap:14px}
+.fgrid{display:flex;flex-direction:column;gap:14px}
+/* PC: breitere Darstellung (4.10) */
+@media (min-width:1000px){
+  .app{max-width:980px}
+  .screen{padding:24px 32px 40px}
+  .menu{display:grid;grid-template-columns:1fr 1fr}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;align-items:start}
+  .fgrid .wide{grid-column:1 / -1}
+  .mem{grid-template-columns:repeat(4,1fr)}
+  .card{min-height:96px;font-size:1.5rem}
+  .key{min-height:54px;font-size:1.35rem}
+  .keys{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
+  .mapwrap{height:74vh}
+  svg.gallows{width:190px;height:190px}
+}
 /* Wochenfrage, Meldung */
 .wf{display:flex;flex-direction:column;gap:10px}
 .wf .q{font-size:1.1rem}
@@ -202,6 +251,7 @@ svg.gallows .part.on{visibility:visible}
       <div class="bar"><i id="stBar"></i></div>
       <div class="barlabel"><span id="stPunkte"></span><span id="stFehlt"></span></div>
       <div class="muted" id="stNext"></div>
+      <div class="muted" id="stHafen"></div>
     </div>
     <div class="note" id="storageWarn" hidden>Dieser Browser erlaubt gerade kein Speichern. Was du übst, ist nach dem Schließen weg.</div>
     <div class="note" id="dataWarn" hidden></div>
@@ -212,14 +262,68 @@ svg.gallows .part.on{visibility:visible}
       <div class="warn" id="wfMsg" aria-live="polite"></div>
       <div class="row"><button class="btn small" id="wfLater">Später</button><button class="btn primary small" id="wfSend">Antworten</button></div>
     </div>
+    <div class="menu">
     <button class="btn" data-go="auswahl"><span class="ico">🎧</span>Üben</button>
     <button class="btn" data-go="diktatwahl"><span class="ico">📝</span>Diktat</button>
     <button class="btn" data-go="lueckewahl"><span class="ico">🧩</span>Lückensatz</button>
     <button class="btn" data-go="spiele"><span class="ico">🎮</span>Spiele</button>
+    <button class="btn" data-go="karte"><span class="ico">🗺️</span>Seekarte</button>
     <button class="btn" data-go="fortschritt"><span class="ico">📈</span>Mein Fortschritt</button>
     <button class="btn" data-go="meine"><span class="ico">📒</span>Meine Wörter</button>
     <button class="btn" data-go="bericht"><span class="ico">📤</span>Bericht senden</button>
     <button class="btn" data-go="daten"><span class="ico">💾</span>Daten sichern</button>
+    </div>
+  </section>
+
+  <!-- SEEKARTE -->
+  <section class="screen" id="karte">
+    <button class="back" data-back>‹ Zurück</button>
+    <div class="kopf">
+      <div><h2>Rechtschreibland</h2><div class="next" id="kNext"></div></div>
+      <div class="muted" id="kCount"></div>
+    </div>
+    <div class="mapwrap" id="mapwrap">
+      <svg id="map" viewBox="0 0 800 1100" role="img" aria-label="Seekarte von Rechtschreibland">
+        <defs>
+          <pattern id="mgrid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="rgba(179,32,42,.16)" stroke-width="1"/>
+          </pattern>
+          <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+            <line x1="0" y1="0" x2="0" y2="10" stroke="rgba(179,32,42,.28)" stroke-width="2"/>
+          </pattern>
+          <pattern id="fogtex" width="120" height="60" patternUnits="userSpaceOnUse">
+            <rect width="120" height="60" fill="#1d1a19"/>
+            <path d="M6 22q14-10 28 0t28 0M58 48q14-10 28 0t28 0" fill="none" stroke="#2b2726" stroke-width="3" stroke-linecap="round"/>
+          </pattern>
+          <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"/></filter>
+          <mask id="fogmask" maskUnits="userSpaceOnUse" x="0" y="0" width="800" height="1100">
+            <rect width="800" height="1100" fill="#fff"/>
+            <g id="holes" filter="url(#soft)"></g>
+          </mask>
+        </defs>
+        <rect width="800" height="1100" fill="#040404"/>
+        <rect width="800" height="1100" fill="url(#mgrid)"/>
+        <g id="waves" fill="none" stroke="rgba(236,230,225,.13)" stroke-width="2" stroke-linecap="round"></g>
+        <g id="routes"></g>
+        <g id="buoys"></g>
+        <g id="islands"></g>
+        <g id="marks"></g>
+        <g id="boat" transform="translate(120 1066)">
+          <path d="M-24 6 L24 6 L16 18 L-16 18 Z" fill="#6b3a2a" stroke="#ece6e1" stroke-width="2"/>
+          <line x1="0" y1="6" x2="0" y2="-34" stroke="#ece6e1" stroke-width="3"/>
+          <path d="M2 -32 L2 2 L24 2 Z" fill="#d7263d"/>
+          <path d="M-2 -26 L-2 2 L-18 2 Z" fill="#ece6e1" opacity=".85"/>
+        </g>
+        <rect id="fog" width="800" height="1100" fill="url(#fogtex)" mask="url(#fogmask)"/>
+        <g id="toplabels"></g>
+        <g transform="translate(720 1030)" opacity=".85">
+          <circle r="34" fill="#050404" stroke="#b3202a" stroke-width="2"/>
+          <path d="M0 -30 L7 0 L0 30 L-7 0 Z" fill="#b3202a"/>
+          <text y="-38" text-anchor="middle" class="mlabel" style="font-size:16px">N</text>
+        </g>
+      </svg>
+    </div>
+    <div class="muted">Tipp auf eine freigelegte Insel, um dort zu üben.</div>
   </section>
 
   <!-- AUSWAHL -->
@@ -391,7 +495,15 @@ svg.gallows .part.on{visibility:visible}
     <button class="back" data-back>‹ Zurück</button>
     <h2>Silben-Memory</h2>
     <div class="muted">Finde die zwei Teile, die zusammen ein Wort ergeben.</div>
-    <div class="mem" id="mem"></div>
+    <div class="memwrap">
+      <div class="mem" id="mem"></div>
+      <div class="memword" id="memWord" hidden aria-live="polite"></div>
+      <div class="memlist" id="memList" hidden>
+        <div class="muted">Alle gefunden! Deine Wörter:</div>
+        <ul id="memListWords"></ul>
+        <button class="btn primary" id="memListOk">Weiter</button>
+      </div>
+    </div>
     <div class="muted" id="memMsg" aria-live="polite"></div>
     <button class="btn" id="memNew"><span class="ico">🔁</span>Neu mischen</button>
   </section>
@@ -420,6 +532,7 @@ svg.gallows .part.on{visibility:visible}
   <section class="screen" id="fortschritt">
     <button class="back" data-back>‹ Zurück</button>
     <h2>Mein Fortschritt</h2>
+    <div class="fgrid">
     <div class="panel" id="fAmpel"></div>
     <div class="panel">
       <div class="head"><span>Übungszeit, letzte 7 Tage</span><b id="fWocheSumme" style="white-space:nowrap"></b></div>
@@ -436,6 +549,7 @@ svg.gallows .part.on{visibility:visible}
     <div class="panel">
       <div class="muted" style="margin-bottom:6px">Deine Titelreihe</div>
       <div class="chips" id="fTitel"></div>
+    </div>
     </div>
   </section>
 
@@ -486,6 +600,12 @@ svg.gallows .part.on{visibility:visible}
       <button class="btn primary" id="mOk">Weiter</button>
     </div>
   </div>
+  <div class="icard" id="icard" hidden role="dialog" aria-labelledby="icTitel">
+    <h2 id="icTitel"></h2>
+    <div class="muted" id="icStatus"></div>
+    <div class="bojen" id="icBojen" aria-label="Bojen"></div>
+    <div class="row"><button class="btn primary small" id="icUeben">Hier üben</button><button class="btn small" id="icClose">Schließen</button></div>
+  </div>
   <div class="toast" id="toast" role="status" hidden></div>
 </div>
 
@@ -494,8 +614,8 @@ svg.gallows .part.on{visibility:visible}
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.4.0";
-var SCHEMA_VERSION = 4;
+var APP_VERSION = "0.5.0";
+var SCHEMA_VERSION = 5;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
@@ -525,7 +645,10 @@ var CONFIG = {
   serieMinSekunden: 300,      // Tag zählt für die Serie ab 5 Min. Üben/Diktat/Lückensatz (Spiele nicht)
   galgenFehlversuche: 6,
   memoryPaare: 6,
-  spielMin: { galgen: 1, salat: 1, memory: 6 }
+  spielMin: { galgen: 1, salat: 1, memory: 6 },
+  inselStufe: 3,              // Insel erobert, wenn die Stufen-Automatik diese Stufe erreicht
+  memoryWortMs: 1500,         // gefundenes Wort so lange groß zeigen
+  bootFahrtMaxMs: 2400
 };
 var TITELREIHEN = {
   matrose: ["Leichtmatrose", "Steuermann", "Kapitän"],
@@ -1341,7 +1464,7 @@ function emptyState() {
     settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle",
       spielAuswahl: defaultAuswahl(), salatStufe: 1, titelreihe: "matrose" },
     versuche: [], meineWoerter: [], zeiten: {}, stufen: {}, stufenLog: [], diktate: [], wochenfragen: [],
-    wochenfrageSpaeter: "", letzteMeldung: "", spiele: [], levelGesehen: null };
+    wochenfrageSpaeter: "", letzteMeldung: "", spiele: [], levelGesehen: null, karte: null };
 }
 function clampRate(r) {
   r = Number(r);
@@ -1441,6 +1564,9 @@ function sanitize(obj) {
     }
   });
   if (typeof obj.levelGesehen === "number") st.levelGesehen = obj.levelGesehen;
+  if (obj.karte && typeof obj.karte.boot === "number" && Array.isArray(obj.karte.gesehen)) {
+    st.karte = { boot: obj.karte.boot, gesehen: obj.karte.gesehen.filter(function (x) { return typeof x === "number"; }) };
+  }
   return { state: st };
 }
 function loadState() {
@@ -1533,6 +1659,7 @@ function drawRound(words, n) {
 // ================= Stufen-Automatik (5.2) =================
 function unitName(u) {
   if (u === "gesamt") return "Alle Themen";
+  if (u === "welt:alltag") return "Alltagswörter";
   if (u.indexOf("silben:") === 0) { var n = u.slice(7); return n === "1" ? "1 Silbe" : n + " Silben"; }
   return u;
 }
@@ -1541,6 +1668,7 @@ function unitsOf(v) {
   var us = v.themen.slice();
   if (v.quelle !== "luecke") {
     if (v.silbenZahl > 0) us.push("silben:" + (v.silbenZahl >= 4 ? "4+" : v.silbenZahl));
+    if (v.welt === "alltag") us.push("welt:alltag");
     us.push("gesamt");
   }
   return us;
@@ -1837,6 +1965,8 @@ function show(id) {
   if (id === "meine") renderMeine();
   if (id === "spielwahl") renderSpielwahl();
   if (id === "fortschritt") renderFortschritt();
+  if (id === "karte") showKarte();
+  $("icard").hidden = true;
   if (id === "bericht") renderReport();
   if (id === "daten") renderData();
 }
@@ -1849,7 +1979,7 @@ function goHome() { navStack = ["start"]; show("start"); }
 // ================= Können-Meldungen (5.4) =================
 var modalQueue = [];
 function meldungFor(e) {
-  var key = e.unit.indexOf("silben:") === 0 ? "Silben" : (e.unit === "gesamt" ? "alle" : e.unit);
+  var key = e.unit.indexOf("silben:") === 0 ? "Silben" : (e.unit === "gesamt" || e.unit.indexOf("welt:") === 0 ? "alle" : e.unit);
   var vars = content.meldungen[key] || content.meldungen["alle"] || ["{richtig} von {gesamt} richtig."];
   var cands = vars.length > 1 ? vars.filter(function (v) { return fill(v) !== state.letzteMeldung; }) : vars;
   var text = fill(cands[Math.floor(Math.random() * cands.length)]);
@@ -2381,6 +2511,8 @@ function renderStatus() {
   $("stBar").style.width = Math.round((li.punkte - li.start) / (li.naechste - li.start) * 100) + "%";
   $("stPunkte").textContent = li.punkte + " Punkte";
   $("stFehlt").textContent = "noch " + li.fehlt + " bis Level " + (li.level + 1);
+  var ks = karteStatus();
+  $("stHafen").textContent = ks.seq < INSELN.length ? "🗺️ Nächster Hafen: " + INSELN[ks.seq].n + " · Boje " + ks.boje + " von 3" : "🗺️ Ganz Rechtschreibland ist erobert!";
   $("stNext").textContent = li.naechsterTitel ? "⚓ Nächster Titel: " + li.naechsterTitel + " (Level " + li.naechsterTitelLevel + ")" : "⚓ Höchster Titel erreicht";
 }
 function checkLevelUp() {
@@ -2522,7 +2654,26 @@ function galgenRate(l) {
 
 // --- Silben-Memory ---
 var M = null;
+var memWordTimer = null;
+function memoryZeigeWort(w) {
+  var b = $("memWord"); b.textContent = w; b.hidden = false;
+  speak(findWord(w) ? spokenText(findWord(w)) : w);
+  clearTimeout(memWordTimer);
+  memWordTimer = setTimeout(function () { b.hidden = true; }, CONFIG.memoryWortMs);
+}
+// Nach dem letzten Paar: alle Wörter richtig geschrieben, bleibt bis zum Antippen
+function memoryZeigeListe() {
+  if (!M || !M.done) return;
+  $("memWord").hidden = true;
+  var ul = $("memListWords"); ul.textContent = "";
+  M.pairs.forEach(function (pr) { ul.appendChild(el("li", "", pr.wort)); });
+  $("memList").hidden = false;
+  try { $("memListOk").focus(); } catch (err) { /* egal */ }
+}
 function memoryNeu() {
+  if (M && M.listTimer) clearTimeout(M.listTimer);
+  clearTimeout(memWordTimer);
+  $("memWord").hidden = true; $("memList").hidden = true;
   var pairs = memoryPairs(gamePool("memory", state.settings.spielAuswahl), CONFIG.memoryPaare);
   var cards = [];
   pairs.forEach(function (pr, i) { cards.push({ t: pr.a, id: i }); cards.push({ t: pr.b, id: i }); });
@@ -2546,10 +2697,12 @@ function memoryFlip(b) {
     a.classList.remove("open"); c.classList.remove("open"); a.classList.add("done"); c.classList.add("done");
     M.found++; M.open = [];
     var w = M.pairs[Number(a.getAttribute("data-id"))].wort;
+    memoryZeigeWort(w);
     if (M.found === M.pairs.length) {
       M.done = true;
       recordGame({ spiel: "memory", ergebnis: "geschafft", stufe: 1, wort: "" });
       $("memMsg").textContent = "Alle gefunden in " + M.zuege + " Zügen! +" + CONFIG.punkte.memory + " Punkte";
+      M.listTimer = setTimeout(memoryZeigeListe, CONFIG.memoryWortMs);
     } else $("memMsg").textContent = "Gefunden: " + M.found + " von " + M.pairs.length + " · „" + w + "“";
   } else {
     M.lock = true;
@@ -2615,6 +2768,230 @@ function salatCase(gross) {
   var w = S.entry.wort, nomen = /^[A-ZÄÖÜ]/.test(w);
   $("sCase").hidden = true;
   $("sMsg").textContent = gross === nomen ? "Richtig: " + w : "Fast! Richtig ist „" + w + "“" + (nomen ? " – ein Nomen, also groß." : " – kein Nomen, also klein.");
+}
+
+// ================= Seekarte „Rechtschreibland“ (5.5) =================
+var SVGNS = "http://www.w3.org/2000/svg";
+var HAFEN = { x: 120, y: 1040 };
+// Lernpfad: jede Insel gehört zu einer Einheit der Stufen-Automatik
+var INSELN = [
+  { n: "1 Silbe", unit: "silben:1", x: 205, y: 915, r: 52 },
+  { n: "2 Silben", unit: "silben:2", x: 430, y: 985, r: 54 },
+  { n: "Groß oder klein", unit: "Groß/klein", x: 650, y: 880, r: 58 },
+  { n: "Doppelte Buchstaben", unit: "Doppelte Buchstaben", x: 600, y: 700, r: 56 },
+  { n: "3 Silben", unit: "silben:3", x: 365, y: 770, r: 54 },
+  { n: "s, ss oder ß", unit: "s/ss/ß", x: 150, y: 640, r: 56 },
+  { n: "Lange Laute (ie, h)", unit: "Dehnung", x: 175, y: 430, r: 54 },
+  { n: "Verlängern", unit: "Verlängern", x: 400, y: 545, r: 52 },
+  { n: "Umlaute ableiten", unit: "Umlaute ableiten", x: 640, y: 470, r: 58 },
+  { n: "Verwechslungswörter", unit: "Verwechslungswörter", x: 650, y: 245, r: 56 },
+  { n: "Alltagswörter", unit: "welt:alltag", x: 430, y: 130, r: 58 },
+  { n: "4+ Silben", unit: "silben:4+", x: 170, y: 215, r: 54 },
+  { n: "Kapitänsinsel", unit: "gesamt", x: 405, y: 335, r: 78, cap: true }
+];
+function rngSeed(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+// Routen als quadratische Kurven; Bojen bei festen Anteilen der Bogenlänge (ohne DOM, daher überall gleich)
+function kurve(s) {
+  var P = [HAFEN].concat(INSELN), a = P[s], b = P[s + 1];
+  var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, bend = (s % 2 ? 1 : -1) * 0.18;
+  return { a: a, b: b, c: { x: mx - dy * bend, y: my + dx * bend } };
+}
+function kurvenPunkt(k, t) {
+  var u = 1 - t;
+  return { x: u * u * k.a.x + 2 * u * t * k.c.x + t * t * k.b.x, y: u * u * k.a.y + 2 * u * t * k.c.y + t * t * k.b.y };
+}
+function kurvenStellen(k, anteile) {
+  var n = 200, pts = [], len = [0];
+  for (var i = 0; i <= n; i++) pts.push(kurvenPunkt(k, i / n));
+  for (var j = 1; j <= n; j++) len.push(len[j - 1] + Math.hypot(pts[j].x - pts[j - 1].x, pts[j].y - pts[j - 1].y));
+  return anteile.map(function (f) {
+    var ziel = len[n] * f, m = 1;
+    while (m < n && len[m] < ziel) m++;
+    var t0 = (m - 1) / n, t1 = m / n, g = len[m] === len[m - 1] ? 0 : (ziel - len[m - 1]) / (len[m] - len[m - 1]);
+    return kurvenPunkt(k, t0 + (t1 - t0) * g);
+  });
+}
+var STOPS = (function () {
+  var st = [{ x: HAFEN.x, y: HAFEN.y }];
+  INSELN.forEach(function (isl, s) {
+    var k = kurve(s);
+    kurvenStellen(k, [0.38, 0.57, 0.76]).forEach(function (p, i) { st.push({ x: p.x, y: p.y, boje: i + 1, seg: s }); });
+    st.push({ x: isl.x, y: isl.y, insel: s });
+  });
+  return st;
+})();
+function inselUnitErobertAm(u) {
+  for (var i = 0; i < state.stufenLog.length; i++) {
+    var l = state.stufenLog[i];
+    if (l.unit === u && l.grund === "auf" && l.nach >= CONFIG.inselStufe) return l.tag;
+  }
+  return "";
+}
+function karteStatus() {
+  var erobert = [], erobertAm = [], anzahl = 0, alleVorher = true;
+  INSELN.forEach(function (isl, i) {
+    var am = inselUnitErobertAm(isl.unit), e = !!am;
+    if (isl.cap) e = e && alleVorher;          // Kapitänsinsel erst nach allen anderen
+    else alleVorher = alleVorher && e;
+    erobert.push(e); erobertAm.push(e ? am : "");
+    if (e) anzahl++;
+  });
+  var seq = 0;
+  while (seq < INSELN.length && erobert[seq]) seq++;
+  var boje = seq < INSELN.length ? Math.min(3, stufeInfo(INSELN[seq].unit).stufe) : 0;
+  if (seq < INSELN.length && INSELN[seq].cap && !alleVorher) boje = 0;
+  var stop = seq >= INSELN.length ? STOPS.length - 1 : seq * 4 + boje;
+  var wiederholung = INSELN.map(function (isl, i) { return erobert[i] && stufeInfo(isl.unit).stufe < CONFIG.inselStufe; });
+  return { erobert: erobert, erobertAm: erobertAm, anzahl: anzahl, seq: seq, boje: boje, stop: stop, wiederholung: wiederholung };
+}
+function svgEl(tag, attrs, parent) {
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function inselPfad(cx, cy, r, seed) {
+  var rand = rngSeed(seed), n = 16, pts = [], d = "";
+  for (var i = 0; i < n; i++) {
+    var a = (i / n) * Math.PI * 2, rr = r * (0.72 + rand() * 0.38);
+    pts.push([cx + Math.cos(a) * rr * 1.15, cy + Math.sin(a) * rr * 0.85]);
+  }
+  for (var j = 0; j < n; j++) {
+    var p = pts[j], q = pts[(j + 1) % n], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+    d += (j === 0 ? "M" + ((pts[n - 1][0] + p[0]) / 2).toFixed(1) + " " + ((pts[n - 1][1] + p[1]) / 2).toFixed(1) : "") +
+      " Q" + p[0].toFixed(1) + " " + p[1].toFixed(1) + " " + mx.toFixed(1) + " " + my.toFixed(1);
+  }
+  return d + "Z";
+}
+var karteGebaut = false, bootStop = null, bootAnim = null, karteLetzteLoecher = [], karteEvents = [], offeneInsel = null;
+function reduceMotion() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (err) { return false; } }
+function baueKarte() {
+  if (karteGebaut) return;
+  karteGebaut = true;
+  var wr = rngSeed(7), gw = $("waves");
+  for (var w = 0; w < 60; w++) { var wx = wr() * 760 + 20, wy = wr() * 1060 + 20; svgEl("path", { d: "M" + wx + " " + wy + "q8-6 16 0t16 0" }, gw); }
+  INSELN.forEach(function (isl, s) {
+    var k = kurve(s);
+    svgEl("path", { d: "M" + k.a.x + " " + k.a.y + " Q" + k.c.x + " " + k.c.y + " " + k.b.x + " " + k.b.y, "class": "route", "data-seg": s }, $("routes"));
+  });
+  STOPS.forEach(function (st, i) { if (st.boje) st.el = svgEl("circle", { cx: st.x, cy: st.y, r: 9, "class": "buoy off", "data-stop": i }, $("buoys")); });
+  INSELN.forEach(function (isl, i) {
+    var g = svgEl("g", { "class": "island" + (isl.cap ? " cap" : ""), "data-i": i, tabindex: "0", role: "button", "aria-label": isl.n }, $("islands"));
+    svgEl("path", { d: inselPfad(isl.x, isl.y, isl.r, i * 31 + 5), "class": "land" }, g);
+    svgEl("path", { d: inselPfad(isl.x, isl.y, isl.r * 0.62, i * 17 + 3), fill: "url(#hatch)" }, g);
+    if (isl.cap) svgEl("path", { d: "M" + (isl.x - 26) + " " + (isl.y + 6) + " l14 -24 l14 24 M" + (isl.x - 2) + " " + (isl.y + 6) + " l14 -28 l14 28", fill: "none", stroke: "#b3202a", "stroke-width": 3 }, g);
+    isl.g = g;
+  });
+}
+function karteLoecher(ks) {
+  var holes = [];
+  for (var i = 0; i <= ks.stop; i++) holes.push({ x: STOPS[i].x, y: STOPS[i].y, r: STOPS[i].insel !== undefined ? 150 : 95 });
+  INSELN.forEach(function (isl, j) { if (ks.erobert[j]) holes.push({ x: isl.x, y: isl.y, r: isl.cap ? 190 : 150 }); });
+  if (ks.seq < INSELN.length) holes.push({ x: INSELN[ks.seq].x, y: INSELN[ks.seq].y, r: 80 });
+  holes.push({ x: HAFEN.x, y: HAFEN.y, r: 130 });
+  if (ks.seq >= INSELN.length) holes.push({ x: 400, y: 550, r: 900 });
+  return holes;
+}
+function freigelegt(x, y, holes) {
+  for (var i = 0; i < holes.length; i++) if (Math.hypot(holes[i].x - x, holes[i].y - y) < holes[i].r - 30) return true;
+  return false;
+}
+function renderKarte() {
+  baueKarte();
+  var ks = karteStatus(), holes = karteLoecher(ks);
+  karteLetzteLoecher = holes;
+  var gh = $("holes"); gh.textContent = "";
+  holes.forEach(function (h) { svgEl("circle", { cx: h.x, cy: h.y, r: h.r, fill: "#000" }, gh); });
+  STOPS.forEach(function (st, i) { if (st.el) st.el.setAttribute("class", "buoy" + (i <= ks.stop ? "" : " off")); });
+  var gm = $("marks"), gl = $("toplabels"); gm.textContent = ""; gl.textContent = "";
+  INSELN.forEach(function (isl, i) {
+    var sichtbar = freigelegt(isl.x, isl.y, holes);
+    isl.g.classList.toggle("target", i === ks.seq);
+    isl.g.style.pointerEvents = sichtbar ? "auto" : "none";
+    isl.g.setAttribute("aria-hidden", sichtbar ? "false" : "true");
+    isl.g.setAttribute("tabindex", sichtbar ? "0" : "-1");
+    // Namen nur für freigelegte Inseln und das nächste Ziel (sonst Überraschung)
+    if (sichtbar || i === ks.seq) { var t = svgEl("text", { x: isl.x, y: isl.y + isl.r + 26, "text-anchor": "middle", "class": "mlabel", "data-label": i }, gl); t.textContent = isl.n; }
+    if (ks.erobert[i]) {
+      var fx = isl.x + isl.r * 0.55, fy = isl.y - isl.r * 0.55;
+      svgEl("line", { x1: fx, y1: fy, x2: fx, y2: fy - 40, stroke: "#ece6e1", "stroke-width": 3 }, gm);
+      svgEl("path", { d: "M" + fx + " " + (fy - 40) + " l26 9 l-26 9 Z", "class": "flag", "data-flag": i }, gm);
+    }
+    if (ks.wiederholung[i]) {
+      var r = svgEl("text", { x: isl.x - isl.r - 6, y: isl.y - isl.r * 0.2, "class": "repeat", "data-repeat": i }, gm); r.textContent = "⚓";
+      var rl = svgEl("text", { x: isl.x, y: isl.y + isl.r + 50, "text-anchor": "middle", "class": "mlabel", style: "font-size:17px;fill:#ffc940" }, gl);
+      rl.textContent = "Nochmal anlegen";
+    }
+  });
+  $("kCount").textContent = ks.anzahl + " von " + INSELN.length + " Inseln erobert";
+  $("kNext").textContent = ks.seq < INSELN.length ? "⚓ Nächster Hafen: " + INSELN[ks.seq].n + " · Boje " + ks.boje + " von 3" : "⚓ Ganz Rechtschreibland ist erobert!";
+  return ks;
+}
+function placeBoat(p) { $("boat").setAttribute("transform", "translate(" + p.x.toFixed(1) + " " + (p.y + 26).toFixed(1) + ")"); }
+function moveBoat(from, to) {
+  if (bootAnim) { cancelAnimationFrame(bootAnim); bootAnim = null; }
+  bootStop = to;
+  if (reduceMotion() || from === to || from === null) { placeBoat(STOPS[to]); return; }
+  var dir = to > from ? 1 : -1, steps = Math.abs(to - from);
+  var per = Math.min(450, CONFIG.bootFahrtMaxMs / steps), start = null;   // Gesamtfahrt max. 2,4 s
+  function frame(ts) {
+    if (start === null) start = ts;
+    var prog = Math.min((ts - start) / per, steps), idx = Math.floor(prog), f = prog - idx;
+    if (idx >= steps) { placeBoat(STOPS[to]); bootAnim = null; return; }
+    var a = STOPS[from + dir * idx], b = STOPS[from + dir * (idx + 1)];
+    var e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
+    placeBoat({ x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e });
+    bootAnim = requestAnimationFrame(frame);
+  }
+  bootAnim = requestAnimationFrame(frame);
+}
+function scrollToBoat(stop) {
+  var wrap = $("mapwrap"), svg = $("map"), p = STOPS[stop];
+  var scale = svg.getBoundingClientRect().width / 800;
+  try { wrap.scrollTo({ left: p.x * scale - wrap.clientWidth / 2, top: p.y * scale - wrap.clientHeight / 2, behavior: "auto" }); }
+  catch (err) { wrap.scrollLeft = p.x * scale - wrap.clientWidth / 2; wrap.scrollTop = p.y * scale - wrap.clientHeight / 2; }
+}
+function showKarte() {
+  var ks = renderKarte();
+  if (!state.karte) state.karte = { boot: ks.stop, gesehen: ks.erobert.map(function (e, i) { return e ? i : -1; }).filter(function (i) { return i >= 0; }) };
+  // Neu eroberte Inseln genau einmal melden (W3), Boot fährt vom letzten gesehenen Stand (max. 2,4 s)
+  var neu = [];
+  ks.erobert.forEach(function (e, i) { if (e && state.karte.gesehen.indexOf(i) < 0) { neu.push(i); state.karte.gesehen.push(i); } });
+  var von = Math.min(state.karte.boot, STOPS.length - 1);
+  state.karte.boot = ks.stop;
+  saveState();
+  moveBoat(von, ks.stop);
+  setTimeout(function () { scrollToBoat(ks.stop); }, 30);
+  if (neu.length) {
+    karteEvents.push.apply(karteEvents, neu);
+    toast("🏴 " + neu.map(function (i) { return INSELN[i].n; }).join(", ") + " erobert! Neues Land in Sicht.");
+  }
+}
+function openInsel(i) {
+  var ks = karteStatus(), isl = INSELN[i], status, an;
+  if (ks.erobert[i]) { status = ks.wiederholung[i] ? "Erobert · Wiederholungsrunde: nochmal anlegen" : "Erobert 🏴"; an = 3; }
+  else if (i === ks.seq) { status = "Nächstes Ziel · Stufe " + stufeInfo(isl.unit).stufe; an = ks.boje; }
+  else { status = "Noch nicht erreicht · Stufe " + stufeInfo(isl.unit).stufe; an = 0; }
+  if (isl.cap && !ks.erobert[i]) status += " · erst nach allen anderen Inseln";
+  offeneInsel = i;
+  $("icTitel").textContent = isl.n; $("icStatus").textContent = status;
+  var b = $("icBojen"); b.textContent = "";
+  for (var k = 0; k < 3; k++) b.appendChild(el("span", k < an ? "on" : ""));
+  $("icard").hidden = false;
+  try { $("icUeben").focus(); } catch (err) { /* egal */ }
+}
+// „Hier üben“: startet genau die Einheit der Insel (W6/W11)
+function uebenAufInsel(i) {
+  var u = INSELN[i].unit;
+  $("icard").hidden = true;
+  if (u === VERWECHSLUNG) { state.settings.paar = "alle"; saveState(); navStack = ["start", "karte", "lueckewahl"]; startLuecke(); return; }
+  var a = { welten: ["alle"], thema: "egal", silben: "egal" };
+  if (THEMEN.indexOf(u) >= 0) a.thema = u;
+  else if (u.indexOf("silben:") === 0) a.silben = u.slice(7);
+  else if (u === "welt:alltag") a.welten = ["alltag"];
+  state.settings.auswahl = a; saveState();
+  navStack = ["start", "karte", "auswahl"];
+  startRound();
 }
 
 // ================= Mein Fortschritt (4.7) =================
@@ -2790,6 +3167,11 @@ function reportText() {
   state.wochenfragen.filter(function (f) { return inP(f.tag); }).forEach(function (f) {
     lines.push("", "Wochenfrage: " + f.frage, "„" + f.antwort + "“");
   });
+  var ks = karteStatus(), neuErobert = [];
+  INSELN.forEach(function (isl, i) { if (ks.erobert[i] && inP(ks.erobertAm[i])) neuErobert.push(isl.n); });
+  lines.push("", "Seekarte: " + ks.anzahl + " von " + INSELN.length + " Inseln erobert" +
+    (neuErobert.length ? " (neu: " + neuErobert.join(", ") + ")" : "") +
+    (ks.seq < INSELN.length ? " · nächster Hafen: " + INSELN[ks.seq].n : ""));
   var li = levelInfo(punkte()), se = serie();
   lines.push("", "Level " + li.level + " · " + li.titel + " · 🔥 " + plural(se.tage, "Tag", "Tage") + " · " + li.punkte + " Punkte");
   lines.push("", "HD · Version " + APP_VERSION);
@@ -3032,6 +3414,20 @@ function wire() {
   $("sListen").addEventListener("click", function () { if (S) speak(spokenText(S.entry)); });
   $("sTip").addEventListener("click", function () { if (S) $("sMsg").textContent = "Tipp: " + (S.entry.hinweis || "Eins deiner eigenen Wörter."); });
   $("sNext").addEventListener("click", salatNeu);
+  // Seekarte
+  $("islands").addEventListener("click", function (ev) {
+    var g = ev.target.closest ? ev.target.closest(".island") : null;
+    if (g && g.style.pointerEvents !== "none") openInsel(Number(g.getAttribute("data-i")));
+  });
+  $("islands").addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    var g = ev.target.closest ? ev.target.closest(".island") : null;
+    if (!g || g.style.pointerEvents === "none") return;
+    ev.preventDefault(); openInsel(Number(g.getAttribute("data-i")));
+  });
+  $("icClose").addEventListener("click", function () { $("icard").hidden = true; });
+  $("icUeben").addEventListener("click", function () { if (offeneInsel !== null) uebenAufInsel(offeneInsel); });
+  $("memListOk").addEventListener("click", function () { $("memList").hidden = true; });
   // Fortschritt
   $("fAlle").addEventListener("click", function () { fAlleZeigen = true; renderFortschritt(); });
   $("fTitel").addEventListener("click", function (ev) {
@@ -3088,6 +3484,10 @@ window.__test = {
   galgen: function () { return G ? { wort: G.entry.wort, misses: G.misses, done: G.done } : null; },
   salat: function () { return S ? { wort: S.entry.wort, fixed: S.fixed, pieces: S.pieces.map(function (p) { return p.t; }), placed: S.placed.length, awaitCase: S.awaitCase } : null; },
   memory: function () { return M ? { pairs: M.pairs, found: M.found, zuege: M.zuege } : null; },
+  karte: { inseln: INSELN.map(function (i) { return { n: i.n, unit: i.unit, x: i.x, y: i.y, cap: !!i.cap }; }),
+    stops: STOPS.map(function (x) { return { x: x.x, y: x.y, insel: x.insel }; }),
+    status: function () { return karteStatus(); }, holes: function () { return karteLetzteLoecher; },
+    events: karteEvents, kurve: kurve, kurvenPunkt: kurvenPunkt },
   reportText: reportText, importText: importText, exportJson: exportJson,
   state: function () { return JSON.parse(JSON.stringify(state)); },
   storageOk: function () { return storageOk; },
