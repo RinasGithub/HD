@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HD</title>
+<meta name="description" content="HD – Rechtschreibtraining">
+<meta name="theme-color" content="#050404">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HD">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;
+  src:url("fonts/AtkinsonHyperlegible-Regular.woff2") format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;
+  src:url("fonts/AtkinsonHyperlegible-Bold.woff2") format("woff2")}
+@font-face{font-family:"Spectral SC";font-style:normal;font-weight:500;font-display:swap;
+  src:url("fonts/SpectralSC-Medium.woff2") format("woff2")}
+@font-face{font-family:"Spectral SC";font-style:normal;font-weight:700;font-display:swap;
+  src:url("fonts/SpectralSC-Bold.woff2") format("woff2")}
+:root{
+  --bg:#050404; --panel:rgba(12,9,9,.94); --line:#b3202a; --line-soft:rgba(179,32,42,.2);
+  --ink:#ece6e1; --muted:#a39b95; --ok:#3ddc84; --err:#ffc940; --outer:#1a1716;
+  --sans:"Atkinson Hyperlegible",Verdana,"Segoe UI",Arial,sans-serif;
+  --serif:"Spectral SC",Georgia,"Times New Roman",serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{min-height:100%}
+body{margin:0;background:var(--outer);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.5;
+  display:flex;justify-content:center;-webkit-text-size-adjust:100%}
+.app{width:100%;max-width:520px;min-height:100vh;position:relative;display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);
+  background:
+    repeating-linear-gradient(0deg,transparent 0 39px,var(--line-soft) 39px 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,var(--line-soft) 39px 40px),var(--bg)}
+.appflag{flex-shrink:0;font-size:.8rem;color:var(--muted);text-align:center;padding:6px 0;border-bottom:1px solid var(--line-soft)}
+.screen{display:none;padding:18px 18px 32px;flex-direction:column;gap:14px}
+.screen.active{display:flex}
+.screen>*{flex-shrink:0}
+h1,h2{font-family:var(--serif);font-weight:700;margin:0;line-height:1.15}
+h1{font-size:2.4rem;letter-spacing:.04em} h2{font-size:1.35rem}
+.muted{color:var(--muted);font-size:.95rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px}
+button{font:inherit;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-within{outline:3px solid var(--err);outline-offset:2px}
+.btn{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;width:100%;
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:1.1rem;text-align:left}
+.btn:active{background:#2a0c0e}
+.btn .ico{font-size:1.3rem;width:1.7rem;text-align:center;flex-shrink:0}
+.btn.primary{background:var(--line);justify-content:center;font-weight:700}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.back{align-self:flex-start;background:none;border:0;color:var(--muted);padding:6px 0;font-size:1rem;min-height:44px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.today{font-size:1rem;color:var(--muted);text-align:right}
+/* Üben */
+.speaker{align-self:center;width:124px;height:124px;border-radius:50%;background:var(--panel);
+  border:2px solid var(--line);font-size:2.8rem;display:grid;place-items:center}
+.speaker.playing{box-shadow:0 0 0 8px rgba(179,32,42,.35)}
+.slider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.95rem}
+.slider input{flex:1;min-width:0;accent-color:var(--line);min-height:44px}
+.slider output{min-width:3.2em;text-align:right;color:var(--ink)}
+.inp{width:100%;min-height:58px;font:inherit;font-size:1.5rem;letter-spacing:.04em;padding:0 14px;
+  background:#120f0f;color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.result{display:flex;flex-direction:column;gap:6px}
+.result .lbl{font-size:.9rem;color:var(--muted)}
+.result .w{font-size:1.6rem;letter-spacing:.06em;overflow-wrap:anywhere}
+.c-ok{color:var(--ok)}
+.c-err{color:var(--err);text-decoration:underline wavy var(--err);text-underline-offset:5px;
+  -webkit-text-decoration:underline wavy var(--err)}
+.msg{min-height:1.3em;color:var(--err);font-size:.95rem}
+.note{border-left:3px solid var(--err);padding:8px 12px;background:rgba(255,201,64,.07);font-size:.95rem}
+pre.report{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);font-size:.95rem;margin:0}
+.stat{font-size:1.2rem}
+.big{font-size:2rem;font-weight:700}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  background:#2a2322;border:1px solid var(--line);padding:10px 16px;border-radius:6px;z-index:20;max-width:90%}
+.banner{flex-shrink:0;display:flex;gap:10px;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:#2a0c0e;border-bottom:1px solid var(--line);font-size:.95rem}
+.banner button{min-height:44px;padding:0 14px;background:var(--line);border:0;border-radius:6px;font-weight:700}
+@media (prefers-reduced-motion:no-preference){ .speaker{transition:box-shadow .3s} }
+@media (orientation:landscape) and (max-height:500px){
+  .screen{padding-top:10px;gap:10px} .speaker{width:90px;height:90px;font-size:2.1rem}
+  h1{font-size:1.9rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="appflag" id="appflag">HD · Version <span id="version"></span></div>
+  <div class="banner" id="updateBanner" hidden>
+    <span>Neue Version ist da.</span><button id="updateBtn">Jetzt laden</button>
+  </div>
+
+  <!-- START -->
+  <section class="screen active" id="start">
+    <div class="head">
+      <h1>HD</h1>
+      <div class="today" id="todayStat"></div>
+    </div>
+    <div class="note" id="storageWarn" hidden>Dieser Browser erlaubt gerade kein Speichern. Was du übst, ist nach dem Schließen weg.</div>
+    <div class="note" id="dataWarn" hidden></div>
+    <button class="btn" data-go="ueben"><span class="ico">🎧</span>Üben</button>
+    <button class="btn" data-go="bericht"><span class="ico">📤</span>Bericht senden</button>
+    <button class="btn" data-go="daten"><span class="ico">💾</span>Daten sichern</button>
+  </section>
+
+  <!-- ÜBEN -->
+  <section class="screen" id="ueben">
+    <button class="back" data-back>‹ Zurück</button>
+    <div class="head"><span class="muted">Wort hören und schreiben</span><span class="muted" id="counter"></span></div>
+    <button class="speaker" id="speaker" aria-label="Wort anhören">🔊</button>
+    <div class="msg" id="speechMsg" aria-live="polite"></div>
+    <div class="slider"><span>Tempo</span>
+      <input type="range" id="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
+      <output id="rateOut" for="rate"></output></div>
+    <input class="inp" id="wordInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+      spellcheck="false" enterkeyhint="done" placeholder="Hier schreiben …" aria-label="Wort eingeben">
+    <button class="btn primary" id="checkBtn">Prüfen</button>
+    <div class="result" id="result" aria-live="polite"></div>
+    <div class="muted" id="feedback" aria-live="polite"></div>
+    <button class="btn" id="nextBtn" hidden><span class="ico">➡️</span>Nächstes Wort</button>
+  </section>
+
+  <!-- RUNDE FERTIG -->
+  <section class="screen" id="fertig">
+    <h2>Runde geschafft</h2>
+    <div class="panel"><div class="big" id="doneScore"></div><div class="muted" id="doneText"></div></div>
+    <button class="btn primary" id="againBtn">Noch eine Runde</button>
+    <button class="btn" data-home><span class="ico">⚓</span>Zum Start</button>
+  </section>
+
+  <!-- BERICHT -->
+  <section class="screen" id="bericht">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Bericht an Mama</h2>
+    <div class="muted">So kommt die Nachricht an:</div>
+    <div class="panel"><pre class="report" id="reportText"></pre></div>
+    <button class="btn primary" id="shareBtn">📤 Teilen</button>
+    <div class="muted" id="shareHint" hidden>Teilen geht in diesem Browser nicht. Nimm „Kopieren“ und füge den Text in Signal ein.</div>
+    <button class="btn" id="copyBtn">📋 Kopieren</button>
+  </section>
+
+  <!-- DATEN -->
+  <section class="screen" id="daten">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Daten sichern</h2>
+    <div class="panel muted" id="dataInfo"></div>
+    <button class="btn" id="exportBtn"><span class="ico">💾</span>Sicherung als Datei speichern</button>
+    <button class="btn" id="exportShareBtn" hidden><span class="ico">📤</span>Sicherung teilen (Dateien, Signal …)</button>
+    <label class="btn" id="importLabel"><span class="ico">📂</span>Sicherung laden
+      <input type="file" id="importFile" accept=".json,application/json"></label>
+    <div class="msg" id="dataMsg" aria-live="polite"></div>
+    <div class="muted">Tipp: Speicher ab und zu eine Sicherung. Mit „Sicherung laden“ holst du deinen Stand auch auf ein anderes Gerät.</div>
+  </section>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+</div>
+
+<script>
+"use strict";
+(function () {
+
+// ================= Version & Einstellungen =================
+var APP_VERSION = "0.1.0";
+var SCHEMA_VERSION = 1;
+var STORAGE_KEY = "hd.fortschritt.v1";
+
+var CONFIG = {
+  stufeAufstiegQuote: 0.85,   // ab 0.2
+  stufeAufstiegWoerter: 30,   // ab 0.2
+  stufeAufstiegTage: 3,       // ab 0.2
+  stufeAbstiegQuote: 0.60,    // ab 0.2
+  stufeAbstiegWoerter: 20,    // ab 0.2
+  mischungAktuell: 0.8,       // ab 0.2
+  inaktivSekunden: 60,        // ab 0.2
+  woerterProRunde: 15,
+  tempoMin: 0.5, tempoMax: 1.5, tempoStandard: 0.9,
+  berichtTage: 7
+};
+
+var THEMEN = ["grossklein", "doppel", "ck-tz", "s-laute", "dehnung", "verlaengern",
+  "umlaute", "merkwoerter", "vorsilben", "fremdwoerter", "verwechslung"];
+
+// ================= Inhalte (Spalten wie spätere Excel-Datei) =================
+var DATA = {
+  welten: [
+    { "kürzel": "segeln", name: "Segeln", emoji: "⛵" },
+    { "kürzel": "fechten", name: "Fechten", emoji: "🤺" },
+    { "kürzel": "pferde", name: "Pferde", emoji: "🐴" },
+    { "kürzel": "hunde", name: "Hunde", emoji: "🐕" },
+    { "kürzel": "chemie", name: "Chemie & Bio", emoji: "🧪" },
+    { "kürzel": "sport", name: "Sport", emoji: "🏐" },
+    { "kürzel": "pfadfinder", name: "Pfadfinder", emoji: "🏕️" },
+    { "kürzel": "spiele", name: "Spiele", emoji: "🎮" },
+    { "kürzel": "freundschaft", name: "Freundschaft", emoji: "🤝" },
+    { "kürzel": "alltag", name: "Alltag", emoji: "📌" }
+  ],
+  woerter: [
+    { wort: "Segel", silben: "Se|gel", welt: "segeln", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Stoff am Mast, der den Wind fängt", fremdwort: "nein" },
+    { wort: "Wind", silben: "Wind", welt: "segeln", nomen: "ja", themen: ["grossklein", "verlaengern"], stufe: 1, hinweis: "Ohne ihn bewegt sich das Boot nicht", fremdwort: "nein" },
+    { wort: "Hafen", silben: "Ha|fen", welt: "segeln", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Hier legt das Schiff an", fremdwort: "nein" },
+    { wort: "Degen", silben: "De|gen", welt: "fechten", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Waffe beim Fechten", fremdwort: "nein" },
+    { wort: "Maske", silben: "Mas|ke", welt: "fechten", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Schützt beim Fechten das Gesicht", fremdwort: "nein" },
+    { wort: "Pferd", silben: "Pferd", welt: "pferde", nomen: "ja", themen: ["verlaengern"], stufe: 2, hinweis: "Tier mit Hufen und Mähne", fremdwort: "nein" },
+    { wort: "Sattel", silben: "Sat|tel", welt: "pferde", nomen: "ja", themen: ["doppel"], stufe: 2, hinweis: "Darauf sitzt man beim Reiten", fremdwort: "nein" },
+    { wort: "Hund", silben: "Hund", welt: "hunde", nomen: "ja", themen: ["verlaengern"], stufe: 1, hinweis: "Bellt", fremdwort: "nein" },
+    { wort: "Leine", silben: "Lei|ne", welt: "hunde", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Damit führt man den Hund", fremdwort: "nein" },
+    { wort: "Salz", silben: "Salz", welt: "chemie", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Weiße Körner, die im Meerwasser gelöst sind", fremdwort: "nein" },
+    { wort: "Zelle", silben: "Zel|le", welt: "chemie", nomen: "ja", themen: ["doppel"], stufe: 2, hinweis: "Kleinster Baustein von Lebewesen", fremdwort: "nein" },
+    { wort: "Zelt", silben: "Zelt", welt: "pfadfinder", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Darin schläft man im Lager", fremdwort: "nein" },
+    { wort: "Freund", silben: "Freund", welt: "freundschaft", nomen: "ja", themen: ["verlaengern"], stufe: 2, hinweis: "Jemand, auf den du dich verlassen kannst", fremdwort: "nein" },
+    { wort: "Straße", silben: "Stra|ße", welt: "alltag", nomen: "ja", themen: ["s-laute"], stufe: 2, hinweis: "Darauf fahren Autos", fremdwort: "nein" },
+    { wort: "vielleicht", silben: "viel|leicht", welt: "alltag", nomen: "nein", themen: ["doppel", "merkwoerter"], stufe: 3, hinweis: "Nicht sicher, aber möglich", fremdwort: "nein" },
+    { wort: "plötzlich", silben: "plötz|lich", welt: "alltag", nomen: "nein", themen: ["ck-tz"], stufe: 3, hinweis: "Auf einmal, ganz schnell", fremdwort: "nein" }
+  ],
+  texte: [],
+  lueckensaetze: [],
+  regeln: [],
+  meldungen: [],
+  inseln: []
+};
+
+// ================= Hilfsfunktionen =================
+var testHooks = { fakeNow: null };
+function now() { return testHooks.fakeNow ? new Date(testHooks.fakeNow) : new Date(); }
+function pad(n) { return (n < 10 ? "0" : "") + n; }
+function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function fmtDay(d) { return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
+function $(id) { return document.getElementById(id); }
+function norm(s) { return String(s == null ? "" : s).normalize("NFC").replace(/\s+/g, " ").trim(); }
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+function isYesNo(v) { return v === "ja" || v === "nein"; }
+var toastTimer = null;
+function toast(text) {
+  var t = $("toast"); t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2500);
+}
+
+// ================= Validierung der Inhalte (T2) =================
+function validate(data) {
+  var errors = [];
+  var welten = [], weltKeys = {};
+  (Array.isArray(data.welten) ? data.welten : []).forEach(function (w, i) {
+    var nr = "Welten Zeile " + (i + 1);
+    if (!w || typeof w["kürzel"] !== "string" || !w["kürzel"] || typeof w.name !== "string" || !w.name || typeof w.emoji !== "string") {
+      errors.push(nr + ": Pflichtfeld fehlt"); return;
+    }
+    if (weltKeys[w["kürzel"]]) { errors.push(nr + ": Kürzel „" + w["kürzel"] + "“ doppelt"); return; }
+    weltKeys[w["kürzel"]] = true; welten.push(w);
+  });
+  var woerter = [], seen = {};
+  (Array.isArray(data.woerter) ? data.woerter : []).forEach(function (e, i) {
+    var nr = "Wörter Zeile " + (i + 1) + (e && e.wort ? " („" + e.wort + "“)" : "");
+    if (!e || typeof e.wort !== "string" || !norm(e.wort)) { errors.push(nr + ": Wort fehlt"); return; }
+    if (typeof e.silben !== "string" || !e.silben) { errors.push(nr + ": Silben fehlen"); return; }
+    if (e.silben.split("|").join("") !== e.wort) { errors.push(nr + ": Silben ergeben nicht das Wort"); return; }
+    if (!weltKeys[e.welt]) { errors.push(nr + ": Welt „" + e.welt + "“ unbekannt"); return; }
+    if (!isYesNo(e.nomen)) { errors.push(nr + ": nomen muss ja oder nein sein"); return; }
+    if (!isYesNo(e.fremdwort)) { errors.push(nr + ": fremdwort muss ja oder nein sein"); return; }
+    if (typeof e.stufe !== "number" || e.stufe % 1 !== 0 || e.stufe < 1 || e.stufe > 5) { errors.push(nr + ": Stufe muss 1 bis 5 sein"); return; }
+    if (!Array.isArray(e.themen) || e.themen.some(function (t) { return THEMEN.indexOf(t) < 0; })) { errors.push(nr + ": unbekanntes Thema"); return; }
+    if (typeof e.hinweis !== "string") { errors.push(nr + ": Hinweis fehlt"); return; }
+    if (seen[e.wort]) { errors.push(nr + ": Wort doppelt"); return; }
+    seen[e.wort] = true; woerter.push(e);
+  });
+  return { welten: welten, woerter: woerter, errors: errors };
+}
+
+var content = { welten: [], woerter: [], errors: [] };
+try { content = validate(DATA); } catch (err) { content.errors = ["Inhalte konnten nicht gelesen werden: " + err.message]; }
+
+// ================= Speicher =================
+var storageOk = true;
+function emptyState() {
+  return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
+    settings: { rate: CONFIG.tempoStandard }, versuche: [] };
+}
+function clampRate(r) {
+  r = Number(r);
+  if (!isFinite(r)) return CONFIG.tempoStandard;
+  return Math.round(Math.min(CONFIG.tempoMax, Math.max(CONFIG.tempoMin, r)) * 10) / 10;
+}
+// Prüft einen Stand (aus Speicher oder Import). Gibt bereinigten Stand oder Fehlertext zurück.
+function sanitize(obj) {
+  if (!obj || typeof obj !== "object" || obj.app !== "HD") return { error: "Das ist keine Sicherung von HD." };
+  if (typeof obj.schema !== "number" || obj.schema % 1 !== 0 || obj.schema < 1) return { error: "Die Sicherung ist beschädigt (Schema fehlt)." };
+  if (obj.schema > SCHEMA_VERSION) return { error: "Diese Sicherung stammt aus einer neueren Version von HD. Bitte zuerst die App aktualisieren." };
+  if (!Array.isArray(obj.versuche)) return { error: "Die Sicherung ist beschädigt (Übungen fehlen)." };
+  var st = emptyState();
+  st.erstellt = typeof obj.erstellt === "string" ? obj.erstellt : st.erstellt;
+  st.settings.rate = clampRate(obj.settings && obj.settings.rate);
+  obj.versuche.forEach(function (v) {
+    if (v && typeof v.wort === "string" && typeof v.richtig === "boolean" && typeof v.tag === "string" && /^\d{4}-\d\d-\d\d$/.test(v.tag)) {
+      st.versuche.push({ wort: v.wort, richtig: v.richtig, eingabe: typeof v.eingabe === "string" ? v.eingabe : "",
+        zeit: typeof v.zeit === "string" ? v.zeit : "", tag: v.tag, kategorie: v.kategorie == null ? null : String(v.kategorie) });
+    }
+  });
+  return { state: st };
+}
+function loadState() {
+  var raw = null;
+  try { raw = window.localStorage.getItem(STORAGE_KEY); }
+  catch (err) { storageOk = false; return emptyState(); }
+  if (!raw) return emptyState();
+  try {
+    var res = sanitize(JSON.parse(raw));
+    return res.state || emptyState();
+  } catch (err) { return emptyState(); }
+}
+function saveState() {
+  state.appVersion = APP_VERSION;
+  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageOk = true; }
+  catch (err) { storageOk = false; }
+  $("storageWarn").hidden = storageOk;
+}
+var state = loadState();
+
+function requestPersist() {
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(function (granted) { persistGranted = granted; }).catch(function () {});
+    }
+  } catch (err) { /* egal */ }
+}
+var persistGranted = null;
+
+// ================= Buchstabenvergleich (LCS) =================
+function compare(target, input) {
+  var a = Array.from(target), b = Array.from(input);
+  var n = a.length, m = b.length, i, j;
+  var dp = [];
+  for (i = 0; i <= n; i++) { dp.push(new Array(m + 1).fill(0)); }
+  for (i = n - 1; i >= 0; i--) {
+    for (j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  var tMarks = [], iMarks = [];
+  i = 0; j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j] && dp[i][j] === dp[i + 1][j + 1] + 1) { tMarks.push({ ch: a[i], ok: true }); iMarks.push({ ch: b[j], ok: true }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { tMarks.push({ ch: a[i], ok: false }); i++; }
+    else { iMarks.push({ ch: b[j], ok: false }); j++; }
+  }
+  for (; i < n; i++) tMarks.push({ ch: a[i], ok: false });
+  for (; j < m; j++) iMarks.push({ ch: b[j], ok: false });
+  return { correct: target === input, target: tMarks, input: iMarks,
+    missing: tMarks.filter(function (x) { return !x.ok; }).length,
+    extra: iMarks.filter(function (x) { return !x.ok; }).length };
+}
+
+// ================= Sprachausgabe =================
+var voices = [];
+var currentUtterance = null; // Referenz halten (iOS verliert sonst Ereignisse)
+var speakLog = [];
+function hasSpeech() { return typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined"; }
+function loadVoices() { try { voices = window.speechSynthesis.getVoices() || []; } catch (err) { voices = []; } }
+function pickVoice() {
+  var de = voices.filter(function (v) { return /^de([-_]|$)/i.test(v.lang || ""); });
+  if (!de.length) return null;
+  de.sort(function (x, y) { return score(y) - score(x); });
+  return de[0];
+  function score(v) {
+    var s = 0;
+    if (/^de[-_]DE$/i.test(v.lang)) s += 2;
+    if (/natural|online/i.test(v.name)) s += 2;
+    if (/anna|katja|google/i.test(v.name)) s += 1;
+    return s;
+  }
+}
+if (hasSpeech()) {
+  loadVoices();
+  try {
+    if (window.speechSynthesis.addEventListener) window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    else window.speechSynthesis.onvoiceschanged = loadVoices;
+  } catch (err) { /* egal */ }
+}
+function speak(text) {
+  var msg = $("speechMsg"); msg.textContent = "";
+  if (!hasSpeech()) { msg.textContent = "Dieser Browser kann nicht vorlesen. Probier Safari, Chrome oder Edge."; return false; }
+  loadVoices();
+  var voice = pickVoice();
+  if (voices.length > 0 && !voice) {
+    msg.textContent = "Keine deutsche Stimme gefunden. In den Geräte-Einstellungen unter Sprache kannst du eine deutsche Stimme laden.";
+    return false;
+  }
+  var u = new window.SpeechSynthesisUtterance(text);
+  u.lang = voice ? voice.lang : "de-DE";
+  if (voice) u.voice = voice;
+  u.rate = state.settings.rate;
+  var sp = $("speaker");
+  u.onstart = function () { sp.classList.add("playing"); };
+  u.onend = function () { sp.classList.remove("playing"); };
+  u.onerror = function (e) {
+    sp.classList.remove("playing");
+    if (e && (e.error === "interrupted" || e.error === "canceled")) return;
+    msg.textContent = "Vorlesen hat nicht geklappt" + (e && e.error ? " (" + e.error + ")" : "") + ". Tipp nochmal auf den Lautsprecher.";
+  };
+  currentUtterance = u;
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+  } catch (err) {
+    msg.textContent = "Vorlesen hat nicht geklappt. Tipp nochmal auf den Lautsprecher.";
+    return false;
+  }
+  speakLog.push({ text: text, rate: u.rate, lang: u.lang });
+  return true;
+}
+
+// ================= Navigation =================
+var navStack = ["start"];
+function show(id) {
+  var screens = document.querySelectorAll(".screen");
+  for (var i = 0; i < screens.length; i++) screens[i].classList.toggle("active", screens[i].id === id);
+  if (navStack[navStack.length - 1] !== id) navStack.push(id);
+  window.scrollTo(0, 0);
+  if (id === "start") renderStart();
+  if (id === "bericht") renderReport();
+  if (id === "daten") renderData();
+}
+function goBack() {
+  navStack.pop();
+  show(navStack.length ? navStack[navStack.length - 1] : "start");
+}
+function goHome() { navStack = ["start"]; show("start"); }
+
+// ================= Start =================
+function renderStart() {
+  var today = dayKey(now());
+  var n = state.versuche.filter(function (v) { return v.tag === today; }).length;
+  $("todayStat").textContent = n ? "Heute: " + n + (n === 1 ? " Wort" : " Wörter") : "";
+  $("storageWarn").hidden = storageOk;
+  if (content.errors.length) {
+    $("dataWarn").hidden = false;
+    $("dataWarn").textContent = content.errors.length + (content.errors.length === 1 ? " Eintrag" : " Einträge") +
+      " in den Inhalten fehlerhaft und übersprungen: " + content.errors.join("; ");
+  }
+}
+
+// ================= Üben =================
+var round = null;
+function pool() { return content.woerter.filter(function (w) { return w.fremdwort !== "ja"; }); }
+function startRound() {
+  var words = shuffle(pool()).slice(0, CONFIG.woerterProRunde);
+  round = { words: words, idx: 0, right: 0, checked: false, recorded: false };
+  show("ueben");
+  showWord();
+}
+function currentWord() { return round && round.words[round.idx] ? round.words[round.idx].wort : null; }
+function showWord() {
+  round.checked = false; round.recorded = false;
+  $("counter").textContent = round.words.length ? "Wort " + (round.idx + 1) + " von " + round.words.length : "";
+  $("wordInput").value = "";
+  $("result").textContent = "";
+  $("feedback").textContent = "";
+  $("nextBtn").hidden = true;
+  $("checkBtn").disabled = !round.words.length;
+  if (!round.words.length) $("feedback").textContent = "Keine Wörter vorhanden.";
+  else speak(currentWord());
+  try { $("wordInput").focus(); } catch (err) { /* egal */ }
+}
+function renderMarks(label, marks) {
+  var wrap = document.createElement("div");
+  var l = document.createElement("div"); l.className = "lbl"; l.textContent = label; wrap.appendChild(l);
+  var w = document.createElement("div"); w.className = "w";
+  marks.forEach(function (mk) {
+    var s = document.createElement("span");
+    s.className = mk.ok ? "c-ok" : "c-err";
+    s.textContent = mk.ch === " " ? " " : mk.ch;
+    w.appendChild(s);
+  });
+  wrap.appendChild(w);
+  return wrap;
+}
+function check() {
+  if (!round || !currentWord()) return;
+  var target = currentWord();
+  var input = norm($("wordInput").value);
+  if (!input) { $("feedback").textContent = "Schreib zuerst das Wort."; return; }
+  var res = compare(target, input);
+  var box = $("result"); box.textContent = "";
+  if (res.correct) {
+    box.appendChild(renderMarks("Richtig geschrieben:", res.target));
+    $("feedback").textContent = "Stimmt genau.";
+  } else {
+    box.appendChild(renderMarks("Du hast geschrieben:", res.input));
+    box.appendChild(renderMarks("So schreibt man es:", res.target));
+    $("feedback").textContent = "Schau dir die gelben Stellen an. Du kannst es noch mal versuchen oder weitergehen.";
+  }
+  if (!round.recorded) {
+    var d = now();
+    state.versuche.push({ wort: target, richtig: res.correct, eingabe: input, zeit: d.toISOString(), tag: dayKey(d), kategorie: null });
+    saveState();
+    round.recorded = true;
+    if (res.correct) round.right++;
+  }
+  round.checked = true;
+  $("nextBtn").hidden = false;
+}
+function next() {
+  if (!round) return;
+  round.idx++;
+  if (round.idx >= round.words.length) {
+    $("doneScore").textContent = round.right + " von " + round.words.length;
+    $("doneText").textContent = "beim ersten Versuch richtig geschrieben.";
+    show("fertig");
+    return;
+  }
+  showWord();
+}
+
+// ================= Bericht =================
+function reportText() {
+  var end = now();
+  var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (CONFIG.berichtTage - 1));
+  var startKey = dayKey(start), endKey = dayKey(end);
+  var vs = state.versuche.filter(function (v) { return v.tag >= startKey && v.tag <= endKey; });
+  var lines = ["⚓ HD – Übungsbericht", "Zeitraum: " + fmtDay(start) + "–" + fmtDay(end) + end.getFullYear(), ""];
+  if (!vs.length) {
+    lines.push("In diesem Zeitraum noch nicht geübt.");
+  } else {
+    var days = {}; vs.forEach(function (v) { days[v.tag] = true; });
+    var nDays = Object.keys(days).length;
+    var right = vs.filter(function (v) { return v.richtig; }).length;
+    lines.push("Geübt an " + nDays + (nDays === 1 ? " Tag" : " Tagen"));
+    lines.push("Wörter: " + vs.length + " · davon richtig: " + right + " (" + Math.round(right / vs.length * 100) + " %)");
+    var last = {};
+    vs.forEach(function (v) { last[v.wort] = v.richtig; });
+    var hang = Object.keys(last).filter(function (w) { return !last[w]; });
+    lines.push("");
+    lines.push(hang.length ? "Wörter, die noch hängen:\n" + hang.join(", ") : "Keine Wörter, die noch hängen.");
+  }
+  lines.push("", "HD · Version " + APP_VERSION);
+  return lines.join("\n");
+}
+function renderReport() {
+  $("reportText").textContent = reportText();
+  var canShare = typeof navigator.share === "function";
+  $("shareBtn").hidden = !canShare;
+  $("shareHint").hidden = canShare;
+}
+function share() {
+  var text = reportText();
+  try {
+    navigator.share({ text: text }).catch(function (err) {
+      if (err && err.name === "AbortError") return;
+      toast("Teilen hat nicht geklappt. Nimm „Kopieren“.");
+    });
+  } catch (err) { toast("Teilen hat nicht geklappt. Nimm „Kopieren“."); }
+}
+function copyText(text) {
+  function fallback() {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.top = "-1000px";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+    document.body.removeChild(ta);
+    toast(ok ? "Kopiert. Jetzt in Signal einfügen." : "Kopieren ging nicht. Markier den Text von Hand.");
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("Kopiert. Jetzt in Signal einfügen."); }, fallback);
+      return;
+    }
+  } catch (err) { /* weiter mit fallback */ }
+  fallback();
+}
+
+// ================= Export / Import =================
+function exportName() { return "hd-sicherung-" + dayKey(now()) + ".json"; }
+function exportJson() {
+  var copy = JSON.parse(JSON.stringify(state));
+  copy.appVersion = APP_VERSION; copy.exportiert = now().toISOString();
+  return JSON.stringify(copy, null, 1);
+}
+function exportDownload() {
+  var blob = new Blob([exportJson()], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = exportName();
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  $("dataMsg").textContent = "";
+  toast("Sicherung wird gespeichert: " + exportName());
+}
+function exportFile() {
+  try { return new File([exportJson()], exportName(), { type: "application/json" }); } catch (err) { return null; }
+}
+function canShareFile() {
+  try {
+    var f = exportFile();
+    return !!(f && navigator.canShare && navigator.share && navigator.canShare({ files: [f] }));
+  } catch (err) { return false; }
+}
+function exportShare() {
+  var f = exportFile();
+  try {
+    navigator.share({ files: [f], title: "HD-Sicherung" }).catch(function (err) {
+      if (err && err.name === "AbortError") return;
+      $("dataMsg").textContent = "Teilen ging nicht. Nimm „Sicherung als Datei speichern“.";
+    });
+  } catch (err) { $("dataMsg").textContent = "Teilen ging nicht. Nimm „Sicherung als Datei speichern“."; }
+}
+function importText(text) {
+  var obj;
+  try { obj = JSON.parse(text); } catch (err) { return { ok: false, msg: "Die Datei ist keine gültige Sicherung." }; }
+  var res = sanitize(obj);
+  if (res.error) return { ok: false, msg: res.error };
+  var n = res.state.versuche.length;
+  if (!window.confirm("Sicherung laden? Dein jetziger Stand auf diesem Gerät wird dabei ersetzt (" + n + " Übungen in der Sicherung).")) {
+    return { ok: false, msg: "Nichts geändert." };
+  }
+  state = res.state;
+  saveState();
+  return { ok: true, msg: "Sicherung geladen: " + n + " Übungen." };
+}
+function onImportFile(ev) {
+  var file = ev.target.files && ev.target.files[0];
+  ev.target.value = "";
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function () {
+    var r = importText(String(reader.result));
+    $("dataMsg").textContent = r.msg;
+    $("dataMsg").style.color = r.ok ? "var(--ok)" : "";
+    renderData();
+  };
+  reader.onerror = function () { $("dataMsg").textContent = "Die Datei konnte nicht gelesen werden."; };
+  reader.readAsText(file);
+}
+function renderData() {
+  var n = state.versuche.length;
+  var days = {}; state.versuche.forEach(function (v) { days[v.tag] = true; });
+  $("dataInfo").textContent = "Auf diesem Gerät gespeichert: " + n + (n === 1 ? " Übung" : " Übungen") +
+    " an " + Object.keys(days).length + " Tagen." + (storageOk ? "" : " Achtung: Speichern ist gerade nicht möglich.");
+  $("exportShareBtn").hidden = !canShareFile();
+}
+
+// ================= Service Worker / Update =================
+function registerSW() {
+  if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+  var hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").then(function (reg) {
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") { try { reg.update(); } catch (err) { /* egal */ } }
+    });
+  }).catch(function () { /* offline ohne SW: App läuft trotzdem */ });
+  navigator.serviceWorker.addEventListener("controllerchange", function () {
+    if (hadController) $("updateBanner").hidden = false;
+    hadController = true;
+  });
+}
+
+// ================= Verdrahtung =================
+function wire() {
+  $("version").textContent = APP_VERSION;
+  document.addEventListener("click", function (ev) {
+    var t = ev.target.closest ? ev.target.closest("[data-go],[data-back],[data-home]") : null;
+    if (!t) return;
+    if (t.hasAttribute("data-back")) { goBack(); return; }
+    if (t.hasAttribute("data-home")) { goHome(); return; }
+    var go = t.getAttribute("data-go");
+    if (go === "ueben") startRound(); else show(go);
+  });
+  $("speaker").addEventListener("click", function () { if (currentWord()) speak(currentWord()); });
+  $("checkBtn").addEventListener("click", check);
+  $("nextBtn").addEventListener("click", next);
+  $("againBtn").addEventListener("click", function () { navStack = ["start"]; startRound(); });
+  $("wordInput").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && !ev.isComposing) {
+      ev.preventDefault();
+      if (round && round.checked && norm($("wordInput").value) === currentWord()) next(); else check();
+    }
+  });
+  var rate = $("rate");
+  rate.min = CONFIG.tempoMin; rate.max = CONFIG.tempoMax;
+  rate.value = state.settings.rate;
+  function showRate() { $("rateOut").textContent = String(state.settings.rate).replace(".", ",") + "×"; }
+  showRate();
+  rate.addEventListener("input", function () { state.settings.rate = clampRate(rate.value); showRate(); });
+  rate.addEventListener("change", function () { state.settings.rate = clampRate(rate.value); showRate(); saveState(); });
+  $("shareBtn").addEventListener("click", share);
+  $("copyBtn").addEventListener("click", function () { copyText(reportText()); });
+  $("exportBtn").addEventListener("click", exportDownload);
+  $("exportShareBtn").addEventListener("click", exportShare);
+  $("importFile").addEventListener("change", onImportFile);
+  $("updateBtn").addEventListener("click", function () { location.reload(); });
+}
+
+wire();
+renderStart();
+requestPersist();
+registerSW();
+
+// ================= Test-Schnittstelle (einziger Zugang) =================
+window.__test = {
+  version: APP_VERSION, schema: SCHEMA_VERSION, storageKey: STORAGE_KEY,
+  config: CONFIG, data: DATA, content: content, themen: THEMEN,
+  validate: validate, compare: compare, sanitize: sanitize,
+  reportText: reportText, importText: importText, exportJson: exportJson,
+  state: function () { return JSON.parse(JSON.stringify(state)); },
+  storageOk: function () { return storageOk; },
+  speakLog: speakLog, currentWord: currentWord,
+  setNow: function (iso) { testHooks.fakeNow = iso; }
+};
+
+})();
+</script>
+</body>
+</html>

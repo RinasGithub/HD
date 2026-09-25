@@ -1,0 +1,10 @@
+# Öffentliches Repo: nur die App-Dateien.
+# Nicht hochladen (persönliche Angaben / interne Unterlagen):
+CLAUDE.md
+docs/
+mockups/
+# Nur lokal:
+tests/
+tools/
+__pycache__/
+*.check.js
