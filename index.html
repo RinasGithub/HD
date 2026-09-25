@@ -43,8 +43,9 @@ body{margin:0;background:var(--outer);color:var(--ink);font-family:var(--sans);f
 .screen{display:none;padding:18px 18px 32px;flex-direction:column;gap:14px}
 .screen.active{display:flex}
 .screen>*{flex-shrink:0}
-h1,h2{font-family:var(--serif);font-weight:700;margin:0;line-height:1.15}
-h1{font-size:2.4rem;letter-spacing:.04em} h2{font-size:1.35rem}
+h1,h2{font-weight:700;margin:0;line-height:1.2}
+/* Nur „HD“ in Spectral SC; Überschriften normal geschrieben (keine Kapitälchen, besser lesbar) */
+h1{font-family:var(--serif);font-size:2.4rem;letter-spacing:.04em} h2{font-family:var(--sans);font-size:1.4rem}
 .muted{color:var(--muted);font-size:.95rem}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px}
 button{font:inherit;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -54,19 +55,29 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 .btn:active{background:#2a0c0e}
 .btn .ico{font-size:1.3rem;width:1.7rem;text-align:center;flex-shrink:0}
 .btn.primary{background:var(--line);justify-content:center;font-weight:700}
+.btn.small{min-height:48px;font-size:1rem}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .back{align-self:flex-start;background:none;border:0;color:var(--muted);padding:6px 0;font-size:1rem;min-height:44px}
 .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .today{font-size:1rem;color:var(--muted);text-align:right}
+/* Auswahl */
+.label{color:var(--muted);font-size:.95rem;margin-bottom:-6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;min-width:44px;padding:0 14px;border-radius:22px;background:var(--panel);border:1px solid #5a3a3a}
+.chip[aria-pressed="true"]{background:var(--line);border-color:var(--line)}
+.count{font-size:1rem}
+.warn{color:var(--err);font-size:.95rem;min-height:1.3em}
 /* Üben */
 .speaker{align-self:center;width:124px;height:124px;border-radius:50%;background:var(--panel);
   border:2px solid var(--line);font-size:2.8rem;display:grid;place-items:center}
 .speaker.playing{box-shadow:0 0 0 8px rgba(179,32,42,.35)}
+.onlyword{text-align:center;color:var(--muted);font-size:.95rem;margin-top:-6px}
 .slider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.95rem}
 .slider input{flex:1;min-width:0;accent-color:var(--line);min-height:44px}
 .slider output{min-width:3.2em;text-align:right;color:var(--ink)}
 .inp{width:100%;min-height:58px;font:inherit;font-size:1.5rem;letter-spacing:.04em;padding:0 14px;
   background:#120f0f;color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.inp.small{font-size:1.2rem;min-height:52px}
 .result{display:flex;flex-direction:column;gap:6px}
 .result .lbl{font-size:.9rem;color:var(--muted)}
 .result .w{font-size:1.6rem;letter-spacing:.06em;overflow-wrap:anywhere}
@@ -74,10 +85,21 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 .c-err{color:var(--err);text-decoration:underline wavy var(--err);text-underline-offset:5px;
   -webkit-text-decoration:underline wavy var(--err)}
 .msg{min-height:1.3em;color:var(--err);font-size:.95rem}
+.hintbox{border-left:3px solid var(--err);padding:8px 12px;background:rgba(255,201,64,.07);display:flex;flex-direction:column;gap:8px}
+.syll{font-size:1.6rem;letter-spacing:.04em}
+.syll span{display:inline-block;border-bottom:3px solid var(--line);border-radius:0 0 40% 40%;padding:0 3px 2px;margin-right:8px}
 .note{border-left:3px solid var(--err);padding:8px 12px;background:rgba(255,201,64,.07);font-size:.95rem}
 pre.report{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);font-size:.95rem;margin:0}
-.stat{font-size:1.2rem}
 .big{font-size:2rem;font-weight:700}
+.lines{margin:6px 0 0;padding-left:1.1em}
+/* Meine Wörter */
+.addrow{display:flex;gap:8px}
+.addrow .inp{flex:1;min-width:0}
+.addrow .btn{width:auto;flex-shrink:0}
+.mylist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mylist li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 4px 4px 12px;
+  background:var(--panel);border:1px solid #5a3a3a;border-radius:6px;font-size:1.15rem}
+.mylist button{min-height:44px;min-width:44px;background:none;border:0;color:var(--muted);font-size:1.1rem}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));
   background:#2a2322;border:1px solid var(--line);padding:10px 16px;border-radius:6px;z-index:20;max-width:90%}
@@ -106,16 +128,33 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     </div>
     <div class="note" id="storageWarn" hidden>Dieser Browser erlaubt gerade kein Speichern. Was du übst, ist nach dem Schließen weg.</div>
     <div class="note" id="dataWarn" hidden></div>
-    <button class="btn" data-go="ueben"><span class="ico">🎧</span>Üben</button>
+    <button class="btn" data-go="auswahl"><span class="ico">🎧</span>Üben</button>
+    <button class="btn" data-go="meine"><span class="ico">📒</span>Meine Wörter</button>
     <button class="btn" data-go="bericht"><span class="ico">📤</span>Bericht senden</button>
     <button class="btn" data-go="daten"><span class="ico">💾</span>Daten sichern</button>
+  </section>
+
+  <!-- AUSWAHL -->
+  <section class="screen" id="auswahl">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Was willst du üben?</h2>
+    <div class="label">Welten (mehrere möglich)</div>
+    <div class="chips" id="chipWelten"></div>
+    <div class="label">Thema</div>
+    <div class="chips" id="chipThema"></div>
+    <div class="label">Silben</div>
+    <div class="chips" id="chipSilben"></div>
+    <div class="count" id="auswahlCount" aria-live="polite"></div>
+    <div class="warn" id="auswahlWarn" aria-live="polite"></div>
+    <button class="btn primary" id="auswahlStart">Los geht's</button>
   </section>
 
   <!-- ÜBEN -->
   <section class="screen" id="ueben">
     <button class="back" data-back>‹ Zurück</button>
-    <div class="head"><span class="muted">Wort hören und schreiben</span><span class="muted" id="counter"></span></div>
+    <div class="head"><span class="muted" id="uebenInfo">Wort hören und schreiben</span><span class="muted" id="counter"></span></div>
     <button class="speaker" id="speaker" aria-label="Wort anhören">🔊</button>
+    <div class="onlyword" id="onlyWord"></div>
     <div class="msg" id="speechMsg" aria-live="polite"></div>
     <div class="slider"><span>Tempo</span>
       <input type="range" id="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
@@ -125,15 +164,36 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <button class="btn primary" id="checkBtn">Prüfen</button>
     <div class="result" id="result" aria-live="polite"></div>
     <div class="muted" id="feedback" aria-live="polite"></div>
+    <button class="btn small" id="hintBtn"><span class="ico">💡</span><span id="hintBtnText">Tipp zeigen</span></button>
+    <div class="hintbox" id="hintBox" hidden>
+      <div id="hintTips"></div>
+      <div class="syll" id="hintSyll" hidden></div>
+    </div>
     <button class="btn" id="nextBtn" hidden><span class="ico">➡️</span>Nächstes Wort</button>
   </section>
 
   <!-- RUNDE FERTIG -->
   <section class="screen" id="fertig">
     <h2>Runde geschafft</h2>
-    <div class="panel"><div class="big" id="doneScore"></div><div class="muted" id="doneText"></div></div>
+    <div class="panel"><div class="big" id="doneScore"></div><div class="muted" id="doneText"></div>
+      <ul class="lines" id="doneLines"></ul></div>
     <button class="btn primary" id="againBtn">Noch eine Runde</button>
     <button class="btn" data-home><span class="ico">⚓</span>Zum Start</button>
+  </section>
+
+  <!-- MEINE WÖRTER -->
+  <section class="screen" id="meine">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Meine Wörter</h2>
+    <div class="muted">Wörter aus der Schule oder von überall. Du findest sie beim Üben unter der Welt „📒 Meine Wörter“.</div>
+    <div class="addrow">
+      <input class="inp small" id="meineInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+        spellcheck="false" enterkeyhint="done" placeholder="Neues Wort …" aria-label="Neues Wort">
+      <button class="btn primary small" id="meineAdd">Dazu</button>
+    </div>
+    <div class="warn" id="meineMsg" aria-live="polite"></div>
+    <ul class="mylist" id="meineList"></ul>
+    <div class="muted" id="meineEmpty">Noch keine eigenen Wörter.</div>
   </section>
 
   <!-- BERICHT -->
@@ -168,27 +228,32 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.1.0";
-var SCHEMA_VERSION = 1;
-var STORAGE_KEY = "hd.fortschritt.v1";
+var APP_VERSION = "0.2.0";
+var SCHEMA_VERSION = 2;
+var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
-  stufeAufstiegQuote: 0.85,   // ab 0.2
-  stufeAufstiegWoerter: 30,   // ab 0.2
-  stufeAufstiegTage: 3,       // ab 0.2
-  stufeAbstiegQuote: 0.60,    // ab 0.2
-  stufeAbstiegWoerter: 20,    // ab 0.2
-  mischungAktuell: 0.8,       // ab 0.2
-  inaktivSekunden: 60,        // ab 0.2
+  stufeAufstiegQuote: 0.85,   // auch Ampel „sicher“
+  stufeAufstiegWoerter: 30,   // auch Ampel: letzte 30 Wörter je Thema
+  stufeAufstiegTage: 3,       // ab 0.3
+  stufeAbstiegQuote: 0.60,    // auch Ampel „wackelig“ (darunter „mehr üben“)
+  stufeAbstiegWoerter: 20,    // ab 0.3
+  mischungAktuell: 0.8,       // ab 0.3
+  inaktivSekunden: 60,
   woerterProRunde: 15,
+  minWoerterUebung: 5,
+  ampelMinVersuche: 10,
+  leitnerGewichte: { 0: 4, 1: 8, 2: 4, 3: 2, 4: 1, 5: 0.5 },  // Fach → Ziehgewicht (0 = neu)
   tempoMin: 0.5, tempoMax: 1.5, tempoStandard: 0.9,
-  berichtTage: 7
+  berichtTage: 7,
+  zeitSpeichernSekunden: 15
 };
 
-var THEMEN = ["grossklein", "doppel", "ck-tz", "s-laute", "dehnung", "verlaengern",
-  "umlaute", "merkwoerter", "vorsilben", "fremdwoerter", "verwechslung"];
+var KATEGORIEN = ["Groß/klein", "Doppelkonsonant", "ck/k", "tz/z", "ie/i", "Dehnungs-h", "Doppelvokal",
+  "s/ss/ß", "Endlaut", "Umlaut", "fehlender Buchstabe", "zusätzlicher Buchstabe", "vertauschte Buchstaben", "Sonstige"];
 
 // ================= Inhalte (Spalten wie spätere Excel-Datei) =================
+// Wörter werden mit tools/csv_to_data.py aus docs/wortliste.csv übertragen.
 var DATA = {
   welten: [
     { "kürzel": "segeln", name: "Segeln", emoji: "⛵" },
@@ -202,27 +267,540 @@ var DATA = {
     { "kürzel": "freundschaft", name: "Freundschaft", emoji: "🤝" },
     { "kürzel": "alltag", name: "Alltag", emoji: "📌" }
   ],
+  regeln: [
+    { id: "Groß/klein", text: "Kannst du der, die oder das davorsetzen? Dann schreibst du das Wort groß." },
+    { id: "Doppelte Buchstaben", text: "Sprich das Wort langsam. Ist der Laut vor dem Mitlaut kurz? Dann steht der Mitlaut oft doppelt: Wet-ter, Ball." },
+    { id: "ck/tz", text: "Nach einem kurzen Laut schreibst du ck statt kk und tz statt zz: Zu-cker, Kat-ze." },
+    { id: "s/ss/ß", text: "Kurzer Laut davor: ss (Was-ser). Langer Laut oder ei, au davor: ß (Fuß, heiß). Summt das s: einfaches s (Na-se)." },
+    { id: "Dehnung", text: "Ein lang gesprochenes i schreibst du fast immer ie. Manche langen Laute zeigen ein h (Zahn) oder zwei gleiche Selbstlaute (Boot)." },
+    { id: "Verlängern", text: "Hörst du am Ende p, t oder k? Verlängere das Wort: Hund → Hunde, Berg → Berge. Dann hörst du, ob b, d oder g." },
+    { id: "Umlaute ableiten", text: "Gibt es ein verwandtes Wort mit a oder au? Dann schreibst du ä oder äu: Hand → Hände, Baum → Bäume." },
+    { id: "Merkwörter", text: "Dieses Wort hält sich an keine Regel. Sieh es dir genau an und merk dir, wie es aussieht." },
+    { id: "Vorsilben", text: "Die Vorsilben ver- und vor- schreibst du immer mit v." },
+    { id: "Fremdwörter", text: "Das Wort kommt aus einer anderen Sprache. Man schreibt es anders, als man es spricht. Merk dir, wie es aussieht." },
+    { id: "Verwechslungswörter", text: "Diese Wörter klingen gleich. Der Satz zeigt, welches gemeint ist." },
+    { id: "allgemein", text: "Sprich das Wort langsam in Silben mit und schreib Silbe für Silbe." }
+  ],
   woerter: [
-    { wort: "Segel", silben: "Se|gel", welt: "segeln", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Stoff am Mast, der den Wind fängt", fremdwort: "nein" },
-    { wort: "Wind", silben: "Wind", welt: "segeln", nomen: "ja", themen: ["grossklein", "verlaengern"], stufe: 1, hinweis: "Ohne ihn bewegt sich das Boot nicht", fremdwort: "nein" },
-    { wort: "Hafen", silben: "Ha|fen", welt: "segeln", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Hier legt das Schiff an", fremdwort: "nein" },
-    { wort: "Degen", silben: "De|gen", welt: "fechten", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Waffe beim Fechten", fremdwort: "nein" },
-    { wort: "Maske", silben: "Mas|ke", welt: "fechten", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Schützt beim Fechten das Gesicht", fremdwort: "nein" },
-    { wort: "Pferd", silben: "Pferd", welt: "pferde", nomen: "ja", themen: ["verlaengern"], stufe: 2, hinweis: "Tier mit Hufen und Mähne", fremdwort: "nein" },
-    { wort: "Sattel", silben: "Sat|tel", welt: "pferde", nomen: "ja", themen: ["doppel"], stufe: 2, hinweis: "Darauf sitzt man beim Reiten", fremdwort: "nein" },
-    { wort: "Hund", silben: "Hund", welt: "hunde", nomen: "ja", themen: ["verlaengern"], stufe: 1, hinweis: "Bellt", fremdwort: "nein" },
-    { wort: "Leine", silben: "Lei|ne", welt: "hunde", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Damit führt man den Hund", fremdwort: "nein" },
-    { wort: "Salz", silben: "Salz", welt: "chemie", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Weiße Körner, die im Meerwasser gelöst sind", fremdwort: "nein" },
-    { wort: "Zelle", silben: "Zel|le", welt: "chemie", nomen: "ja", themen: ["doppel"], stufe: 2, hinweis: "Kleinster Baustein von Lebewesen", fremdwort: "nein" },
-    { wort: "Zelt", silben: "Zelt", welt: "pfadfinder", nomen: "ja", themen: ["grossklein"], stufe: 1, hinweis: "Darin schläft man im Lager", fremdwort: "nein" },
-    { wort: "Freund", silben: "Freund", welt: "freundschaft", nomen: "ja", themen: ["verlaengern"], stufe: 2, hinweis: "Jemand, auf den du dich verlassen kannst", fremdwort: "nein" },
-    { wort: "Straße", silben: "Stra|ße", welt: "alltag", nomen: "ja", themen: ["s-laute"], stufe: 2, hinweis: "Darauf fahren Autos", fremdwort: "nein" },
-    { wort: "vielleicht", silben: "viel|leicht", welt: "alltag", nomen: "nein", themen: ["doppel", "merkwoerter"], stufe: 3, hinweis: "Nicht sicher, aber möglich", fremdwort: "nein" },
-    { wort: "plötzlich", silben: "plötz|lich", welt: "alltag", nomen: "nein", themen: ["ck-tz"], stufe: 3, hinweis: "Auf einmal, ganz schnell", fremdwort: "nein" }
+    /*WOERTER-START*/
+    {"wort": "Segel", "silben": "Se|gel", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Stoff am Mast, der den Wind fängt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Boot", "silben": "Boot", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Kleines Wasserfahrzeug", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mast", "silben": "Mast", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Hoher Pfosten, an dem das Segel hängt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wind", "silben": "Wind", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Bewegte Luft, die das Boot antreibt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hafen", "silben": "Ha|fen", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Hier legt das Schiff an", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kiel", "silben": "Kiel", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Unterster Teil des Bootes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Welle", "silben": "Wel|le", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Wasser, das sich hebt und senkt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ruder", "silben": "Ru|der", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Damit lenkt man das Boot", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kurs", "silben": "Kurs", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Richtung, in die das Schiff fährt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Knoten", "silben": "Kno|ten", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Damit bindet man ein Seil fest", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tau", "silben": "Tau", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Dickes Seil an Bord", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Insel", "silben": "In|sel", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Land mitten im Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Küste", "silben": "Küs|te", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Wo Land und Meer sich treffen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Strand", "silben": "Strand", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Sand am Ufer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ufer", "silben": "U|fer", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Rand eines Sees oder Flusses", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schiff", "silben": "Schiff", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Großes Wasserfahrzeug", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schifffahrt", "silben": "Schiff|fahrt", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Merkwörter", "Doppelte Buchstaben"], "stufe": 3, "hinweis": "Reisen und Transport mit Schiffen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Steuermann", "silben": "Steu|er|mann", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Er lenkt das Schiff", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kapitän", "silben": "Ka|pi|tän", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": ["Merkwörter"], "stufe": 2, "hinweis": "Chef an Bord", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Möwe", "silben": "Mö|we", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Weißer Vogel am Meer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Anker", "silben": "An|ker", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Hält das Schiff am Platz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sturm", "silben": "Sturm", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Sehr starker Wind", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wetter", "silben": "Wet|ter", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Sonne, Regen oder Wind", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Flagge", "silben": "Flag|ge", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Stoff mit Farben am Mast", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Reise", "silben": "Rei|se", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Fahrt an einen anderen Ort", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wasser", "silben": "Was|ser", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 1, "hinweis": "Darauf schwimmt das Boot", "fremdwort": "nein", "ansage": ""},
+    {"wort": "segeln", "silben": "se|geln", "welt": "segeln", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Mit dem Wind übers Wasser fahren", "fremdwort": "nein", "ansage": "Morgen wollen wir segeln."},
+    {"wort": "nass", "silben": "nass", "welt": "segeln", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß", "Doppelte Buchstaben"], "stufe": 1, "hinweis": "Ganz feucht", "fremdwort": "nein", "ansage": "Nach dem Regen ist alles nass."},
+    {"wort": "Kette", "silben": "Ket|te", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Hält den Anker am Boot", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Rettungsweste", "silben": "Ret|tungs|wes|te", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 3, "hinweis": "Hält dich im Wasser oben", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Leuchtturm", "silben": "Leucht|turm", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Zeigt Schiffen nachts den Weg", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fahrt", "silben": "Fahrt", "welt": "segeln", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Reise mit dem Boot", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Deck", "silben": "Deck", "welt": "segeln", "nomen": "ja", "artikel": "das", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Boden oben auf dem Schiff", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Segler", "silben": "Seg|ler", "welt": "segeln", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Jemand, der segelt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "fechten", "silben": "fech|ten", "welt": "fechten", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Sport mit Degen, Säbel oder Florett", "fremdwort": "nein", "ansage": "Ich gehe heute fechten."},
+    {"wort": "Degen", "silben": "De|gen", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Waffe beim Fechten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Maske", "silben": "Mas|ke", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Schützt beim Fechten das Gesicht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Klinge", "silben": "Klin|ge", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Der lange, dünne Teil der Waffe", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Treffer", "silben": "Tref|fer", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Punkt, wenn man den Gegner berührt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gegner", "silben": "Geg|ner", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Gegen ihn kämpfst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bahn", "silben": "Bahn", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Langer Streifen, auf dem gefochten wird", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Handschuh", "silben": "Hand|schuh", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Schützt deine Hand", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Jacke", "silben": "Ja|cke", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Weiße Kleidung beim Fechten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Florett", "silben": "Flo|rett", "welt": "fechten", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Leichte Waffe beim Fechten", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Säbel", "silben": "Sä|bel", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Merkwörter"], "stufe": 2, "hinweis": "Waffe mit gebogener Klinge", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Turnier", "silben": "Tur|nier", "welt": "fechten", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Wettkampf mit vielen Fechtern", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sieg", "silben": "Sieg", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Dehnung", "Verlängern"], "stufe": 2, "hinweis": "Wenn du gewinnst", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Punkt", "silben": "Punkt", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Das bekommst du für einen Treffer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schritt", "silben": "Schritt", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Ein Fuß vor den anderen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ausfall", "silben": "Aus|fall", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Schneller Angriff nach vorn", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Angriff", "silben": "An|griff", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Du greifst zuerst an", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Abwehr", "silben": "Ab|wehr", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Du hältst den Angriff auf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Trainer", "silben": "Trai|ner", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Er zeigt dir, wie es geht", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Training", "silben": "Trai|ning", "welt": "fechten", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Regelmäßiges Üben", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Waffe", "silben": "Waf|fe", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Degen, Säbel oder Florett", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Verein", "silben": "Ver|ein", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Vorsilben"], "stufe": 1, "hinweis": "Gruppe, in der man zusammen Sport macht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kampf", "silben": "Kampf", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Zwei treten gegeneinander an", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mut", "silben": "Mut", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Du traust dich etwas", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kraft", "silben": "Kraft", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Stärke in den Muskeln", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stoß", "silben": "Stoß", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Kurzer, kräftiger Stich nach vorn", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fuß", "silben": "Fuß", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Darauf stehst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "schnell", "silben": "schnell", "welt": "fechten", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Mit hohem Tempo", "fremdwort": "nein", "ansage": "Mein Gegner ist sehr schnell."},
+    {"wort": "Ritter", "silben": "Rit|ter", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Kämpfer aus dem Mittelalter", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Burg", "silben": "Burg", "welt": "fechten", "nomen": "ja", "artikel": "die", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Hier wohnten früher Ritter", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schwert", "silben": "Schwert", "welt": "fechten", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 2, "hinweis": "Alte, schwere Waffe", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stolz", "silben": "Stolz", "welt": "fechten", "nomen": "ja", "artikel": "der", "themen": ["Groß/klein"], "stufe": 2, "hinweis": "Gefühl, wenn du etwas geschafft hast", "fremdwort": "nein", "ansage": "Nach dem Sieg spürt sie großen Stolz."},
+    {"wort": "Pferd", "silben": "Pferd", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Tier mit Hufen und Mähne", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sattel", "silben": "Sat|tel", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Darauf sitzt man beim Reiten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Huf", "silben": "Huf", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Fuß eines Pferdes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mähne", "silben": "Mäh|ne", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Lange Haare am Hals des Pferdes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stall", "silben": "Stall", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Haus für Pferde", "fremdwort": "nein", "ansage": ""},
+    {"wort": "reiten", "silben": "rei|ten", "welt": "pferde", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Auf einem Pferd sitzen und sich tragen lassen", "fremdwort": "nein", "ansage": "Wir wollen in den Wald reiten."},
+    {"wort": "Reiter", "silben": "Rei|ter", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Er sitzt auf dem Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zügel", "silben": "Zü|gel", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Damit lenkt man das Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hafer", "silben": "Ha|fer", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Futter für Pferde", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Heu", "silben": "Heu", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Getrocknetes Gras", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stroh", "silben": "Stroh", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Trockene Halme im Stall", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fohlen", "silben": "Foh|len", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Junges Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Galopp", "silben": "Ga|lopp", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Schnellste Gangart des Pferdes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Trab", "silben": "Trab", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Mittelschnelle Gangart des Pferdes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Weide", "silben": "Wei|de", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Wiese, auf der Pferde grasen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wiese", "silben": "Wie|se", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": ["Dehnung", "s/ss/ß"], "stufe": 1, "hinweis": "Grüne Fläche mit Gras", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bürste", "silben": "Bürs|te", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Damit putzt man das Fell", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fell", "silben": "Fell", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Haare eines Tieres", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Eimer", "silben": "Ei|mer", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Gefäß für Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sprung", "silben": "Sprung", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Das Pferd hüpft über ein Hindernis", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hindernis", "silben": "Hin|der|nis", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 3, "hinweis": "Darüber springt das Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stute", "silben": "Stu|te", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Weibliches Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hengst", "silben": "Hengst", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Männliches Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pony", "silben": "Po|ny", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Kleines Pferd", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Reithalle", "silben": "Reit|hal|le", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 3, "hinweis": "Großes Haus zum Reiten bei Regen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mist", "silben": "Mist", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Das muss man aus dem Stall räumen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mistgabel", "silben": "Mist|ga|bel", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Werkzeug zum Ausmisten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Karotte", "silben": "Ka|rot|te", "welt": "pferde", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Orange Leckerei für Pferde", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Apfel", "silben": "Ap|fel", "welt": "pferde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Runde Frucht, die Pferde mögen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "füttern", "silben": "füt|tern", "welt": "pferde", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Tieren Essen geben", "fremdwort": "nein", "ansage": "Ich muss noch die Pferde füttern."},
+    {"wort": "streicheln", "silben": "strei|cheln", "welt": "pferde", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Sanft mit der Hand übers Fell fahren", "fremdwort": "nein", "ansage": "Sie will das Pferd streicheln."},
+    {"wort": "Hufeisen", "silben": "Huf|ei|sen", "welt": "pferde", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Metall unter dem Huf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hund", "silben": "Hund", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Bellt und wedelt mit dem Schwanz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Leine", "silben": "Lei|ne", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Damit führt man den Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Halsband", "silben": "Hals|band", "welt": "hunde", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Trägt der Hund um den Hals", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Knochen", "silben": "Kno|chen", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Darauf kaut der Hund gern", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Welpe", "silben": "Wel|pe", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Junger Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pfote", "silben": "Pfo|te", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Fuß des Hundes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schwanz", "silben": "Schwanz", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Damit wedelt der Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Napf", "silben": "Napf", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Daraus frisst der Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Futter", "silben": "Fut|ter", "welt": "hunde", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Essen für Tiere", "fremdwort": "nein", "ansage": ""},
+    {"wort": "bellen", "silben": "bel|len", "welt": "hunde", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "So macht der Hund Laut", "fremdwort": "nein", "ansage": "Der Hund fängt an zu bellen."},
+    {"wort": "Korb", "silben": "Korb", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Darin schläft der Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ball", "silben": "Ball", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Rundes Spielzeug", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schnauze", "silben": "Schnau|ze", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Nase und Maul des Hundes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zahn", "silben": "Zahn", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Damit beißt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "beißen", "silben": "bei|ßen", "welt": "hunde", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Mit den Zähnen zupacken", "fremdwort": "nein", "ansage": "Keine Angst, der Hund wird nicht beißen."},
+    {"wort": "Spaziergang", "silben": "Spa|zier|gang", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 3, "hinweis": "Man geht draußen herum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "riechen", "silben": "rie|chen", "welt": "hunde", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Mit der Nase etwas merken", "fremdwort": "nein", "ansage": "Hunde können sehr gut riechen."},
+    {"wort": "Nase", "silben": "Na|se", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Damit riecht man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tierarzt", "silben": "Tier|arzt", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Er hilft kranken Tieren", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Floh", "silben": "Floh", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Kleines Tier im Fell", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hundehütte", "silben": "Hun|de|hüt|te", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 3, "hinweis": "Kleines Haus für den Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pfeife", "silben": "Pfei|fe", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Damit ruft man den Hund", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gras", "silben": "Gras", "welt": "hunde", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß", "Verlängern"], "stufe": 2, "hinweis": "Grüne Halme auf der Wiese", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Spur", "silben": "Spur", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Abdruck von Pfoten im Boden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wachhund", "silben": "Wach|hund", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Er passt auf das Haus auf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Lob", "silben": "Lob", "welt": "hunde", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Worte, wenn man etwas gut gemacht hat", "fremdwort": "nein", "ansage": ""},
+    {"wort": "kuscheln", "silben": "ku|scheln", "welt": "hunde", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Eng beieinander liegen", "fremdwort": "nein", "ansage": "Mein Hund will immer kuscheln."},
+    {"wort": "Hundeschule", "silben": "Hun|de|schu|le", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Hier lernt der Hund zu gehorchen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "treu", "silben": "treu", "welt": "hunde", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Hält immer zu dir", "fremdwort": "nein", "ansage": "Mein Hund ist sehr treu."},
+    {"wort": "Rasse", "silben": "Ras|se", "welt": "hunde", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Art von Hund, zum Beispiel Dackel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Dackel", "silben": "Da|ckel", "welt": "hunde", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Hund mit kurzen Beinen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zelle", "silben": "Zel|le", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Kleinster Baustein von Lebewesen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Blut", "silben": "Blut", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Rote Flüssigkeit im Körper", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Salz", "silben": "Salz", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Weiße Körner, die im Meerwasser gelöst sind", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Säure", "silben": "Säu|re", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Macht etwas sauer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wurzel", "silben": "Wur|zel", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Teil der Pflanze in der Erde", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Blatt", "silben": "Blatt", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Grüner Teil am Baum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pflanze", "silben": "Pflan|ze", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Wächst aus der Erde", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Samen", "silben": "Sa|men", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Daraus wächst eine neue Pflanze", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Herz", "silben": "Herz", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Pumpt Blut durch den Körper", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Lunge", "silben": "Lun|ge", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Damit atmest du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Muskel", "silben": "Mus|kel", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Macht deinen Körper stark", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Haut", "silben": "Haut", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Hülle des Körpers", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Glas", "silben": "Glas", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß", "Verlängern"], "stufe": 1, "hinweis": "Durchsichtiges Gefäß", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Flüssigkeit", "silben": "Flüs|sig|keit", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 3, "hinweis": "Wasser ist eine …", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gas", "silben": "Gas", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Luft ist ein …", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stoff", "silben": "Stoff", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Material, aus dem etwas besteht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Versuch", "silben": "Ver|such", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Experiment im Unterricht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Eiweiß", "silben": "Ei|weiß", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Steckt in Eiern und Fleisch", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zucker", "silben": "Zu|cker", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Macht etwas süß", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stärke", "silben": "Stär|ke", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Steckt in Kartoffeln", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Käfer", "silben": "Kä|fer", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Insekt mit Panzer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Biene", "silben": "Bie|ne", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Macht Honig", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Natur", "silben": "Na|tur", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Alles, was nicht der Mensch gemacht hat", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Körper", "silben": "Kör|per", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Kopf, Bauch, Arme und Beine", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gehirn", "silben": "Ge|hirn", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 2, "hinweis": "Damit denkst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "atmen", "silben": "at|men", "welt": "chemie", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Luft holen", "fremdwort": "nein", "ansage": "Unter Wasser kann man nicht atmen."},
+    {"wort": "Blüte", "silben": "Blü|te", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Bunter Teil der Blume", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wald", "silben": "Wald", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Viele Bäume zusammen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Baum", "silben": "Baum", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Hat Stamm, Äste und Blätter", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ast", "silben": "Ast", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Arm eines Baumes", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tropfen", "silben": "Trop|fen", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Kleine Menge Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Eis", "silben": "Eis", "welt": "chemie", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Gefrorenes Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Dampf", "silben": "Dampf", "welt": "chemie", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Heißes Wasser in der Luft", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hitze", "silben": "Hit|ze", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Große Wärme", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wärme", "silben": "Wär|me", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Das Gegenteil von Kälte", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kälte", "silben": "Käl|te", "welt": "chemie", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Das Gegenteil von Wärme", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Baseball", "silben": "Base|ball", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Spiel mit Schläger, Ball und vier Bases", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Volleyball", "silben": "Vol|ley|ball", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 3, "hinweis": "Man spielt den Ball übers Netz", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Netz", "silben": "Netz", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Hängt in der Mitte des Spielfelds", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schläger", "silben": "Schlä|ger", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Damit trifft man den Ball", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mannschaft", "silben": "Mann|schaft", "welt": "sport", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Alle Spieler eines Teams", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Team", "silben": "Team", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Gruppe, die zusammen spielt", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Tor", "silben": "Tor", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Hier soll der Ball hinein", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Spielfeld", "silben": "Spiel|feld", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Dehnung", "Verlängern"], "stufe": 2, "hinweis": "Fläche, auf der gespielt wird", "fremdwort": "nein", "ansage": ""},
+    {"wort": "werfen", "silben": "wer|fen", "welt": "sport", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Den Ball durch die Luft schicken", "fremdwort": "nein", "ansage": "Kannst du den Ball weit werfen?"},
+    {"wort": "fangen", "silben": "fan|gen", "welt": "sport", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Den Ball mit den Händen halten", "fremdwort": "nein", "ansage": "Ich kann den Ball fangen."},
+    {"wort": "Wurf", "silben": "Wurf", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Der Ball fliegt durch die Luft", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Aufschlag", "silben": "Auf|schlag", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Damit beginnt beim Volleyball der Ballwechsel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schiedsrichter", "silben": "Schieds|rich|ter", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 3, "hinweis": "Er achtet auf die Regeln", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Regel", "silben": "Re|gel", "welt": "sport", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Das muss man im Spiel beachten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Trikot", "silben": "Tri|kot", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Hemd der Mannschaft", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Halle", "silben": "Hal|le", "welt": "sport", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Großer Raum für Sport", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pause", "silben": "Pau|se", "welt": "sport", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Kurze Zeit zum Ausruhen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Spiel", "silben": "Spiel", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Man spielt nach Regeln", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Spieler", "silben": "Spie|ler", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Er macht beim Spiel mit", "fremdwort": "nein", "ansage": ""},
+    {"wort": "laufen", "silben": "lau|fen", "welt": "sport", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Schnell mit den Beinen vorwärts", "fremdwort": "nein", "ansage": "Wir laufen zum Tor."},
+    {"wort": "Rennen", "silben": "Ren|nen", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Wettlauf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sieger", "silben": "Sie|ger", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Wer gewonnen hat", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pokal", "silben": "Po|kal", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Preis für den Sieger", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Knie", "silben": "Knie", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Gelenk in der Mitte des Beins", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schuh", "silben": "Schuh", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Trägt man am Fuß", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kopf", "silben": "Kopf", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Oben auf dem Hals", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fehler", "silben": "Feh|ler", "welt": "sport", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Etwas ist falsch gelaufen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hand", "silben": "Hand", "welt": "sport", "nomen": "ja", "artikel": "die", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Damit fängst du den Ball", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tempo", "silben": "Tem|po", "welt": "sport", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Wie schnell etwas geht", "fremdwort": "ja", "ansage": ""},
+    {"wort": "fit", "silben": "fit", "welt": "sport", "nomen": "nein", "artikel": "", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Gesund und stark", "fremdwort": "ja", "ansage": "Nach dem Training bin ich fit."},
+    {"wort": "schwitzen", "silben": "schwit|zen", "welt": "sport", "nomen": "nein", "artikel": "", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Nass werden vom Sport", "fremdwort": "nein", "ansage": "Beim Laufen fange ich an zu schwitzen."},
+    {"wort": "Zelt", "silben": "Zelt", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Darin schläft man im Lager", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Lager", "silben": "La|ger", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Hier zelten die Pfadfinder", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Feuer", "silben": "Feu|er", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Heiß, hell und knistert", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Holz", "silben": "Holz", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Daraus sind Bäume", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Karte", "silben": "Kar|te", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Zeigt den Weg", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kompass", "silben": "Kom|pass", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Zeigt, wo Norden ist", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Rucksack", "silben": "Ruck|sack", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Tasche für den Rücken", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schlafsack", "silben": "Schlaf|sack", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Darin schläft man warm", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Taschenlampe", "silben": "Ta|schen|lam|pe", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Licht für die Nacht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Messer", "silben": "Mes|ser", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 1, "hinweis": "Damit schneidet man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Seil", "silben": "Seil", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Damit bindet man Dinge fest", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Weg", "silben": "Weg", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Darauf wandert man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "wandern", "silben": "wan|dern", "welt": "pfadfinder", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Lange zu Fuß gehen", "fremdwort": "nein", "ansage": "Am Wochenende wollen wir wandern."},
+    {"wort": "Gruppe", "silben": "Grup|pe", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Mehrere Leute zusammen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hütte", "silben": "Hüt|te", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Kleines Haus im Wald", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Berg", "silben": "Berg", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Sehr hoher Hügel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fluss", "silben": "Fluss", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 1, "hinweis": "Fließendes Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Brücke", "silben": "Brü|cke", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Führt über einen Fluss", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Nacht", "silben": "Nacht", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Wenn es dunkel ist", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stern", "silben": "Stern", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Leuchtet nachts am Himmel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mond", "silben": "Mond", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Leuchtet nachts, mal rund, mal halb", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Himmel", "silben": "Him|mel", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Am Tag ist er blau", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Nebel", "silben": "Ne|bel", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Wolke direkt am Boden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Regen", "silben": "Re|gen", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Wasser fällt aus den Wolken", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pfadfinder", "silben": "Pfad|fin|der", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 3, "hinweis": "Sie erleben draußen Abenteuer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Abenteuer", "silben": "A|ben|teu|er", "welt": "pfadfinder", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 2, "hinweis": "Etwas Spannendes erleben", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Topf", "silben": "Topf", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Darin kocht man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "kochen", "silben": "ko|chen", "welt": "pfadfinder", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Essen warm machen", "fremdwort": "nein", "ansage": "Heute wollen wir am Feuer kochen."},
+    {"wort": "Pilz", "silben": "Pilz", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Wächst im Wald, manche sind giftig", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Axt", "silben": "Axt", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Damit hackt man Holz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fackel", "silben": "Fa|ckel", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 2, "hinweis": "Brennender Stab", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kiste", "silben": "Kis|te", "welt": "pfadfinder", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Kasten aus Holz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stock", "silben": "Stock", "welt": "pfadfinder", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Langes Stück Holz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Level", "silben": "Le|vel", "welt": "spiele", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Stufe in einem Spiel", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Controller", "silben": "Con|trol|ler", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 3, "hinweis": "Damit steuert man das Spiel", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Bildschirm", "silben": "Bild|schirm", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Darauf siehst du das Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Computer", "silben": "Com|pu|ter", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Rechner", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Maus", "silben": "Maus", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Damit klickt man am Computer", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tastatur", "silben": "Tas|ta|tur", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Darauf tippt man Buchstaben", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Leben", "silben": "Le|ben", "welt": "spiele", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Davon hat man im Spiel oft drei", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schatz", "silben": "Schatz", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Gold und Edelsteine", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Rätsel", "silben": "Rät|sel", "welt": "spiele", "nomen": "ja", "artikel": "das", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Aufgabe, bei der man nachdenken muss", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Monster", "silben": "Mons|ter", "welt": "spiele", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Böses Wesen im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Held", "silben": "Held", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Hauptfigur, die die Welt rettet", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Figur", "silben": "Fi|gur", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Person im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Welt", "silben": "Welt", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Die ganze Erde oder die Karte im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Aufgabe", "silben": "Auf|ga|be", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Das musst du im Spiel erledigen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mission", "silben": "Mis|si|on", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": ["Fremdwörter"], "stufe": 3, "hinweis": "Auftrag im Spiel", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Ziel", "silben": "Ziel", "welt": "spiele", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Da willst du hin", "fremdwort": "nein", "ansage": ""},
+    {"wort": "speichern", "silben": "spei|chern", "welt": "spiele", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Den Spielstand sichern", "fremdwort": "nein", "ansage": "Vergiss nicht, das Spiel zu speichern."},
+    {"wort": "starten", "silben": "star|ten", "welt": "spiele", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Mit etwas anfangen", "fremdwort": "nein", "ansage": "Wir wollen das Spiel starten."},
+    {"wort": "Knopf", "silben": "Knopf", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Darauf drückt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "gewinnen", "silben": "ge|win|nen", "welt": "spiele", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Als Erster ins Ziel kommen", "fremdwort": "nein", "ansage": "Heute will ich gewinnen."},
+    {"wort": "verlieren", "silben": "ver|lie|ren", "welt": "spiele", "nomen": "nein", "artikel": "", "themen": ["Vorsilben", "Dehnung"], "stufe": 2, "hinweis": "Nicht gewinnen", "fremdwort": "nein", "ansage": "Ich will nicht verlieren."},
+    {"wort": "Runde", "silben": "Run|de", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Ein Durchgang im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Rüstung", "silben": "Rüs|tung", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Schützt die Figur vor Treffern", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Trank", "silben": "Trank", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Flasche mit Zauber im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zauber", "silben": "Zau|ber", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Magie", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Drache", "silben": "Dra|che", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Riesiges Monster, das Feuer spuckt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kopfhörer", "silben": "Kopf|hö|rer", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Damit hörst du den Ton", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Chat", "silben": "Chat", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Nachrichten schreiben im Spiel", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Stufe", "silben": "Stu|fe", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Nächster Abschnitt im Spiel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tür", "silben": "Tür", "welt": "spiele", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Dadurch geht man in einen Raum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schlüssel", "silben": "Schlüs|sel", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Öffnet eine Tür", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pfeil", "silben": "Pfeil", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Wird mit dem Bogen geschossen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bogen", "silben": "Bo|gen", "welt": "spiele", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Damit schießt man Pfeile", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Freund", "silben": "Freund", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Jemand, auf den du dich verlassen kannst", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Freundin", "silben": "Freun|din", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Auf sie kannst du dich verlassen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Vertrauen", "silben": "Ver|trau|en", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Du glaubst fest an jemanden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Spaß", "silben": "Spaß", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": ["s/ss/ß", "Groß/klein"], "stufe": 1, "hinweis": "Wenn etwas lustig ist", "fremdwort": "nein", "ansage": "Das Spiel macht großen Spaß."},
+    {"wort": "Hilfe", "silben": "Hil|fe", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Wenn dir jemand etwas abnimmt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "helfen", "silben": "hel|fen", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Jemandem etwas abnehmen", "fremdwort": "nein", "ansage": "Kannst du mir helfen?"},
+    {"wort": "Streit", "silben": "Streit", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Wenn zwei sich nicht einig sind", "fremdwort": "nein", "ansage": ""},
+    {"wort": "verzeihen", "silben": "ver|zei|hen", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 3, "hinweis": "Jemandem nicht mehr böse sein", "fremdwort": "nein", "ansage": "Kannst du mir verzeihen?"},
+    {"wort": "Geheimnis", "silben": "Ge|heim|nis", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Das darf niemand wissen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Nachricht", "silben": "Nach|richt", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Text auf dem Handy", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Handy", "silben": "Han|dy", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Kleines Telefon", "fremdwort": "ja", "ansage": ""},
+    {"wort": "treffen", "silben": "tref|fen", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Sich mit jemandem sehen", "fremdwort": "nein", "ansage": "Wir wollen uns am Nachmittag treffen."},
+    {"wort": "Party", "silben": "Par|ty", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Feier mit Musik", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Geburtstag", "silben": "Ge|burts|tag", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Der Tag, an dem du geboren bist", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Geschenk", "silben": "Ge|schenk", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Bekommt man zum Geburtstag", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Feier", "silben": "Fei|er", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Fest", "fremdwort": "nein", "ansage": ""},
+    {"wort": "lachen", "silben": "la|chen", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Das tust du, wenn etwas lustig ist", "fremdwort": "nein", "ansage": "Wir mussten laut lachen."},
+    {"wort": "Witz", "silben": "Witz", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Kurze lustige Geschichte", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Angst", "silben": "Angst", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Gefühl bei Gefahr", "fremdwort": "nein", "ansage": "Er hat keine Angst im Dunkeln."},
+    {"wort": "Glück", "silben": "Glück", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": ["ck/tz", "Groß/klein"], "stufe": 1, "hinweis": "Wenn alles gut läuft", "fremdwort": "nein", "ansage": "Wir hatten großes Glück."},
+    {"wort": "Sorge", "silben": "Sor|ge", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Groß/klein"], "stufe": 2, "hinweis": "Du denkst, dass etwas schlimm wird", "fremdwort": "nein", "ansage": "Mach dir keine Sorge."},
+    {"wort": "Freude", "silben": "Freu|de", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Gefühl, wenn du dich freust", "fremdwort": "nein", "ansage": "Das Geschenk macht mir große Freude."},
+    {"wort": "fair", "silben": "fair", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Fremdwörter"], "stufe": 2, "hinweis": "Gerecht", "fremdwort": "ja", "ansage": "Das Spiel war fair."},
+    {"wort": "ehrlich", "silben": "ehr|lich", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Man sagt die Wahrheit", "fremdwort": "nein", "ansage": "Sei bitte ehrlich zu mir."},
+    {"wort": "Wahrheit", "silben": "Wahr|heit", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Was wirklich stimmt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "nett", "silben": "nett", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Freundlich", "fremdwort": "nein", "ansage": "Das ist echt nett von dir."},
+    {"wort": "zusammen", "silben": "zu|sam|men", "welt": "freundschaft", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Miteinander", "fremdwort": "nein", "ansage": "Wir spielen zusammen."},
+    {"wort": "Verabredung", "silben": "Ver|ab|re|dung", "welt": "freundschaft", "nomen": "ja", "artikel": "die", "themen": ["Vorsilben"], "stufe": 3, "hinweis": "Man macht aus, sich zu treffen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kino", "silben": "Ki|no", "welt": "freundschaft", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Hier schaut man Filme", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Film", "silben": "Film", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Schaut man im Kino", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bus", "silben": "Bus", "welt": "freundschaft", "nomen": "ja", "artikel": "der", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Großes Fahrzeug für viele Leute", "fremdwort": "nein", "ansage": ""},
+    {"wort": "etwas", "silben": "et|was", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Irgendein Ding", "fremdwort": "nein", "ansage": "Ich habe etwas vergessen."},
+    {"wort": "außer", "silben": "au|ßer", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Ohne diesen einen", "fremdwort": "nein", "ansage": "Alle waren da, außer mir."},
+    {"wort": "bisschen", "silben": "biss|chen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß", "Groß/klein"], "stufe": 3, "hinweis": "Ein kleines Stück", "fremdwort": "nein", "ansage": "Ich bin ein bisschen müde."},
+    {"wort": "vielleicht", "silben": "viel|leicht", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "Merkwörter"], "stufe": 3, "hinweis": "Nicht sicher, aber möglich", "fremdwort": "nein", "ansage": "Ich komme vielleicht später."},
+    {"wort": "wieder", "silben": "wie|der", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung", "Merkwörter"], "stufe": 2, "hinweis": "Noch einmal", "fremdwort": "nein", "ansage": "Ich komme morgen wieder."},
+    {"wort": "viel", "silben": "viel", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung", "Merkwörter"], "stufe": 1, "hinweis": "Eine große Menge", "fremdwort": "nein", "ansage": "Das kostet nicht viel."},
+    {"wort": "immer", "silben": "im|mer", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Jedes Mal", "fremdwort": "nein", "ansage": "Er ist immer pünktlich."},
+    {"wort": "nämlich", "silben": "näm|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Merkwörter"], "stufe": 3, "hinweis": "Das sagt man, wenn man etwas erklärt", "fremdwort": "nein", "ansage": "Ich kann nicht, ich bin nämlich krank."},
+    {"wort": "ziemlich", "silben": "ziem|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung", "Merkwörter"], "stufe": 3, "hinweis": "Ganz schön", "fremdwort": "nein", "ansage": "Das war ziemlich schwer."},
+    {"wort": "plötzlich", "silben": "plötz|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["ck/tz"], "stufe": 3, "hinweis": "Auf einmal, ganz schnell", "fremdwort": "nein", "ansage": "Es wurde plötzlich dunkel."},
+    {"wort": "endlich", "silben": "end|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Nach langem Warten", "fremdwort": "nein", "ansage": "Die Ferien sind endlich da."},
+    {"wort": "nichts", "silben": "nichts", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Gar kein Ding", "fremdwort": "nein", "ansage": "Ich habe nichts gehört."},
+    {"wort": "ganz", "silben": "ganz", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Vollständig", "fremdwort": "nein", "ansage": "Das Glas ist ganz voll."},
+    {"wort": "heute", "silben": "heu|te", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "An diesem Tag", "fremdwort": "nein", "ansage": "Wir haben heute frei."},
+    {"wort": "morgen", "silben": "mor|gen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Am nächsten Tag", "fremdwort": "nein", "ansage": "Wir sehen uns morgen."},
+    {"wort": "Morgen", "silben": "Mor|gen", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Zeit nach dem Aufstehen", "fremdwort": "nein", "ansage": "Am Morgen ist es noch kalt."},
+    {"wort": "gestern", "silben": "ges|tern", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 1, "hinweis": "Am Tag vor heute", "fremdwort": "nein", "ansage": "Ich war gestern im Kino."},
+    {"wort": "schon", "silben": "schon", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Früher als gedacht", "fremdwort": "nein", "ansage": "Bist du schon fertig?"},
+    {"wort": "nur", "silben": "nur", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht mehr als", "fremdwort": "nein", "ansage": "Ich habe nur fünf Minuten."},
+    {"wort": "weil", "silben": "weil", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Damit sagt man den Grund", "fremdwort": "nein", "ansage": "Ich bleibe drinnen, weil es regnet."},
+    {"wort": "wenn", "silben": "wenn", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Falls", "fremdwort": "nein", "ansage": "Ruf mich an, wenn du da bist."},
+    {"wort": "dann", "silben": "dann", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Danach", "fremdwort": "nein", "ansage": "Erst essen wir, dann spielen wir."},
+    {"wort": "denn", "silben": "denn", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Kleines Fragewort", "fremdwort": "nein", "ansage": "Was ist denn los?"},
+    {"wort": "Abend", "silben": "A|bend", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Groß/klein", "Verlängern"], "stufe": 2, "hinweis": "Zeit vor der Nacht", "fremdwort": "nein", "ansage": "Wir treffen uns heute Abend."},
+    {"wort": "abends", "silben": "a|bends", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Groß/klein"], "stufe": 2, "hinweis": "Jeden Abend", "fremdwort": "nein", "ansage": "Ich trainiere abends."},
+    {"wort": "Nachmittag", "silben": "Nach|mit|tag", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Groß/klein", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Zeit nach dem Mittag", "fremdwort": "nein", "ansage": "Am Nachmittag habe ich Training."},
+    {"wort": "mittags", "silben": "mit|tags", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Groß/klein", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Jeden Mittag", "fremdwort": "nein", "ansage": "Ich esse mittags in der Schule."},
+    {"wort": "jetzt", "silben": "jetzt", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["ck/tz"], "stufe": 1, "hinweis": "In diesem Moment", "fremdwort": "nein", "ansage": "Ich muss jetzt los."},
+    {"wort": "später", "silben": "spä|ter", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Nach einer Weile", "fremdwort": "nein", "ansage": "Wir reden später weiter."},
+    {"wort": "bald", "silben": "bald", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 1, "hinweis": "In kurzer Zeit", "fremdwort": "nein", "ansage": "Bis bald!"},
+    {"wort": "oft", "silben": "oft", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Viele Male", "fremdwort": "nein", "ansage": "Ich spiele oft Volleyball."},
+    {"wort": "selten", "silben": "sel|ten", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht oft", "fremdwort": "nein", "ansage": "Ich bin selten krank."},
+    {"wort": "sehr", "silben": "sehr", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Besonders", "fremdwort": "nein", "ansage": "Das ist sehr gut."},
+    {"wort": "mehr", "silben": "mehr", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Eine größere Menge", "fremdwort": "nein", "ansage": "Ich will mehr davon."},
+    {"wort": "genug", "silben": "ge|nug", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "So viel, wie man braucht", "fremdwort": "nein", "ansage": "Ich habe genug gegessen."},
+    {"wort": "alles", "silben": "al|les", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 1, "hinweis": "Jedes Ding", "fremdwort": "nein", "ansage": "Ich habe alles dabei."},
+    {"wort": "alle", "silben": "al|le", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Jeder", "fremdwort": "nein", "ansage": "Heute sind alle da."},
+    {"wort": "niemand", "silben": "nie|mand", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung", "Verlängern"], "stufe": 2, "hinweis": "Keiner", "fremdwort": "nein", "ansage": "Es war niemand zu Hause."},
+    {"wort": "jemand", "silben": "je|mand", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Irgendeine Person", "fremdwort": "nein", "ansage": "Hat jemand angerufen?"},
+    {"wort": "überall", "silben": "ü|ber|all", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "An jedem Ort", "fremdwort": "nein", "ansage": "Ich habe überall gesucht."},
+    {"wort": "draußen", "silben": "drau|ßen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Nicht im Haus", "fremdwort": "nein", "ansage": "Wir spielen draußen."},
+    {"wort": "drinnen", "silben": "drin|nen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Im Haus", "fremdwort": "nein", "ansage": "Bei Regen bleiben wir drinnen."},
+    {"wort": "ob", "silben": "ob", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Kleines Fragewort", "fremdwort": "nein", "ansage": "Weißt du, ob er kommt?"},
+    {"wort": "obwohl", "silben": "ob|wohl", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Auch wenn", "fremdwort": "nein", "ansage": "Er kam, obwohl er krank war."},
+    {"wort": "während", "silben": "wäh|rend", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung", "Verlängern"], "stufe": 3, "hinweis": "Zur gleichen Zeit", "fremdwort": "nein", "ansage": "Ich esse während der Pause."},
+    {"wort": "trotzdem", "silben": "trotz|dem", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["ck/tz"], "stufe": 3, "hinweis": "Und doch", "fremdwort": "nein", "ansage": "Es regnet, aber wir gehen trotzdem."},
+    {"wort": "wirklich", "silben": "wirk|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Tatsächlich", "fremdwort": "nein", "ansage": "Das ist wirklich lustig."},
+    {"wort": "eigentlich", "silben": "ei|gent|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 3, "hinweis": "Genau genommen", "fremdwort": "nein", "ansage": "Was machst du eigentlich hier?"},
+    {"wort": "natürlich", "silben": "na|tür|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Selbstverständlich", "fremdwort": "nein", "ansage": "Ich helfe dir natürlich."},
+    {"wort": "fertig", "silben": "fer|tig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Alles erledigt", "fremdwort": "nein", "ansage": "Bist du schon fertig?"},
+    {"wort": "richtig", "silben": "rich|tig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Ohne Fehler", "fremdwort": "nein", "ansage": "Das ist richtig."},
+    {"wort": "wichtig", "silben": "wich|tig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Das darf man nicht vergessen", "fremdwort": "nein", "ansage": "Das ist mir wichtig."},
+    {"wort": "lustig", "silben": "lus|tig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Zum Lachen", "fremdwort": "nein", "ansage": "Der Film war lustig."},
+    {"wort": "müde", "silben": "mü|de", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Du willst schlafen", "fremdwort": "nein", "ansage": "Nach dem Training bin ich müde."},
+    {"wort": "krank", "silben": "krank", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Nicht gesund", "fremdwort": "nein", "ansage": "Ich bin heute krank."},
+    {"wort": "gesund", "silben": "ge|sund", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Nicht krank", "fremdwort": "nein", "ansage": "Obst ist gesund."},
+    {"wort": "schwer", "silben": "schwer", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht leicht", "fremdwort": "nein", "ansage": "Die Kiste ist schwer."},
+    {"wort": "leicht", "silben": "leicht", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht schwer", "fremdwort": "nein", "ansage": "Die Aufgabe ist leicht."},
+    {"wort": "groß", "silben": "groß", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Nicht klein", "fremdwort": "nein", "ansage": "Das Haus ist groß."},
+    {"wort": "klein", "silben": "klein", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht groß", "fremdwort": "nein", "ansage": "Die Maus ist klein."},
+    {"wort": "laut", "silben": "laut", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht leise", "fremdwort": "nein", "ansage": "Die Musik ist zu laut."},
+    {"wort": "leise", "silben": "lei|se", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Nicht laut", "fremdwort": "nein", "ansage": "Sei bitte leise."},
+    {"wort": "dunkel", "silben": "dun|kel", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht hell", "fremdwort": "nein", "ansage": "Im Keller ist es dunkel."},
+    {"wort": "hell", "silben": "hell", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Nicht dunkel", "fremdwort": "nein", "ansage": "Am Tag ist es hell."},
+    {"wort": "kalt", "silben": "kalt", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht warm", "fremdwort": "nein", "ansage": "Das Wasser ist kalt."},
+    {"wort": "warm", "silben": "warm", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nicht kalt", "fremdwort": "nein", "ansage": "Heute ist es warm."},
+    {"wort": "heiß", "silben": "heiß", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Sehr warm", "fremdwort": "nein", "ansage": "Die Suppe ist heiß."},
+    {"wort": "süß", "silben": "süß", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Schmeckt nach Zucker", "fremdwort": "nein", "ansage": "Der Kuchen ist süß."},
+    {"wort": "besser", "silben": "bes|ser", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Mehr gut", "fremdwort": "nein", "ansage": "Heute geht es mir besser."},
+    {"wort": "langweilig", "silben": "lang|wei|lig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Verlängern"], "stufe": 3, "hinweis": "Gar nicht spannend", "fremdwort": "nein", "ansage": "Der Film war langweilig."},
+    {"wort": "genau", "silben": "ge|nau", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Ganz exakt", "fremdwort": "nein", "ansage": "Das ist genau richtig."},
+    {"wort": "voll", "silben": "voll", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Merkwörter", "Doppelte Buchstaben"], "stufe": 1, "hinweis": "Nicht leer", "fremdwort": "nein", "ansage": "Der Bus ist voll."},
+    {"wort": "von", "silben": "von", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Merkwörter"], "stufe": 1, "hinweis": "Kleines Wort für die Herkunft", "fremdwort": "nein", "ansage": "Ich komme von der Schule."},
+    {"wort": "vier", "silben": "vier", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Merkwörter", "Dehnung"], "stufe": 1, "hinweis": "Die Zahl nach drei", "fremdwort": "nein", "ansage": "Ich habe vier Karten."},
+    {"wort": "gehen", "silben": "ge|hen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Zu Fuß unterwegs sein", "fremdwort": "nein", "ansage": "Wir gehen nach Hause."},
+    {"wort": "kommen", "silben": "kom|men", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Herbeigehen", "fremdwort": "nein", "ansage": "Kannst du morgen kommen?"},
+    {"wort": "machen", "silben": "ma|chen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Tun", "fremdwort": "nein", "ansage": "Was willst du machen?"},
+    {"wort": "sagen", "silben": "sa|gen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Sprechen", "fremdwort": "nein", "ansage": "Was willst du sagen?"},
+    {"wort": "fragen", "silben": "fra|gen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Eine Frage stellen", "fremdwort": "nein", "ansage": "Ich muss dich etwas fragen."},
+    {"wort": "wissen", "silben": "wis|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Etwas im Kopf haben", "fremdwort": "nein", "ansage": "Ich will es wissen."},
+    {"wort": "denken", "silben": "den|ken", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Mit dem Kopf arbeiten", "fremdwort": "nein", "ansage": "Lass mich kurz denken."},
+    {"wort": "schreiben", "silben": "schrei|ben", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Buchstaben aufs Papier bringen", "fremdwort": "nein", "ansage": "Ich muss eine Nachricht schreiben."},
+    {"wort": "lesen", "silben": "le|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Buchstaben ansehen und verstehen", "fremdwort": "nein", "ansage": "Ich will das Buch lesen."},
+    {"wort": "essen", "silben": "es|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß", "Groß/klein"], "stufe": 1, "hinweis": "Nahrung zu sich nehmen", "fremdwort": "nein", "ansage": "Wir wollen jetzt essen."},
+    {"wort": "Essen", "silben": "Es|sen", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben", "s/ss/ß", "Groß/klein"], "stufe": 1, "hinweis": "Mahlzeit", "fremdwort": "nein", "ansage": "Das Essen ist fertig."},
+    {"wort": "trinken", "silben": "trin|ken", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Etwas Flüssiges zu sich nehmen", "fremdwort": "nein", "ansage": "Ich muss mehr trinken."},
+    {"wort": "schlafen", "silben": "schla|fen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Nachts im Bett ausruhen", "fremdwort": "nein", "ansage": "Ich will lange schlafen."},
+    {"wort": "spielen", "silben": "spie|len", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Sich mit einem Spiel beschäftigen", "fremdwort": "nein", "ansage": "Wollen wir draußen spielen?"},
+    {"wort": "lernen", "silben": "ler|nen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Neues ins Gedächtnis bringen", "fremdwort": "nein", "ansage": "Ich muss für den Test lernen."},
+    {"wort": "üben", "silben": "ü|ben", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Etwas oft wiederholen", "fremdwort": "nein", "ansage": "Ich will heute üben."},
+    {"wort": "warten", "silben": "war|ten", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Bleiben, bis etwas passiert", "fremdwort": "nein", "ansage": "Kannst du kurz warten?"},
+    {"wort": "fahren", "silben": "fah|ren", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Mit Bus, Rad oder Auto unterwegs sein", "fremdwort": "nein", "ansage": "Wir fahren mit dem Bus."},
+    {"wort": "nehmen", "silben": "neh|men", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Etwas greifen", "fremdwort": "nein", "ansage": "Du kannst dir eins nehmen."},
+    {"wort": "geben", "silben": "ge|ben", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Jemandem etwas reichen", "fremdwort": "nein", "ansage": "Kannst du mir das geben?"},
+    {"wort": "zeigen", "silben": "zei|gen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Jemanden etwas sehen lassen", "fremdwort": "nein", "ansage": "Ich will dir etwas zeigen."},
+    {"wort": "brauchen", "silben": "brau|chen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 1, "hinweis": "Etwas nötig haben", "fremdwort": "nein", "ansage": "Wir brauchen mehr Zeit."},
+    {"wort": "vergessen", "silben": "ver|ges|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben", "Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Nicht mehr daran denken", "fremdwort": "nein", "ansage": "Ich habe es vergessen."},
+    {"wort": "verstehen", "silben": "ver|ste|hen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Den Sinn erkennen", "fremdwort": "nein", "ansage": "Ich kann dich nicht verstehen."},
+    {"wort": "vorlesen", "silben": "vor|le|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben", "s/ss/ß"], "stufe": 2, "hinweis": "Laut lesen für andere", "fremdwort": "nein", "ansage": "Kannst du mir das vorlesen?"},
+    {"wort": "versuchen", "silben": "ver|su|chen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Etwas probieren", "fremdwort": "nein", "ansage": "Ich will es versuchen."},
+    {"wort": "vorbei", "silben": "vor|bei", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Zu Ende", "fremdwort": "nein", "ansage": "Die Ferien sind vorbei."},
+    {"wort": "vorsichtig", "silben": "vor|sich|tig", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben", "Verlängern"], "stufe": 3, "hinweis": "Mit Achtung vor Gefahr", "fremdwort": "nein", "ansage": "Fahr bitte vorsichtig."},
+    {"wort": "verboten", "silben": "ver|bo|ten", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Nicht erlaubt", "fremdwort": "nein", "ansage": "Handys sind hier verboten."},
+    {"wort": "Vorname", "silben": "Vor|na|me", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Dein erster Name", "fremdwort": "nein", "ansage": ""},
+    {"wort": "verstecken", "silben": "ver|ste|cken", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben", "ck/tz"], "stufe": 2, "hinweis": "Etwas so legen, dass keiner es findet", "fremdwort": "nein", "ansage": "Wir müssen uns verstecken."},
+    {"wort": "vorne", "silben": "vor|ne", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Vorsilben"], "stufe": 2, "hinweis": "Nicht hinten", "fremdwort": "nein", "ansage": "Ich sitze vorne."},
+    {"wort": "hoffen", "silben": "hof|fen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 2, "hinweis": "Sich etwas wünschen", "fremdwort": "nein", "ansage": "Wir hoffen auf gutes Wetter."},
+    {"wort": "kennen", "silben": "ken|nen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Jemanden schon getroffen haben", "fremdwort": "nein", "ansage": "Wir kennen uns schon lange."},
+    {"wort": "passen", "silben": "pas|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Die richtige Größe haben", "fremdwort": "nein", "ansage": "Die Schuhe passen gut."},
+    {"wort": "müssen", "silben": "müs|sen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 2, "hinweis": "Etwas tun sollen", "fremdwort": "nein", "ansage": "Wir müssen jetzt los."},
+    {"wort": "einkaufen", "silben": "ein|kau|fen", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": [], "stufe": 2, "hinweis": "Im Laden Sachen holen", "fremdwort": "nein", "ansage": "Ich gehe mit Papa einkaufen."},
+    {"wort": "Schule", "silben": "Schu|le", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Hier lernst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Lehrer", "silben": "Leh|rer", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Er unterrichtet", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hausaufgabe", "silben": "Haus|auf|ga|be", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 3, "hinweis": "Das musst du zu Hause erledigen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Test", "silben": "Test", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Prüfung", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Heft", "silben": "Heft", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Darin schreibst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Buch", "silben": "Buch", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Das kann man lesen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stift", "silben": "Stift", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Damit schreibt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tasche", "silben": "Ta|sche", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Darin trägt man Sachen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zimmer", "silben": "Zim|mer", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Raum in der Wohnung", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Küche", "silben": "Kü|che", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Hier wird gekocht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tisch", "silben": "Tisch", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Daran isst man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stuhl", "silben": "Stuhl", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Darauf sitzt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bett", "silben": "Bett", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Darin schläft man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fenster", "silben": "Fens|ter", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Durch das Glas schaut man nach draußen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Teller", "silben": "Tel|ler", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Darauf liegt das Essen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tasse", "silben": "Tas|se", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben", "s/ss/ß"], "stufe": 1, "hinweis": "Daraus trinkt man Tee", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Löffel", "silben": "Löf|fel", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Damit isst man Suppe", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gabel", "silben": "Ga|bel", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Hat Zinken, damit isst man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Brot", "silben": "Brot", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Backt der Bäcker", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Käse", "silben": "Kä|se", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Gelb, aus Milch gemacht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Milch", "silben": "Milch", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Weißes Getränk von der Kuh", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Obst", "silben": "Obst", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Äpfel, Birnen, Bananen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pizza", "silben": "Piz|za", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Fremdwörter"], "stufe": 1, "hinweis": "Italienisches Essen mit Käse", "fremdwort": "ja", "ansage": ""},
+    {"wort": "Nudeln", "silben": "Nu|deln", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Isst man mit Soße", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Soße", "silben": "So|ße", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Kommt über die Nudeln", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Suppe", "silben": "Sup|pe", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Flüssiges Essen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kuchen", "silben": "Ku|chen", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Süßes Gebäck", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Geld", "silben": "Geld", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Damit bezahlt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Uhr", "silben": "Uhr", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Zeigt die Zeit", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zeit", "silben": "Zeit", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Sekunden, Minuten, Stunden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stunde", "silben": "Stun|de", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "60 Minuten", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Minute", "silben": "Mi|nu|te", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "60 Sekunden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Woche", "silben": "Wo|che", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Sieben Tage", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Monat", "silben": "Mo|nat", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Etwa vier Wochen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tag", "silben": "Tag", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Hat 24 Stunden", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Wochenende", "silben": "Wo|chen|en|de", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 2, "hinweis": "Samstag und Sonntag", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ferien", "silben": "Fe|ri|en", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Schulfreie Zeit", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Familie", "silben": "Fa|mi|lie", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Eltern und Geschwister", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Eltern", "silben": "El|tern", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Mutter und Vater", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mutter", "silben": "Mut|ter", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Mama", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Vater", "silben": "Va|ter", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Merkwörter"], "stufe": 1, "hinweis": "Papa", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bruder", "silben": "Bru|der", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Er hat dieselben Eltern wie du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schwester", "silben": "Schwes|ter", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Sie hat dieselben Eltern wie du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Oma", "silben": "O|ma", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Mutter von Mama oder Papa", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Name", "silben": "Na|me", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "So heißt du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Straße", "silben": "Stra|ße", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 2, "hinweis": "Darauf fahren Autos", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Auto", "silben": "Au|to", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Fahrzeug mit vier Rädern", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fahrrad", "silben": "Fahr|rad", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung", "Verlängern"], "stufe": 2, "hinweis": "Hat zwei Räder und Pedale", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zug", "silben": "Zug", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Fährt auf Schienen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Stadt", "silben": "Stadt", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Merkwörter"], "stufe": 2, "hinweis": "Viele Häuser und Straßen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Dorf", "silben": "Dorf", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Kleiner Ort auf dem Land", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Laden", "silben": "La|den", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Hier kauft man ein", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Arzt", "silben": "Arzt", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Hilft, wenn du krank bist", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bauch", "silben": "Bauch", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Mitte des Körpers", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bein", "silben": "Bein", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Damit läufst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Arm", "silben": "Arm", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Damit greifst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Auge", "silben": "Au|ge", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Damit siehst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ohr", "silben": "Ohr", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Damit hörst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mund", "silben": "Mund", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Damit sprichst du", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kleidung", "silben": "Klei|dung", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 2, "hinweis": "Hose, Pulli, Jacke", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hose", "silben": "Ho|se", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["s/ss/ß"], "stufe": 1, "hinweis": "Trägt man an den Beinen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Pulli", "silben": "Pul|li", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Warmes Oberteil", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mütze", "silben": "Müt|ze", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Trägt man im Winter auf dem Kopf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Winter", "silben": "Win|ter", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Kalte Zeit mit Schnee", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Sommer", "silben": "Som|mer", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Doppelte Buchstaben"], "stufe": 1, "hinweis": "Warme Zeit mit langen Ferien", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Schnee", "silben": "Schnee", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Weiße Flocken im Winter", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tee", "silben": "Tee", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Heißes Getränk", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zoo", "silben": "Zoo", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Hier sieht man wilde Tiere", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Haar", "silben": "Haar", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Wächst auf dem Kopf", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Paar", "silben": "Paar", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Zwei, die zusammengehören", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Saal", "silben": "Saal", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Großer Raum für Feiern", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Beet", "silben": "Beet", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Hier wachsen Blumen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Meer", "silben": "Meer", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Riesiges Salzwasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "See", "silben": "See", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Wasser mit Ufer rundum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Idee", "silben": "I|dee", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Ein Einfall", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Kaffee", "silben": "Kaf|fee", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Schwarzes Heißgetränk", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Häuser", "silben": "Häu|ser", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "s/ss/ß"], "stufe": 2, "hinweis": "Mehr als ein Haus", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bäume", "silben": "Bäu|me", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Mehr als ein Baum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Äpfel", "silben": "Äp|fel", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 1, "hinweis": "Mehr als ein Apfel", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Hände", "silben": "Hän|de", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 1, "hinweis": "Beide Hände", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Zähne", "silben": "Zäh|ne", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "Dehnung"], "stufe": 2, "hinweis": "Mehr als ein Zahn", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Läufer", "silben": "Läu|fer", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Jemand, der läuft", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Mäuse", "silben": "Mäu|se", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "s/ss/ß"], "stufe": 2, "hinweis": "Mehr als eine Maus", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Blätter", "silben": "Blät|ter", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Mehr als ein Blatt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bälle", "silben": "Bäl|le", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "Doppelte Buchstaben"], "stufe": 2, "hinweis": "Mehr als ein Ball", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Nächte", "silben": "Näch|te", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Mehr als eine Nacht", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gläser", "silben": "Glä|ser", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten", "s/ss/ß"], "stufe": 2, "hinweis": "Mehr als ein Glas", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Träume", "silben": "Träu|me", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Mehr als ein Traum", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Gebäude", "silben": "Ge|bäu|de", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Umlaute ableiten"], "stufe": 3, "hinweis": "Großes Haus", "fremdwort": "nein", "ansage": ""},
+    {"wort": "ängstlich", "silben": "ängst|lich", "welt": "alltag", "nomen": "nein", "artikel": "", "themen": ["Umlaute ableiten"], "stufe": 2, "hinweis": "Voller Angst", "fremdwort": "nein", "ansage": "Der Hund ist ängstlich."},
+    {"wort": "Taschengeld", "silben": "Ta|schen|geld", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 2, "hinweis": "Geld, das du jede Woche bekommst", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Nachbar", "silben": "Nach|bar", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 2, "hinweis": "Wohnt nebenan", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Telefon", "silben": "Te|le|fon", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 2, "hinweis": "Damit ruft man an", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Musik", "silben": "Mu|sik", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": [], "stufe": 1, "hinweis": "Lieder und Töne", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Lied", "silben": "Lied", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung", "Verlängern"], "stufe": 1, "hinweis": "Das singt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Bild", "silben": "Bild", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Verlängern"], "stufe": 1, "hinweis": "Gemälde oder Foto", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Foto", "silben": "Fo|to", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": [], "stufe": 1, "hinweis": "Bild aus der Kamera", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tier", "silben": "Tier", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 1, "hinweis": "Hund, Katze oder Pferd", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Katze", "silben": "Kat|ze", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Miaut", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Vogel", "silben": "Vo|gel", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Merkwörter"], "stufe": 1, "hinweis": "Hat Federn und fliegt", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Fisch", "silben": "Fisch", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Schwimmt im Wasser", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Tiger", "silben": "Ti|ger", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Merkwörter"], "stufe": 2, "hinweis": "Große gestreifte Katze", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Krokodil", "silben": "Kro|ko|dil", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Merkwörter"], "stufe": 3, "hinweis": "Großes Reptil mit vielen Zähnen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Maschine", "silben": "Ma|schi|ne", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["Merkwörter"], "stufe": 3, "hinweis": "Gerät mit Motor", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Brief", "silben": "Brief", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Nachricht auf Papier", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Papier", "silben": "Pa|pier", "welt": "alltag", "nomen": "ja", "artikel": "das", "themen": ["Dehnung"], "stufe": 2, "hinweis": "Darauf schreibt man", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Ecke", "silben": "E|cke", "welt": "alltag", "nomen": "ja", "artikel": "die", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Wo zwei Wände zusammentreffen", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Dreck", "silben": "Dreck", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Schmutz", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Platz", "silben": "Platz", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": ["ck/tz"], "stufe": 1, "hinweis": "Freie Fläche", "fremdwort": "nein", "ansage": ""},
+    {"wort": "Traum", "silben": "Traum", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Das siehst du im Schlaf", "fremdwort": "nein", "ansage": ""}
+    /*WOERTER-END*/
   ],
   texte: [],
   lueckensaetze: [],
-  regeln: [],
   meldungen: [],
   inseln: []
 };
@@ -235,12 +813,10 @@ function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" 
 function fmtDay(d) { return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
 function $(id) { return document.getElementById(id); }
 function norm(s) { return String(s == null ? "" : s).normalize("NFC").replace(/\s+/g, " ").trim(); }
-function shuffle(arr) {
-  var a = arr.slice();
-  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
-  return a;
-}
 function isYesNo(v) { return v === "ja" || v === "nein"; }
+function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
+function uniq(arr) { return arr.filter(function (x, i) { return arr.indexOf(x) === i; }); }
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 var toastTimer = null;
 function toast(text) {
   var t = $("toast"); t.textContent = text; t.hidden = false;
@@ -259,6 +835,11 @@ function validate(data) {
     if (weltKeys[w["kürzel"]]) { errors.push(nr + ": Kürzel „" + w["kürzel"] + "“ doppelt"); return; }
     weltKeys[w["kürzel"]] = true; welten.push(w);
   });
+  var regeln = [], regelIds = {};
+  (Array.isArray(data.regeln) ? data.regeln : []).forEach(function (r, i) {
+    if (!r || typeof r.id !== "string" || !r.id || typeof r.text !== "string" || !r.text) { errors.push("Regeln Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
+    regelIds[r.id] = true; regeln.push(r);
+  });
   var woerter = [], seen = {};
   (Array.isArray(data.woerter) ? data.woerter : []).forEach(function (e, i) {
     var nr = "Wörter Zeile " + (i + 1) + (e && e.wort ? " („" + e.wort + "“)" : "");
@@ -268,30 +849,50 @@ function validate(data) {
     if (!weltKeys[e.welt]) { errors.push(nr + ": Welt „" + e.welt + "“ unbekannt"); return; }
     if (!isYesNo(e.nomen)) { errors.push(nr + ": nomen muss ja oder nein sein"); return; }
     if (!isYesNo(e.fremdwort)) { errors.push(nr + ": fremdwort muss ja oder nein sein"); return; }
+    var art = e.artikel == null ? "" : e.artikel;
+    if (e.nomen === "ja" && ["der", "die", "das"].indexOf(art) < 0) { errors.push(nr + ": Artikel fehlt"); return; }
+    if (e.nomen === "nein" && art) { errors.push(nr + ": Artikel nur bei Nomen"); return; }
     if (typeof e.stufe !== "number" || e.stufe % 1 !== 0 || e.stufe < 1 || e.stufe > 5) { errors.push(nr + ": Stufe muss 1 bis 5 sein"); return; }
-    if (!Array.isArray(e.themen) || e.themen.some(function (t) { return THEMEN.indexOf(t) < 0; })) { errors.push(nr + ": unbekanntes Thema"); return; }
+    if (!Array.isArray(e.themen) || e.themen.some(function (t) { return !regelIds[t] || t === "allgemein"; })) { errors.push(nr + ": unbekanntes Thema"); return; }
     if (typeof e.hinweis !== "string") { errors.push(nr + ": Hinweis fehlt"); return; }
+    var ans = e.ansage == null ? "" : e.ansage;
+    if (typeof ans !== "string") { errors.push(nr + ": Ansage ungültig"); return; }
+    if (ans && ans.split(/[\s.,!?;:„“"]+/).indexOf(e.wort) < 0) { errors.push(nr + ": Ansage enthält das Wort nicht"); return; }
     if (seen[e.wort]) { errors.push(nr + ": Wort doppelt"); return; }
-    seen[e.wort] = true; woerter.push(e);
+    seen[e.wort] = true;
+    woerter.push({ wort: e.wort, silben: e.silben, welt: e.welt, nomen: e.nomen, artikel: art, themen: e.themen.slice(),
+      stufe: e.stufe, hinweis: e.hinweis, fremdwort: e.fremdwort, ansage: ans });
   });
-  return { welten: welten, woerter: woerter, errors: errors };
+  return { welten: welten, regeln: regeln, woerter: woerter, errors: errors };
 }
 
-var content = { welten: [], woerter: [], errors: [] };
+var content = { welten: [], regeln: [], woerter: [], errors: [] };
 try { content = validate(DATA); } catch (err) { content.errors = ["Inhalte konnten nicht gelesen werden: " + err.message]; }
+function themenListe() { return content.regeln.map(function (r) { return r.id; }).filter(function (id) { return id !== "allgemein" && id !== "Verwechslungswörter"; }); }
+function regelText(id) { for (var i = 0; i < content.regeln.length; i++) if (content.regeln[i].id === id) return content.regeln[i].text; return ""; }
 
 // ================= Speicher =================
 var storageOk = true;
+function defaultAuswahl() { return { welten: ["alle"], thema: "egal", silben: "egal" }; }
 function emptyState() {
   return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
-    settings: { rate: CONFIG.tempoStandard }, versuche: [] };
+    settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl() }, versuche: [], meineWoerter: [], zeiten: {} };
 }
 function clampRate(r) {
   r = Number(r);
   if (!isFinite(r)) return CONFIG.tempoStandard;
   return Math.round(Math.min(CONFIG.tempoMax, Math.max(CONFIG.tempoMin, r)) * 10) / 10;
 }
-// Prüft einen Stand (aus Speicher oder Import). Gibt bereinigten Stand oder Fehlertext zurück.
+var DAY_RE = /^\d{4}-\d\d-\d\d$/;
+function cleanAuswahl(a) {
+  var d = defaultAuswahl();
+  if (!a || typeof a !== "object") return d;
+  if (Array.isArray(a.welten) && a.welten.length && a.welten.every(function (w) { return typeof w === "string"; })) d.welten = a.welten.slice();
+  if (typeof a.thema === "string") d.thema = a.thema;
+  if (["egal", "1", "2", "3", "4+"].indexOf(a.silben) >= 0) d.silben = a.silben;
+  return d;
+}
+// Prüft einen Stand (aus Speicher oder Import), wandelt ältere Schemas um. Gibt {state} oder {error} zurück.
 function sanitize(obj) {
   if (!obj || typeof obj !== "object" || obj.app !== "HD") return { error: "Das ist keine Sicherung von HD." };
   if (typeof obj.schema !== "number" || obj.schema % 1 !== 0 || obj.schema < 1) return { error: "Die Sicherung ist beschädigt (Schema fehlt)." };
@@ -299,13 +900,33 @@ function sanitize(obj) {
   if (!Array.isArray(obj.versuche)) return { error: "Die Sicherung ist beschädigt (Übungen fehlen)." };
   var st = emptyState();
   st.erstellt = typeof obj.erstellt === "string" ? obj.erstellt : st.erstellt;
-  st.settings.rate = clampRate(obj.settings && obj.settings.rate);
+  var set = obj.settings || {};
+  st.settings.rate = clampRate(set.rate);
+  st.settings.auswahl = cleanAuswahl(set.auswahl);
   obj.versuche.forEach(function (v) {
-    if (v && typeof v.wort === "string" && typeof v.richtig === "boolean" && typeof v.tag === "string" && /^\d{4}-\d\d-\d\d$/.test(v.tag)) {
-      st.versuche.push({ wort: v.wort, richtig: v.richtig, eingabe: typeof v.eingabe === "string" ? v.eingabe : "",
-        zeit: typeof v.zeit === "string" ? v.zeit : "", tag: v.tag, kategorie: v.kategorie == null ? null : String(v.kategorie) });
+    if (!v || typeof v.wort !== "string" || typeof v.richtig !== "boolean" || typeof v.tag !== "string" || !DAY_RE.test(v.tag)) return;
+    var kat = Array.isArray(v.kategorien) ? v.kategorien.filter(function (k) { return KATEGORIEN.indexOf(k) >= 0; })
+      : (v.kategorie && KATEGORIEN.indexOf(v.kategorie) >= 0 ? [v.kategorie] : []);   // Schema 1
+    var w = findWord(v.wort);
+    st.versuche.push({ wort: v.wort, richtig: v.richtig, hilfe: v.hilfe === 1 || v.hilfe === 2 ? v.hilfe : 0,
+      eingabe: typeof v.eingabe === "string" ? v.eingabe : "", zeit: typeof v.zeit === "string" ? v.zeit : "", tag: v.tag,
+      kategorien: kat,
+      themen: Array.isArray(v.themen) ? v.themen.filter(function (t) { return typeof t === "string"; }) : (w ? w.themen.slice() : []),
+      welt: typeof v.welt === "string" ? v.welt : (w ? w.welt : "") });
+  });
+  (Array.isArray(obj.meineWoerter) ? obj.meineWoerter : []).forEach(function (m) {
+    if (m && typeof m.wort === "string" && checkOwnWord(m.wort, st.meineWoerter) === null) {
+      st.meineWoerter.push({ wort: norm(m.wort), tag: typeof m.tag === "string" && DAY_RE.test(m.tag) ? m.tag : dayKey(now()) });
     }
   });
+  if (obj.zeiten && typeof obj.zeiten === "object") {
+    Object.keys(obj.zeiten).forEach(function (k) {
+      var z = obj.zeiten[k];
+      if (DAY_RE.test(k) && z && typeof z === "object") {
+        st.zeiten[k] = { ueben: Math.max(0, Number(z.ueben) || 0), spiel: Math.max(0, Number(z.spiel) || 0) };
+      }
+    });
+  }
   return { state: st };
 }
 function loadState() {
@@ -324,40 +945,192 @@ function saveState() {
   catch (err) { storageOk = false; }
   $("storageWarn").hidden = storageOk;
 }
-var state = loadState();
 
-function requestPersist() {
-  try {
-    if (navigator.storage && navigator.storage.persist) {
-      navigator.storage.persist().then(function (granted) { persistGranted = granted; }).catch(function () {});
-    }
-  } catch (err) { /* egal */ }
+// ================= Wörter, eigene Wörter, Filter =================
+var wordIndex = {};
+content.woerter.forEach(function (w) { wordIndex[w.wort] = w; });
+function findWord(wort) {
+  if (wordIndex[wort]) return wordIndex[wort];
+  return null;
 }
-var persistGranted = null;
+function ownWordEntry(wort) {
+  return { wort: wort, silben: wort, welt: "meine", nomen: /^[A-ZÄÖÜ]/.test(wort) ? "ja" : "nein", artikel: "",
+    themen: [], stufe: 1, hinweis: "", fremdwort: "nein", ansage: "", eigen: true };
+}
+function checkOwnWord(wort, list) {
+  wort = norm(wort);
+  if (!wort) return "Schreib zuerst ein Wort.";
+  if (!/^[A-Za-zÄÖÜäöüß]+(-[A-Za-zÄÖÜäöüß]+)*$/.test(wort)) return "Bitte nur ein einzelnes Wort, ohne Zahlen und Satzzeichen.";
+  if (Array.from(wort).length < 2 || Array.from(wort).length > 30) return "Das Wort muss 2 bis 30 Buchstaben haben.";
+  if (list.some(function (m) { return m.wort === wort; })) return "Das Wort steht schon in deiner Liste.";
+  return null;
+}
+function allWords() {
+  var list = content.woerter.slice();
+  state.meineWoerter.forEach(function (m) { if (!wordIndex[m.wort]) list.push(ownWordEntry(m.wort)); });
+  return list;
+}
+function silbenZahl(w) { return w.eigen ? 0 : w.silben.split("|").length; }
+function boxes() {
+  var b = {};
+  state.versuche.forEach(function (v) {
+    var ok = v.richtig && v.hilfe < 2;
+    b[v.wort] = ok ? Math.min(5, (b[v.wort] || 1) + 1) : 1;
+  });
+  return b;
+}
+function filterWords(a) {
+  var bx = a.thema === "fehler" ? boxes() : null;
+  var alle = a.welten.indexOf("alle") >= 0;
+  return allWords().filter(function (w) {
+    if (!alle) {
+      var weltOk = w.eigen ? a.welten.indexOf("meine") >= 0 : a.welten.indexOf(w.welt) >= 0;
+      if (!weltOk) return false;
+    }
+    if (a.thema === "fehler") { if (bx[w.wort] !== 1) return false; }
+    else if (a.thema !== "egal") {
+      if (w.themen.indexOf(a.thema) < 0) return false;
+      if (a.thema !== "Fremdwörter" && w.fremdwort === "ja") return false;
+    }
+    if (a.silben !== "egal") {
+      var n = silbenZahl(w);
+      if (a.silben === "4+" ? n < 4 : n !== Number(a.silben)) return false;
+    }
+    return true;
+  });
+}
+// Gewichtete Ziehung ohne Zurücklegen (Leitner: Fehlerwörter öfter)
+function drawRound(words, n) {
+  var bx = boxes();
+  return words.map(function (w) {
+    var weight = CONFIG.leitnerGewichte[bx[w.wort] || 0];
+    return { w: w, key: Math.pow(Math.random(), 1 / weight) };
+  }).sort(function (x, y) { return y.key - x.key; }).slice(0, n).map(function (x) { return x.w; });
+}
 
 // ================= Buchstabenvergleich (LCS) =================
+function align(a, b, eq) {
+  var n = a.length, m = b.length, i, j, dp = [];
+  for (i = 0; i <= n; i++) dp.push(new Array(m + 1).fill(0));
+  for (i = n - 1; i >= 0; i--) for (j = m - 1; j >= 0; j--)
+    dp[i][j] = eq(a[i], b[j]) ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  var ops = []; i = 0; j = 0;
+  while (i < n && j < m) {
+    if (eq(a[i], b[j]) && dp[i][j] === dp[i + 1][j + 1] + 1) { ops.push({ t: "same", i: i, j: j }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { ops.push({ t: "del", i: i, j: j }); i++; }
+    else { ops.push({ t: "ins", i: i, j: j }); j++; }
+  }
+  for (; i < n; i++) ops.push({ t: "del", i: i, j: j });
+  for (; j < m; j++) ops.push({ t: "ins", i: i, j: j });
+  return ops;
+}
 function compare(target, input) {
   var a = Array.from(target), b = Array.from(input);
-  var n = a.length, m = b.length, i, j;
-  var dp = [];
-  for (i = 0; i <= n; i++) { dp.push(new Array(m + 1).fill(0)); }
-  for (i = n - 1; i >= 0; i--) {
-    for (j = m - 1; j >= 0; j--) {
-      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
-    }
-  }
+  var ops = align(a, b, function (x, y) { return x === y; });
   var tMarks = [], iMarks = [];
-  i = 0; j = 0;
-  while (i < n && j < m) {
-    if (a[i] === b[j] && dp[i][j] === dp[i + 1][j + 1] + 1) { tMarks.push({ ch: a[i], ok: true }); iMarks.push({ ch: b[j], ok: true }); i++; j++; }
-    else if (dp[i + 1][j] >= dp[i][j + 1]) { tMarks.push({ ch: a[i], ok: false }); i++; }
-    else { iMarks.push({ ch: b[j], ok: false }); j++; }
-  }
-  for (; i < n; i++) tMarks.push({ ch: a[i], ok: false });
-  for (; j < m; j++) iMarks.push({ ch: b[j], ok: false });
+  ops.forEach(function (o) {
+    if (o.t === "same") { tMarks.push({ ch: a[o.i], ok: true }); iMarks.push({ ch: b[o.j], ok: true }); }
+    else if (o.t === "del") tMarks.push({ ch: a[o.i], ok: false });
+    else iMarks.push({ ch: b[o.j], ok: false });
+  });
   return { correct: target === input, target: tMarks, input: iMarks,
     missing: tMarks.filter(function (x) { return !x.ok; }).length,
     extra: iMarks.filter(function (x) { return !x.ok; }).length };
+}
+
+// ================= Fehlerklassifikation (5.1) =================
+var VOKALE = "aeiouäöü";
+function isVowel(c) { return !!c && VOKALE.indexOf(c) >= 0; }
+function isCons(c) { return !!c && /[a-zß]/.test(c) && !isVowel(c); }
+var ENDLAUT = { "b": "p", "p": "b", "d": "t", "t": "d", "g": "k", "k": "g" };
+function classify(target, input) {
+  if (target === input) return [];
+  var cats = [];
+  var a = Array.from(target), b = Array.from(input);
+  var al = Array.from(target.toLowerCase()), bl = Array.from(input.toLowerCase());
+  if (al.length !== a.length || bl.length !== b.length) return ["Sonstige"];
+  // nur Groß/klein falsch?
+  if (al.join("") === bl.join("")) {
+    var onlyFirst = a.every(function (c, i) { return i === 0 || c === b[i]; });
+    return [onlyFirst ? "Groß/klein" : "Sonstige"];
+  }
+  if (al[0] === bl[0] && a[0] !== b[0]) cats.push("Groß/klein");
+  // zwei benachbarte Buchstaben vertauscht?
+  if (al.length === bl.length && al.length >= 2) {
+    var diff = []; for (var k = 0; k < al.length; k++) if (al[k] !== bl[k]) diff.push(k);
+    if (diff.length === 2 && diff[1] === diff[0] + 1 && al[diff[0]] === bl[diff[1]] && al[diff[1]] === bl[diff[0]]) {
+      cats.push("vertauschte Buchstaben"); return uniq(cats);
+    }
+  }
+  // Abschnitte mit Unterschieden sammeln
+  var ops = align(al, bl, function (x, y) { return x === y; });
+  var regions = [], cur = null;
+  ops.forEach(function (o) {
+    if (o.t === "same") { if (cur) { regions.push(cur); cur = null; } return; }
+    if (!cur) cur = { i: o.i, j: o.j, T: "", I: "" };
+    if (o.t === "del") cur.T += al[o.i]; else cur.I += bl[o.j];
+  });
+  if (cur) regions.push(cur);
+  regions.forEach(function (r) { cats.push(classifyRegion(r, al, bl)); });
+  return uniq(cats);
+}
+function classifyRegion(r, al, bl) {
+  var T = r.T, I = r.I;
+  var tEnd = r.i + Array.from(T).length;              // Index nach dem Abschnitt im Zielwort
+  var prevT = al[r.i - 1], nextT = al[tEnd];
+  var jEnd = r.j + Array.from(I).length;
+  var prevI = bl[r.j - 1], nextI = bl[jEnd];
+  var sSet = { "s": 1, "ss": 1, "ß": 1 };
+  // s/ss/ß
+  if ((sSet[T] || T === "") && (sSet[I] || I === "") && (T + I).replace(/[sß]/g, "") === "" &&
+      (T.indexOf("ß") >= 0 || I.indexOf("ß") >= 0 || prevT === "s" || nextT === "s" || prevI === "s" || nextI === "s")) return "s/ss/ß";
+  // ck/k
+  if ((T === "c" && I === "" && nextT === "k") || (T === "" && I === "c" && nextI === "k") ||
+      (T === "c" && I === "k" && nextT === "k") || (T === "" && I === "k" && (prevI === "k" || nextI === "k") && prevT !== "c")) return "ck/k";
+  // tz/z
+  if ((T === "t" && I === "" && nextT === "z") || (T === "" && I === "t" && nextI === "z") ||
+      (T === "t" && I === "z" && nextT === "z") || (T === "" && I === "z" && (prevI === "z" || nextI === "z"))) return "tz/z";
+  // ie/i
+  if ((T === "e" && I === "" && prevT === "i") || (T === "" && I === "e" && prevI === "i")) return "ie/i";
+  // Dehnungs-h (h nach Selbstlaut, danach Mitlaut oder Wortende)
+  if ((T === "h" && I === "" && isVowel(prevT) && (nextT === undefined || isCons(nextT))) ||
+      (T === "" && I === "h" && isVowel(prevI) && (nextI === undefined || isCons(nextI)))) return "Dehnungs-h";
+  // Doppelvokal
+  if ((T.length === 1 && I === "" && "aeo".indexOf(T) >= 0 && (prevT === T || nextT === T)) ||
+      (I.length === 1 && T === "" && "aeo".indexOf(I) >= 0 && (prevI === I || nextI === I))) return "Doppelvokal";
+  // Doppelkonsonant
+  if ((T.length === 1 && I === "" && isCons(T) && (prevT === T || nextT === T)) ||
+      (I.length === 1 && T === "" && isCons(I) && (prevI === I || nextI === I))) return "Doppelkonsonant";
+  // Endlaut (b/p, d/t, g/k, -ig/-ich) am Wortende oder vor einem Mitlaut
+  if ((T.length === 1 && I.length === 1 && ENDLAUT[T] === I) || (T === "g" && I === "ch")) {
+    if (nextT === undefined || isCons(nextT)) return "Endlaut";
+  }
+  // Umlaut ä/e (auch äu/eu)
+  if ((T === "ä" && I === "e") || (T === "e" && I === "ä")) return "Umlaut";
+  if (T.length === 1 && I === "") return "fehlender Buchstabe";
+  if (I.length === 1 && T === "") return "zusätzlicher Buchstabe";
+  return "Sonstige";
+}
+
+// ================= Statistik =================
+function zaehltRichtig(v) { return v.richtig && v.hilfe < 2; }
+function ampel() {
+  var res = {};
+  themenListe().forEach(function (t) {
+    var vs = state.versuche.filter(function (v) { return v.themen.indexOf(t) >= 0; }).slice(-CONFIG.stufeAufstiegWoerter);
+    if (vs.length < CONFIG.ampelMinVersuche) return;
+    var q = vs.filter(zaehltRichtig).length / vs.length;
+    res[t] = { n: vs.length, quote: q,
+      stufe: q >= CONFIG.stufeAufstiegQuote ? "sicher" : (q >= CONFIG.stufeAbstiegQuote ? "wackelig" : "mehr üben") };
+  });
+  return res;
+}
+function zeitSekunden(fromKey, toKey, art) {
+  var s = 0;
+  Object.keys(state.zeiten).forEach(function (k) {
+    if (k >= fromKey && k <= toKey) s += art ? (state.zeiten[k][art] || 0) : (state.zeiten[k].ueben || 0) + (state.zeiten[k].spiel || 0);
+  });
+  return s;
 }
 
 // ================= Sprachausgabe =================
@@ -419,6 +1192,36 @@ function speak(text) {
   speakLog.push({ text: text, rate: u.rate, lang: u.lang });
   return true;
 }
+// Was vorgelesen wird: Nomen mit Artikel, sonst Wort + Beispielsatz (B6)
+function spokenText(w) {
+  var head = w.artikel ? w.artikel + " " + w.wort : w.wort;
+  return w.ansage ? head + ". " + w.ansage : head;
+}
+function onlyWordHint(w) {
+  if (w.artikel) return "Schreib nur das Wort – ohne „" + w.artikel + "“.";
+  if (w.ansage) return "Schreib nur das eine Wort, nicht den ganzen Satz.";
+  return "";
+}
+
+// ================= Zeiterfassung (5.6) =================
+var lastTick = 0, lastActivity = 0, unsavedSeconds = 0;
+function activeScreen() { var s = document.querySelector(".screen.active"); return s ? s.id : ""; }
+function zeitArt() { return activeScreen() === "ueben" ? "ueben" : null; }
+function markActivity() { lastActivity = now().getTime(); }
+function timeTick() {
+  var t = now().getTime();
+  var d = t - lastTick;
+  lastTick = t;
+  if (d <= 0 || d > 2000) return;                    // Sprung (Hintergrund, Standby): nicht zählen
+  var art = zeitArt();
+  if (!art || document.visibilityState === "hidden") return;
+  if (t - lastActivity > CONFIG.inaktivSekunden * 1000) return;
+  var key = dayKey(now());
+  if (!state.zeiten[key]) state.zeiten[key] = { ueben: 0, spiel: 0 };
+  state.zeiten[key][art] = Math.round((state.zeiten[key][art] + d / 1000) * 1000) / 1000;
+  unsavedSeconds += d / 1000;
+  if (unsavedSeconds >= CONFIG.zeitSpeichernSekunden) { unsavedSeconds = 0; saveState(); }
+}
 
 // ================= Navigation =================
 var navStack = ["start"];
@@ -427,7 +1230,10 @@ function show(id) {
   for (var i = 0; i < screens.length; i++) screens[i].classList.toggle("active", screens[i].id === id);
   if (navStack[navStack.length - 1] !== id) navStack.push(id);
   window.scrollTo(0, 0);
+  markActivity();
   if (id === "start") renderStart();
+  if (id === "auswahl") renderAuswahl();
+  if (id === "meine") renderMeine();
   if (id === "bericht") renderReport();
   if (id === "daten") renderData();
 }
@@ -441,7 +1247,11 @@ function goHome() { navStack = ["start"]; show("start"); }
 function renderStart() {
   var today = dayKey(now());
   var n = state.versuche.filter(function (v) { return v.tag === today; }).length;
-  $("todayStat").textContent = n ? "Heute: " + n + (n === 1 ? " Wort" : " Wörter") : "";
+  var min = Math.floor(zeitSekunden(today, today) / 60);
+  var parts = [];
+  if (n) parts.push("Heute: " + plural(n, "Wort", "Wörter"));
+  if (min) parts.push(min + " Min.");
+  $("todayStat").textContent = parts.join(" · ");
   $("storageWarn").hidden = storageOk;
   if (content.errors.length) {
     $("dataWarn").hidden = false;
@@ -450,51 +1260,127 @@ function renderStart() {
   }
 }
 
-// ================= Üben =================
+// ================= Auswahl (4.2) =================
+function chip(label, attr, value, pressed) {
+  var b = el("button", "chip", label);
+  b.setAttribute(attr, value); b.setAttribute("aria-pressed", pressed ? "true" : "false");
+  return b;
+}
+function renderAuswahl() {
+  var a = state.settings.auswahl;
+  var cw = $("chipWelten"); cw.textContent = "";
+  cw.appendChild(chip("Alle gemischt", "data-w", "alle", a.welten.indexOf("alle") >= 0));
+  content.welten.forEach(function (w) { cw.appendChild(chip(w.emoji + " " + w.name, "data-w", w["kürzel"], a.welten.indexOf(w["kürzel"]) >= 0)); });
+  cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
+  var ct = $("chipThema"); ct.textContent = "";
+  ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
+  themenListe().forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
+  ct.appendChild(chip("Meine Fehlerwörter", "data-t", "fehler", a.thema === "fehler"));
+  var cs = $("chipSilben"); cs.textContent = "";
+  ["egal", "1", "2", "3", "4+"].forEach(function (s) { cs.appendChild(chip(s, "data-s", s, a.silben === s)); });
+  updateAuswahlCount();
+}
+function updateAuswahlCount() {
+  var a = state.settings.auswahl;
+  var warn = "", n = 0;
+  if (!a.welten.length) warn = "Wähl mindestens eine Welt.";
+  else {
+    n = filterWords(a).length;
+    if (n < CONFIG.minWoerterUebung) {
+      warn = a.thema === "fehler" && n === 0 ? "Gerade hast du keine Fehlerwörter. Stark!" :
+        "Zu wenige Wörter für eine Runde (mindestens " + CONFIG.minWoerterUebung + "). Wähl mehr Welten oder „egal“.";
+    }
+  }
+  $("auswahlCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") : "";
+  $("auswahlWarn").textContent = warn;
+  $("auswahlStart").disabled = !!warn;
+}
+function onAuswahlClick(ev) {
+  var b = ev.target.closest ? ev.target.closest(".chip") : null;
+  if (!b) return;
+  var a = state.settings.auswahl;
+  if (b.hasAttribute("data-w")) {
+    var w = b.getAttribute("data-w");
+    if (w === "alle") a.welten = a.welten.indexOf("alle") >= 0 ? [] : ["alle"];
+    else {
+      a.welten = a.welten.filter(function (x) { return x !== "alle"; });
+      var i = a.welten.indexOf(w);
+      if (i >= 0) a.welten.splice(i, 1); else a.welten.push(w);
+    }
+  }
+  if (b.hasAttribute("data-t")) a.thema = b.getAttribute("data-t");
+  if (b.hasAttribute("data-s")) a.silben = b.getAttribute("data-s");
+  saveState();
+  renderAuswahl();
+}
+
+// ================= Üben (4.3) =================
 var round = null;
-function pool() { return content.woerter.filter(function (w) { return w.fremdwort !== "ja"; }); }
 function startRound() {
-  var words = shuffle(pool()).slice(0, CONFIG.woerterProRunde);
-  round = { words: words, idx: 0, right: 0, checked: false, recorded: false };
+  var a = state.settings.auswahl;
+  var words = filterWords(a);
+  if (words.length < CONFIG.minWoerterUebung) { show("auswahl"); return; }
+  round = { words: drawRound(words, Math.min(CONFIG.woerterProRunde, words.length)), idx: 0, results: [] };
   show("ueben");
   showWord();
 }
-function currentWord() { return round && round.words[round.idx] ? round.words[round.idx].wort : null; }
+function currentEntry() { return round && round.words[round.idx] ? round.words[round.idx] : null; }
+function currentWord() { var w = currentEntry(); return w ? w.wort : null; }
 function showWord() {
-  round.checked = false; round.recorded = false;
-  $("counter").textContent = round.words.length ? "Wort " + (round.idx + 1) + " von " + round.words.length : "";
+  var w = currentEntry();
+  round.checked = false; round.recorded = false; round.hilfe = 0;
+  $("counter").textContent = "Wort " + (round.idx + 1) + " von " + round.words.length;
+  var a = state.settings.auswahl;
+  $("uebenInfo").textContent = a.thema === "egal" ? "Wort hören und schreiben" : (a.thema === "fehler" ? "Meine Fehlerwörter" : a.thema);
+  $("onlyWord").textContent = onlyWordHint(w);
   $("wordInput").value = "";
   $("result").textContent = "";
   $("feedback").textContent = "";
   $("nextBtn").hidden = true;
-  $("checkBtn").disabled = !round.words.length;
-  if (!round.words.length) $("feedback").textContent = "Keine Wörter vorhanden.";
-  else speak(currentWord());
+  $("hintBox").hidden = true; $("hintSyll").hidden = true;
+  $("hintBtn").hidden = false; $("hintBtnText").textContent = "Tipp zeigen";
+  speak(spokenText(w));
   try { $("wordInput").focus(); } catch (err) { /* egal */ }
 }
+function showHint() {
+  var w = currentEntry(); if (!w) return;
+  if (round.hilfe === 0) {
+    round.hilfe = 1;
+    var box = $("hintTips"); box.textContent = "";
+    var ids = w.themen.length ? w.themen.slice(0, 2) : ["allgemein"];
+    ids.forEach(function (id) { var t = regelText(id); if (t) box.appendChild(el("div", "muted", t)); });
+    $("hintBox").hidden = false;
+    if (w.eigen) { $("hintBtn").hidden = true; return; }
+    $("hintBtnText").textContent = "Silben zeigen (zählt als Hilfe)";
+  } else if (round.hilfe === 1) {
+    round.hilfe = 2;
+    var s = $("hintSyll"); s.textContent = "";
+    w.silben.split("|").forEach(function (part) { s.appendChild(el("span", "", part)); });
+    s.hidden = false;
+    $("hintBtn").hidden = true;
+  }
+  markActivity();
+}
 function renderMarks(label, marks) {
-  var wrap = document.createElement("div");
-  var l = document.createElement("div"); l.className = "lbl"; l.textContent = label; wrap.appendChild(l);
-  var w = document.createElement("div"); w.className = "w";
-  marks.forEach(function (mk) {
-    var s = document.createElement("span");
-    s.className = mk.ok ? "c-ok" : "c-err";
-    s.textContent = mk.ch === " " ? " " : mk.ch;
-    w.appendChild(s);
-  });
+  var wrap = el("div");
+  wrap.appendChild(el("div", "lbl", label));
+  var w = el("div", "w");
+  marks.forEach(function (mk) { w.appendChild(el("span", mk.ok ? "c-ok" : "c-err", mk.ch === " " ? " " : mk.ch)); });
   wrap.appendChild(w);
   return wrap;
 }
 function check() {
-  if (!round || !currentWord()) return;
-  var target = currentWord();
+  var w = currentEntry(); if (!w) return;
+  var target = w.wort;
   var input = norm($("wordInput").value);
   if (!input) { $("feedback").textContent = "Schreib zuerst das Wort."; return; }
+  var m = /^(der|die|das)\s+(.+)$/i.exec(input);
+  if (m && m[2] === target) { $("feedback").textContent = "Fast! Schreib nur das Wort, ohne „" + m[1] + "“."; return; }
   var res = compare(target, input);
   var box = $("result"); box.textContent = "";
   if (res.correct) {
     box.appendChild(renderMarks("Richtig geschrieben:", res.target));
-    $("feedback").textContent = "Stimmt genau.";
+    $("feedback").textContent = round.hilfe === 2 ? "Stimmt – mit Silbenhilfe. Beim nächsten Mal schaffst du es ohne." : "Stimmt genau.";
   } else {
     box.appendChild(renderMarks("Du hast geschrieben:", res.input));
     box.appendChild(renderMarks("So schreibt man es:", res.target));
@@ -502,47 +1388,107 @@ function check() {
   }
   if (!round.recorded) {
     var d = now();
-    state.versuche.push({ wort: target, richtig: res.correct, eingabe: input, zeit: d.toISOString(), tag: dayKey(d), kategorie: null });
+    var v = { wort: target, richtig: res.correct, hilfe: round.hilfe, eingabe: input, zeit: d.toISOString(), tag: dayKey(d),
+      kategorien: res.correct ? [] : classify(target, input), themen: w.themen.slice(), welt: w.welt };
+    state.versuche.push(v);
     saveState();
     round.recorded = true;
-    if (res.correct) round.right++;
+    round.results.push(v);
   }
   round.checked = true;
   $("nextBtn").hidden = false;
+  markActivity();
 }
 function next() {
   if (!round) return;
   round.idx++;
-  if (round.idx >= round.words.length) {
-    $("doneScore").textContent = round.right + " von " + round.words.length;
-    $("doneText").textContent = "beim ersten Versuch richtig geschrieben.";
-    show("fertig");
-    return;
-  }
+  if (round.idx >= round.words.length) { showDone(); return; }
   showWord();
 }
+function showDone() {
+  var rs = round.results, n = rs.length;
+  var ok = rs.filter(zaehltRichtig).length;
+  var mitHilfe = rs.filter(function (v) { return v.hilfe === 2; }).length;
+  $("doneScore").textContent = ok + " von " + n;
+  $("doneText").textContent = "beim ersten Versuch richtig" + (mitHilfe ? " · " + mitHilfe + " mit Silbenhilfe" : "") + ".";
+  var ul = $("doneLines"); ul.textContent = "";
+  var per = {};
+  rs.forEach(function (v) { v.themen.forEach(function (t) { per[t] = per[t] || { n: 0, ok: 0 }; per[t].n++; if (zaehltRichtig(v)) per[t].ok++; }); });
+  Object.keys(per).filter(function (t) { return per[t].n >= 3; }).forEach(function (t) {
+    ul.appendChild(el("li", "", t + ": " + per[t].ok + " von " + per[t].n + " richtig"));
+  });
+  var wrong = rs.filter(function (v) { return !zaehltRichtig(v); }).map(function (v) { return v.wort; });
+  if (wrong.length) ul.appendChild(el("li", "", "Kommen bald wieder: " + wrong.join(", ")));
+  show("fertig");
+}
 
-// ================= Bericht =================
+// ================= Meine Wörter =================
+function renderMeine() {
+  var ul = $("meineList"); ul.textContent = "";
+  state.meineWoerter.slice().reverse().forEach(function (m) {
+    var li = el("li"); li.appendChild(el("span", "", m.wort));
+    var del = el("button", "", "✕"); del.setAttribute("aria-label", m.wort + " löschen"); del.setAttribute("data-del", m.wort);
+    li.appendChild(del); ul.appendChild(li);
+  });
+  $("meineEmpty").hidden = state.meineWoerter.length > 0;
+}
+function addOwnWord() {
+  var wort = norm($("meineInput").value);
+  var err = checkOwnWord(wort, state.meineWoerter);
+  if (err) { $("meineMsg").textContent = err; return false; }
+  state.meineWoerter.push({ wort: wort, tag: dayKey(now()) });
+  saveState();
+  $("meineInput").value = ""; $("meineMsg").textContent = "";
+  toast("„" + wort + "“ ist jetzt in deiner Liste.");
+  renderMeine();
+  return true;
+}
+function deleteOwnWord(wort) {
+  if (!window.confirm("„" + wort + "“ aus deiner Liste löschen?")) return;
+  state.meineWoerter = state.meineWoerter.filter(function (m) { return m.wort !== wort; });
+  saveState(); renderMeine();
+}
+
+// ================= Bericht (4.8) =================
 function reportText() {
   var end = now();
   var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (CONFIG.berichtTage - 1));
   var startKey = dayKey(start), endKey = dayKey(end);
   var vs = state.versuche.filter(function (v) { return v.tag >= startKey && v.tag <= endKey; });
   var lines = ["⚓ HD – Übungsbericht", "Zeitraum: " + fmtDay(start) + "–" + fmtDay(end) + end.getFullYear(), ""];
-  if (!vs.length) {
+  var days = {};
+  vs.forEach(function (v) { days[v.tag] = true; });
+  Object.keys(state.zeiten).forEach(function (k) { if (k >= startKey && k <= endKey && state.zeiten[k].ueben >= 1) days[k] = true; });
+  var nDays = Object.keys(days).length;
+  var min = Math.round(zeitSekunden(startKey, endKey, "ueben") / 60);
+  if (!vs.length && !min) {
     lines.push("In diesem Zeitraum noch nicht geübt.");
   } else {
-    var days = {}; vs.forEach(function (v) { days[v.tag] = true; });
-    var nDays = Object.keys(days).length;
-    var right = vs.filter(function (v) { return v.richtig; }).length;
-    lines.push("Geübt an " + nDays + (nDays === 1 ? " Tag" : " Tagen"));
-    lines.push("Wörter: " + vs.length + " · davon richtig: " + right + " (" + Math.round(right / vs.length * 100) + " %)");
-    var last = {};
-    vs.forEach(function (v) { last[v.wort] = v.richtig; });
-    var hang = Object.keys(last).filter(function (w) { return !last[w]; });
+    lines.push("Übungszeit: " + plural(min, "Minute", "Minuten") + " an " + plural(nDays, "Tag", "Tagen"));
+    var right = vs.filter(zaehltRichtig).length;
+    var help = vs.filter(function (v) { return v.hilfe === 2; }).length;
+    lines.push("Wörter: " + vs.length + " · davon richtig: " + right + " (" + (vs.length ? Math.round(right / vs.length * 100) : 0) + " %)" +
+      (help ? " · mit Silbenhilfe: " + help : ""));
+    var am = ampel(), groups = { "sicher": [], "wackelig": [], "mehr üben": [] };
+    Object.keys(am).forEach(function (t) { groups[am[t].stufe].push(t); });
+    if (Object.keys(am).length) {
+      lines.push("");
+      if (groups["sicher"].length) lines.push("Sicher: " + groups["sicher"].join(", "));
+      if (groups["wackelig"].length) lines.push("Wackelig: " + groups["wackelig"].join(", "));
+      if (groups["mehr üben"].length) lines.push("Mehr üben: " + groups["mehr üben"].join(", "));
+    }
+    var kc = {};
+    vs.forEach(function (v) { v.kategorien.forEach(function (k) { kc[k] = (kc[k] || 0) + 1; }); });
+    var top = Object.keys(kc).sort(function (x, y) { return kc[y] - kc[x] || x.localeCompare(y); }).slice(0, 3);
+    if (top.length) lines.push("", "Häufigste Fehler: " + top.map(function (k) { return k + " (" + kc[k] + ")"; }).join(", "));
+    var bx = boxes();
+    var seenW = uniq(vs.map(function (v) { return v.wort; }));
+    var hang = seenW.filter(function (w) { return bx[w] === 1; });
     lines.push("");
     lines.push(hang.length ? "Wörter, die noch hängen:\n" + hang.join(", ") : "Keine Wörter, die noch hängen.");
   }
+  var neu = state.meineWoerter.filter(function (m) { return m.tag >= startKey && m.tag <= endKey && !wordIndex[m.wort]; });
+  if (neu.length) lines.push("", "Neue eigene Wörter (bitte prüfen, ob richtig geschrieben):", neu.map(function (m) { return m.wort; }).join(", "));
   lines.push("", "HD · Version " + APP_VERSION);
   return lines.join("\n");
 }
@@ -588,6 +1534,7 @@ function exportJson() {
   return JSON.stringify(copy, null, 1);
 }
 function exportDownload() {
+  saveState();
   var blob = new Blob([exportJson()], { type: "application/json" });
   var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
@@ -645,8 +1592,9 @@ function onImportFile(ev) {
 function renderData() {
   var n = state.versuche.length;
   var days = {}; state.versuche.forEach(function (v) { days[v.tag] = true; });
-  $("dataInfo").textContent = "Auf diesem Gerät gespeichert: " + n + (n === 1 ? " Übung" : " Übungen") +
-    " an " + Object.keys(days).length + " Tagen." + (storageOk ? "" : " Achtung: Speichern ist gerade nicht möglich.");
+  $("dataInfo").textContent = "Auf diesem Gerät gespeichert: " + plural(n, "Übung", "Übungen") +
+    " an " + plural(Object.keys(days).length, "Tag", "Tagen") + ", " + plural(state.meineWoerter.length, "eigenes Wort", "eigene Wörter") + "." +
+    (storageOk ? "" : " Achtung: Speichern ist gerade nicht möglich.");
   $("exportShareBtn").hidden = !canShareFile();
 }
 
@@ -664,8 +1612,14 @@ function registerSW() {
     hadController = true;
   });
 }
+function requestPersist() {
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+  } catch (err) { /* egal */ }
+}
 
 // ================= Verdrahtung =================
+var state = loadState();
 function wire() {
   $("version").textContent = APP_VERSION;
   document.addEventListener("click", function (ev) {
@@ -673,18 +1627,29 @@ function wire() {
     if (!t) return;
     if (t.hasAttribute("data-back")) { goBack(); return; }
     if (t.hasAttribute("data-home")) { goHome(); return; }
-    var go = t.getAttribute("data-go");
-    if (go === "ueben") startRound(); else show(go);
+    show(t.getAttribute("data-go"));
   });
-  $("speaker").addEventListener("click", function () { if (currentWord()) speak(currentWord()); });
+  ["keydown", "pointerdown", "input"].forEach(function (evn) { document.addEventListener(evn, markActivity, true); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") saveState(); lastTick = now().getTime(); });
+  window.addEventListener("pagehide", saveState);
+  $("auswahl").addEventListener("click", onAuswahlClick);
+  $("auswahlStart").addEventListener("click", startRound);
+  $("speaker").addEventListener("click", function () { var w = currentEntry(); if (w) speak(spokenText(w)); });
   $("checkBtn").addEventListener("click", check);
   $("nextBtn").addEventListener("click", next);
-  $("againBtn").addEventListener("click", function () { navStack = ["start"]; startRound(); });
+  $("hintBtn").addEventListener("click", showHint);
+  $("againBtn").addEventListener("click", function () { navStack = ["start", "auswahl"]; startRound(); });
   $("wordInput").addEventListener("keydown", function (ev) {
     if (ev.key === "Enter" && !ev.isComposing) {
       ev.preventDefault();
       if (round && round.checked && norm($("wordInput").value) === currentWord()) next(); else check();
     }
+  });
+  $("meineAdd").addEventListener("click", addOwnWord);
+  $("meineInput").addEventListener("keydown", function (ev) { if (ev.key === "Enter" && !ev.isComposing) { ev.preventDefault(); addOwnWord(); } });
+  $("meineList").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-del]") : null;
+    if (b) deleteOwnWord(b.getAttribute("data-del"));
   });
   var rate = $("rate");
   rate.min = CONFIG.tempoMin; rate.max = CONFIG.tempoMax;
@@ -699,6 +1664,8 @@ function wire() {
   $("exportShareBtn").addEventListener("click", exportShare);
   $("importFile").addEventListener("change", onImportFile);
   $("updateBtn").addEventListener("click", function () { location.reload(); });
+  lastTick = now().getTime(); markActivity();
+  setInterval(timeTick, 1000);
 }
 
 wire();
@@ -709,13 +1676,15 @@ registerSW();
 // ================= Test-Schnittstelle (einziger Zugang) =================
 window.__test = {
   version: APP_VERSION, schema: SCHEMA_VERSION, storageKey: STORAGE_KEY,
-  config: CONFIG, data: DATA, content: content, themen: THEMEN,
-  validate: validate, compare: compare, sanitize: sanitize,
+  config: CONFIG, data: DATA, content: content, kategorien: KATEGORIEN, themen: themenListe(),
+  validate: validate, compare: compare, classify: classify, sanitize: sanitize,
+  filterWords: filterWords, drawRound: drawRound, boxes: boxes, ampel: ampel, spokenText: spokenText,
   reportText: reportText, importText: importText, exportJson: exportJson,
   state: function () { return JSON.parse(JSON.stringify(state)); },
   storageOk: function () { return storageOk; },
-  speakLog: speakLog, currentWord: currentWord,
-  setNow: function (iso) { testHooks.fakeNow = iso; }
+  speakLog: speakLog, currentWord: currentWord, currentEntry: function () { return currentEntry(); },
+  setNow: function (iso) { testHooks.fakeNow = iso; },
+  timeTick: timeTick, markActivity: markActivity
 };
 
 })();
