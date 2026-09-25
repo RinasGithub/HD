@@ -119,6 +119,52 @@ pre.report{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);f
   background:var(--panel);border:1px solid #5a3a3a;border-radius:6px;font-size:1.15rem}
 .mylist button{min-height:44px;min-width:44px;background:none;border:0;color:var(--muted);font-size:1.1rem}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+/* Status (Start) */
+.status{display:flex;flex-direction:column;gap:6px}
+.status .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.status .titel{font-size:1.25rem;font-weight:700}
+.status .serie{font-size:1.15rem;white-space:nowrap}
+.bar{height:12px;border-radius:6px;background:#2a2322;overflow:hidden;border:1px solid #3a2e2c}
+.bar i{display:block;height:100%;background:var(--line)}
+.barlabel{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;color:var(--muted)}
+/* Spiele */
+.hword{font-size:2rem;letter-spacing:.3em;text-align:center;font-weight:700;overflow-wrap:anywhere}
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.key{min-height:46px;min-width:44px;border-radius:6px;background:var(--panel);border:1px solid #5a3a3a;font-size:1.2rem}
+.key:disabled{opacity:.35}
+.key.hit{background:#143d27;border-color:var(--ok);opacity:1}
+svg.gallows{display:block;margin:0 auto;width:150px;height:150px}
+svg.gallows .part{visibility:hidden}
+svg.gallows .part.on{visibility:visible}
+.mem{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{min-height:72px;border-radius:6px;border:1px solid var(--line);background:var(--panel);font-size:1.3rem}
+.card .face{visibility:hidden}
+.card.open .face,.card.done .face{visibility:visible}
+.card.open{background:#2a0c0e}
+.card.done{background:#143d27;border-color:var(--ok)}
+.slots{display:flex;flex-wrap:wrap;gap:6px;min-height:62px;padding:6px;border:1px dashed var(--line);border-radius:6px;justify-content:center}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:58px}
+.tile{min-width:46px;min-height:50px;padding:0 10px;border-radius:6px;background:#241b1a;border:1px solid #7a4a4a;font-size:1.4rem}
+.tile.fixed{background:#1d2a22;border-color:var(--ok);cursor:default}
+.tile.placed{background:#2a0c0e;border-color:var(--line)}
+/* Fortschritt */
+.amp{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2e2524}
+.amp:last-child{border-bottom:0}
+.amp .name{min-width:0;display:flex;flex-direction:column}
+.amp .name small{color:var(--muted);font-size:.85rem}
+.amp .light{font-size:.95rem;text-align:right;flex-shrink:0}
+.week{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:8px}
+.week>div{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;font-size:.75rem;color:var(--muted)}
+.week .stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;flex:1}
+.week .u{background:var(--line);border-radius:3px 3px 0 0}
+.week .s{background:#6b5a55}
+.legend{display:flex;gap:14px;font-size:.8rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}
+.wtable{width:100%;border-collapse:collapse;font-size:.95rem}
+.wtable th{color:var(--muted);font-weight:400;text-align:left;padding:4px 2px;border-bottom:1px solid #3a2e2c}
+.wtable td{padding:6px 2px;border-bottom:1px solid #2e2524}
+.wtable td.n,.wtable th.n{text-align:right;white-space:nowrap}
 /* Wochenfrage, Meldung */
 .wf{display:flex;flex-direction:column;gap:10px}
 .wf .q{font-size:1.1rem}
@@ -150,6 +196,13 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
       <h1>HD</h1>
       <div class="today" id="todayStat"></div>
     </div>
+    <div class="panel status" id="statusBox">
+      <div class="top"><span class="titel" id="stTitel"></span><span class="serie" id="stSerie" title="Tage am Stück"></span></div>
+      <div class="muted" id="stLevel"></div>
+      <div class="bar"><i id="stBar"></i></div>
+      <div class="barlabel"><span id="stPunkte"></span><span id="stFehlt"></span></div>
+      <div class="muted" id="stNext"></div>
+    </div>
     <div class="note" id="storageWarn" hidden>Dieser Browser erlaubt gerade kein Speichern. Was du übst, ist nach dem Schließen weg.</div>
     <div class="note" id="dataWarn" hidden></div>
     <div class="panel wf" id="wfCard" hidden>
@@ -162,6 +215,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <button class="btn" data-go="auswahl"><span class="ico">🎧</span>Üben</button>
     <button class="btn" data-go="diktatwahl"><span class="ico">📝</span>Diktat</button>
     <button class="btn" data-go="lueckewahl"><span class="ico">🧩</span>Lückensatz</button>
+    <button class="btn" data-go="spiele"><span class="ico">🎮</span>Spiele</button>
+    <button class="btn" data-go="fortschritt"><span class="ico">📈</span>Mein Fortschritt</button>
     <button class="btn" data-go="meine"><span class="ico">📒</span>Meine Wörter</button>
     <button class="btn" data-go="bericht"><span class="ico">📤</span>Bericht senden</button>
     <button class="btn" data-go="daten"><span class="ico">💾</span>Daten sichern</button>
@@ -283,6 +338,107 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <button class="btn" id="lNext" hidden><span class="ico">➡️</span>Nächster Satz</button>
   </section>
 
+  <!-- SPIELE -->
+  <section class="screen" id="spiele">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Spiele</h2>
+    <button class="btn" data-game="galgen"><span class="ico">🪢</span>Galgenmännchen</button>
+    <button class="btn" data-game="memory"><span class="ico">🃏</span>Silben-Memory</button>
+    <button class="btn" data-game="salat"><span class="ico">🔤</span>Buchstabensalat</button>
+    <div class="muted">Spiele bringen Punkte, zählen aber nicht für deine Stufen.</div>
+  </section>
+
+  <!-- SPIEL: AUSWAHL -->
+  <section class="screen" id="spielwahl">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2 id="swTitel"></h2>
+    <div class="label">Welten (mehrere möglich)</div>
+    <div class="chips" id="swWelten"></div>
+    <div class="label">Thema</div>
+    <div class="chips" id="swThema"></div>
+    <div class="count" id="swCount" aria-live="polite"></div>
+    <div class="warn" id="swWarn" aria-live="polite"></div>
+    <button class="btn primary" id="swStart">Los geht's</button>
+  </section>
+
+  <!-- GALGENMÄNNCHEN -->
+  <section class="screen" id="galgen">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Galgenmännchen</h2>
+    <div class="muted" id="gHint"></div>
+    <svg class="gallows" viewBox="0 0 170 170" aria-hidden="true">
+      <g stroke="#b3202a" stroke-width="4" fill="none" stroke-linecap="round">
+        <line x1="20" y1="160" x2="110" y2="160"/><line x1="45" y1="160" x2="45" y2="15"/>
+        <line x1="45" y1="15" x2="120" y2="15"/><line x1="120" y1="15" x2="120" y2="35"/>
+      </g>
+      <g stroke="#ece6e1" stroke-width="4" fill="none" stroke-linecap="round">
+        <circle class="part" cx="120" cy="50" r="15"/>
+        <line class="part" x1="120" y1="65" x2="120" y2="110"/>
+        <line class="part" x1="120" y1="78" x2="100" y2="95"/>
+        <line class="part" x1="120" y1="78" x2="140" y2="95"/>
+        <line class="part" x1="120" y1="110" x2="103" y2="138"/>
+        <line class="part" x1="120" y1="110" x2="137" y2="138"/>
+      </g>
+    </svg>
+    <div class="hword" id="gWord" aria-live="polite"></div>
+    <div class="muted" id="gMsg" aria-live="polite"></div>
+    <div class="keys" id="gKeys"></div>
+    <button class="btn" id="gNext" hidden><span class="ico">🔁</span>Neues Wort</button>
+  </section>
+
+  <!-- MEMORY -->
+  <section class="screen" id="memory">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Silben-Memory</h2>
+    <div class="muted">Finde die zwei Teile, die zusammen ein Wort ergeben.</div>
+    <div class="mem" id="mem"></div>
+    <div class="muted" id="memMsg" aria-live="polite"></div>
+    <button class="btn" id="memNew"><span class="ico">🔁</span>Neu mischen</button>
+  </section>
+
+  <!-- BUCHSTABENSALAT -->
+  <section class="screen" id="salat">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Buchstabensalat</h2>
+    <div class="chips" id="salatStufe"></div>
+    <div class="slots" id="sSlots" aria-label="Deine Lösung"></div>
+    <div class="tiles" id="sTiles" aria-label="Buchstaben"></div>
+    <div class="row">
+      <button class="btn small" id="sListen">🔊 Anhören</button>
+      <button class="btn small" id="sTip">💡 Tipp</button>
+    </div>
+    <div class="msg speechmsg" aria-live="polite"></div>
+    <div class="muted" id="sMsg" aria-live="polite"></div>
+    <div class="row" id="sCase" hidden>
+      <button class="btn small" data-case="gross">Groß am Anfang</button>
+      <button class="btn small" data-case="klein">klein am Anfang</button>
+    </div>
+    <button class="btn" id="sNext"><span class="ico">🔁</span>Neues Wort</button>
+  </section>
+
+  <!-- FORTSCHRITT -->
+  <section class="screen" id="fortschritt">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Mein Fortschritt</h2>
+    <div class="panel" id="fAmpel"></div>
+    <div class="panel">
+      <div class="head"><span>Übungszeit, letzte 7 Tage</span><b id="fWocheSumme" style="white-space:nowrap"></b></div>
+      <div class="week" id="fWoche"></div>
+      <div class="legend"><span><i style="background:var(--line)"></i>Üben <span id="fSumU"></span></span><span><i style="background:#6b5a55"></i>Spiele <span id="fSumS"></span></span></div>
+    </div>
+    <div class="panel" id="fDiktat"></div>
+    <div class="panel">
+      <div class="muted" style="margin-bottom:6px">Deine Wörter (zuerst die, die oft falsch waren)</div>
+      <table class="wtable"><thead><tr><th>Wort</th><th class="n">geübt</th><th class="n">falsch</th><th class="n">zuletzt</th></tr></thead><tbody id="fWoerter"></tbody></table>
+      <div class="muted" id="fWoerterLeer"></div>
+      <button class="btn small" id="fAlle" hidden>Alle Wörter anzeigen</button>
+    </div>
+    <div class="panel">
+      <div class="muted" style="margin-bottom:6px">Deine Titelreihe</div>
+      <div class="chips" id="fTitel"></div>
+    </div>
+  </section>
+
   <!-- MEINE WÖRTER -->
   <section class="screen" id="meine">
     <button class="back" data-back>‹ Zurück</button>
@@ -338,8 +494,8 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.3.0";
-var SCHEMA_VERSION = 3;
+var APP_VERSION = "0.4.0";
+var SCHEMA_VERSION = 4;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
@@ -360,8 +516,22 @@ var CONFIG = {
   tempoMin: 0.5, tempoMax: 1.5, tempoStandard: 0.9,
   berichtTage: 7,
   zeitSpeichernSekunden: 15,
-  wochenfrageMaxZeichen: 300
+  wochenfrageMaxZeichen: 300,
+  // Punkte (keine Abzüge). Level L ab levelBasis·L·(L−1) Punkten: 2 → 100, 3 → 300, 4 → 600, 5 → 1000
+  punkte: { wortRichtig: 10, wortHilfe: 3, wortFalsch: 1, lueckeRichtig: 5, lueckeFalsch: 1, diktatWort: 2, diktatPapier: 20,
+    galgenGewonnen: 20, galgenVerloren: 5, memory: 20, salat: { 1: 10, 2: 15, 3: 20 }, wochenfrage: 20 },
+  levelBasis: 50,
+  titelAbLevel: [1, 5, 10],
+  serieMinSekunden: 300,      // Tag zählt für die Serie ab 5 Min. Üben/Diktat/Lückensatz (Spiele nicht)
+  galgenFehlversuche: 6,
+  memoryPaare: 6,
+  spielMin: { galgen: 1, salat: 1, memory: 6 }
 };
+var TITELREIHEN = {
+  matrose: ["Leichtmatrose", "Steuermann", "Kapitän"],
+  fechter: ["Knappe", "Fechter", "Fechtmeister"]
+};
+var SPIELNAMEN = { galgen: "Galgenmännchen", memory: "Silben-Memory", salat: "Buchstabensalat" };
 
 var KATEGORIEN = ["Groß/klein", "Doppelkonsonant", "ck/k", "tz/z", "ie/i", "Dehnungs-h", "Doppelvokal",
   "s/ss/ß", "Endlaut", "Umlaut", "fehlender Buchstabe", "zusätzlicher Buchstabe", "vertauschte Buchstaben", "Sonstige"];
@@ -1168,9 +1338,10 @@ var storageOk = true;
 function defaultAuswahl() { return { welten: ["alle"], thema: "egal", silben: "egal" }; }
 function emptyState() {
   return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
-    settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle" },
+    settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle",
+      spielAuswahl: defaultAuswahl(), salatStufe: 1, titelreihe: "matrose" },
     versuche: [], meineWoerter: [], zeiten: {}, stufen: {}, stufenLog: [], diktate: [], wochenfragen: [],
-    wochenfrageSpaeter: "", letzteMeldung: "" };
+    wochenfrageSpaeter: "", letzteMeldung: "", spiele: [], levelGesehen: null };
 }
 function clampRate(r) {
   r = Number(r);
@@ -1200,6 +1371,10 @@ function sanitize(obj) {
   st.settings.auswahl = cleanAuswahl(set.auswahl);
   if (set.diktatModus === "papier") st.settings.diktatModus = "papier";
   if (isStr(set.paar)) st.settings.paar = set.paar;
+  st.settings.spielAuswahl = cleanAuswahl(set.spielAuswahl);
+  st.settings.spielAuswahl.silben = "egal";
+  if ([1, 2, 3].indexOf(set.salatStufe) >= 0) st.settings.salatStufe = set.salatStufe;
+  if (TITELREIHEN[set.titelreihe]) st.settings.titelreihe = set.titelreihe;
   obj.versuche.forEach(function (v) {
     if (!v || !isStr(v.wort) || typeof v.richtig !== "boolean" || !isStr(v.tag) || !DAY_RE.test(v.tag)) return;
     var kat = Array.isArray(v.kategorien) ? v.kategorien.filter(function (k) { return KATEGORIEN.indexOf(k) >= 0; })
@@ -1248,6 +1423,7 @@ function sanitize(obj) {
     if (d && isStr(d.id) && isStr(d.tag) && DAY_RE.test(d.tag)) {
       st.diktate.push({ id: d.id, titel: isStr(d.titel) ? d.titel : d.id, tag: d.tag, zeit: isStr(d.zeit) ? d.zeit : "",
         modus: d.modus === "papier" ? "papier" : "app", fehler: Number(d.fehler) || 0, woerter: Number(d.woerter) || 0,
+        richtig: typeof d.richtig === "number" ? d.richtig : Math.max(0, (Number(d.woerter) || 0) - (Number(d.fehler) || 0)),
         eingabe: isStr(d.eingabe) ? d.eingabe : "" });
     }
   });
@@ -1258,6 +1434,13 @@ function sanitize(obj) {
   });
   if (isStr(obj.wochenfrageSpaeter)) st.wochenfrageSpaeter = obj.wochenfrageSpaeter;
   if (isStr(obj.letzteMeldung)) st.letzteMeldung = obj.letzteMeldung;
+  (Array.isArray(obj.spiele) ? obj.spiele : []).forEach(function (g) {
+    if (g && SPIELNAMEN[g.spiel] && isStr(g.ergebnis) && isStr(g.tag) && DAY_RE.test(g.tag)) {
+      st.spiele.push({ spiel: g.spiel, ergebnis: g.ergebnis, tag: g.tag, zeit: isStr(g.zeit) ? g.zeit : "",
+        stufe: [1, 2, 3].indexOf(g.stufe) >= 0 ? g.stufe : 1, wort: isStr(g.wort) ? g.wort : "" });
+    }
+  });
+  if (typeof obj.levelGesehen === "number") st.levelGesehen = obj.levelGesehen;
   return { state: st };
 }
 function loadState() {
@@ -1620,7 +1803,7 @@ function onlyWordHint(w) {
 
 // ================= Zeiterfassung (5.6) =================
 var lastTick = 0, lastActivity = 0, unsavedSeconds = 0;
-var ZEIT_SCREENS = { ueben: "ueben", diktat: "ueben", luecke: "ueben" };
+var ZEIT_SCREENS = { ueben: "ueben", diktat: "ueben", luecke: "ueben", galgen: "spiel", memory: "spiel", salat: "spiel" };
 function activeScreen() { var s = document.querySelector(".screen.active"); return s ? s.id : ""; }
 function zeitArt() { return ZEIT_SCREENS[activeScreen()] || null; }
 function markActivity() { lastActivity = now().getTime(); }
@@ -1652,6 +1835,8 @@ function show(id) {
   if (id === "diktatwahl") renderDiktatWahl();
   if (id === "lueckewahl") renderLueckeWahl();
   if (id === "meine") renderMeine();
+  if (id === "spielwahl") renderSpielwahl();
+  if (id === "fortschritt") renderFortschritt();
   if (id === "bericht") renderReport();
   if (id === "daten") renderData();
 }
@@ -1709,6 +1894,8 @@ function renderStart() {
       " in den Inhalten fehlerhaft und übersprungen: " + content.errors.join("; ");
   }
   renderWochenfrage();
+  renderStatus();
+  checkLevelUp();
 }
 function wochenfrageAktuell() {
   if (!content.wochenfragen.length) return null;
@@ -1728,7 +1915,8 @@ function sendWochenfrage() {
   if (!a) { $("wfMsg").textContent = "Schreib zuerst eine Antwort – oder tipp auf „Später“."; return; }
   state.wochenfragen.push({ woche: isoWeek(now()), id: f.id, frage: f.frage, antwort: a, tag: dayKey(now()) });
   saveState(); $("wfInput").value = "";
-  toast("Danke! Deine Antwort steht im nächsten Bericht.");
+  toast("Danke! Deine Antwort steht im nächsten Bericht. +" + CONFIG.punkte.wochenfrage + " Punkte");
+  checkLevelUp();
   renderWochenfrage();
 }
 function laterWochenfrage() { state.wochenfrageSpaeter = dayKey(now()); saveState(); renderWochenfrage(); }
@@ -1937,6 +2125,7 @@ function showDone(rs, events, kind) {
   var wrong = uniq(rs.filter(function (v) { return !zaehltRichtig(v); }).map(function (v) { return v.wort; }));
   if (wrong.length && kind !== "luecke") ul.appendChild(el("li", "", "Kommen bald wieder: " + wrong.join(", ")));
   var notes = showEvents(events);
+  checkLevelUp();
   $("doneNote").hidden = !notes.length; $("doneNote").textContent = notes.join(" ");
   lastKind = kind;
   show("fertig");
@@ -2016,11 +2205,11 @@ function diktatFertig() {
   if (!dRun) return;
   var t = dRun.text, d = now();
   if (dRun.modus === "papier") {
-    state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "papier", fehler: 0, woerter: tokens(t.text).length, eingabe: "" });
+    state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "papier", fehler: 0, woerter: tokens(t.text).length, richtig: 0, eingabe: "" });
     saveState();
     $("deTitel").textContent = t.titel;
     $("deScore").textContent = "Auf Papier geschrieben";
-    $("deText").textContent = "Vergleich selbst mit dem Text. Dann mach ein Foto und schick es an Mama.";
+    $("deText").textContent = "Vergleich selbst mit dem Text. Dann mach ein Foto und schick es an Mama. +" + CONFIG.punkte.diktatPapier + " Punkte";
     var box = $("deAnzeige"); box.textContent = t.text;
     $("deNote").hidden = true;
     dRun = null;
@@ -2031,7 +2220,8 @@ function diktatFertig() {
   if (!norm(input)) { $("dMsg").textContent = "Schreib zuerst den Text."; return; }
   var res = compareDiktat(t.text, input);
   var prev = state.diktate.filter(function (x) { return x.id === t.id && x.modus === "app"; }).slice(-1)[0];
-  state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "app", fehler: res.fehler, woerter: res.woerter, eingabe: norm(input) });
+  state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "app", fehler: res.fehler, woerter: res.woerter,
+    richtig: res.items.filter(function (it) { return it.status === "ok"; }).length, eingabe: norm(input) });
   res.items.forEach(function (it) {
     if (!it.soll) return;
     var w = findWord(it.soll), ok = it.status === "ok";
@@ -2056,6 +2246,7 @@ function diktatFertig() {
   });
   var wrong = uniq(res.items.filter(function (it) { return it.soll && it.status !== "ok"; }).map(function (it) { return it.soll; }));
   var notes = showEvents(dRun.events);
+  checkLevelUp();
   var txt = wrong.length ? "Diese Wörter kommen in deine Fehlerwörter: " + wrong.join(", ") + "." : "Kein einziger Fehler!";
   $("deNote").hidden = false; $("deNote").textContent = txt + (notes.length ? " " + notes.join(" ") : "");
   dRun = null;
@@ -2149,6 +2340,360 @@ function nextLuecke() {
   showLuecke();
 }
 
+// ================= Punkte, Level, Serie, Titel (5.4) =================
+// Punkte werden immer aus dem Verlauf berechnet (stimmen so auch nach Import).
+function punkte() {
+  var P = CONFIG.punkte, sum = 0;
+  state.versuche.forEach(function (v) {
+    if (v.quelle === "uebung") sum += zaehltRichtig(v) ? P.wortRichtig : (v.richtig ? P.wortHilfe : P.wortFalsch);
+    else if (v.quelle === "luecke") sum += v.richtig ? P.lueckeRichtig : P.lueckeFalsch;
+  });
+  state.diktate.forEach(function (d) { sum += d.modus === "app" ? d.richtig * P.diktatWort : P.diktatPapier; });
+  state.spiele.forEach(function (g) {
+    if (g.spiel === "galgen") sum += g.ergebnis === "gewonnen" ? P.galgenGewonnen : P.galgenVerloren;
+    if (g.spiel === "memory") sum += P.memory;
+    if (g.spiel === "salat") sum += P.salat[g.stufe] || 0;
+  });
+  sum += state.wochenfragen.length * P.wochenfrage;
+  return sum;
+}
+function levelStart(L) { return CONFIG.levelBasis * L * (L - 1); }
+function titelIndex(L) { var i = 0; CONFIG.titelAbLevel.forEach(function (ab, k) { if (L >= ab) i = k; }); return i; }
+function levelInfo(p) {
+  var L = 1;
+  while (levelStart(L + 1) <= p) L++;
+  var reihe = TITELREIHEN[state.settings.titelreihe] || TITELREIHEN.matrose, ti = titelIndex(L);
+  return { level: L, punkte: p, start: levelStart(L), naechste: levelStart(L + 1), fehlt: levelStart(L + 1) - p,
+    titel: reihe[ti], naechsterTitel: ti + 1 < reihe.length ? reihe[ti + 1] : "", naechsterTitelLevel: CONFIG.titelAbLevel[ti + 1] || 0 };
+}
+function shiftDay(key, n) { var d = new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, Number(key.slice(8, 10)) + n); return dayKey(d); }
+function serie() {
+  function zaehlt(k) { return state.zeiten[k] && state.zeiten[k].ueben >= CONFIG.serieMinSekunden; }
+  var today = dayKey(now()), heute = zaehlt(today), k = heute ? today : shiftDay(today, -1), n = 0;
+  while (zaehlt(k) && n < 3660) { n++; k = shiftDay(k, -1); }
+  return { tage: n, heute: heute };
+}
+function renderStatus() {
+  var li = levelInfo(punkte()), se = serie();
+  $("stTitel").textContent = li.titel;
+  $("stSerie").textContent = "🔥 " + plural(se.tage, "Tag", "Tage");
+  $("stLevel").textContent = "Level " + li.level + (se.heute ? "" : (se.tage ? " · Heute noch 5 Minuten üben, dann hält die Serie." : " · Ab 5 Minuten Üben startet deine Serie."));
+  $("stBar").style.width = Math.round((li.punkte - li.start) / (li.naechste - li.start) * 100) + "%";
+  $("stPunkte").textContent = li.punkte + " Punkte";
+  $("stFehlt").textContent = "noch " + li.fehlt + " bis Level " + (li.level + 1);
+  $("stNext").textContent = li.naechsterTitel ? "⚓ Nächster Titel: " + li.naechsterTitel + " (Level " + li.naechsterTitelLevel + ")" : "⚓ Höchster Titel erreicht";
+}
+function checkLevelUp() {
+  var li = levelInfo(punkte());
+  if (state.levelGesehen === null) { state.levelGesehen = li.level; saveState(); return; }
+  if (li.level <= state.levelGesehen) return;
+  var alterTitel = TITELREIHEN[state.settings.titelreihe][titelIndex(state.levelGesehen)];
+  state.levelGesehen = li.level; saveState();
+  modalQueue.push({ title: "Level " + li.level + " erreicht", text: li.punkte + " Punkte gesammelt." +
+    (li.titel !== alterTitel ? " Neuer Titel: " + li.titel + "." : " Nächstes Level bei " + li.naechste + " Punkten.") });
+  if ($("overlay").hidden) nextModal();
+}
+
+// ================= Spiele (4.6) =================
+var currentGame = "galgen";
+function gameKey(w) { return Array.from(w.toLowerCase()).sort().join(""); }
+// Wörter, die im Salat eine zweite gültige Lösung hätten (Anagramm oder nur Groß/klein verschieden)
+function salatGesperrt() {
+  var byKey = {}, res = {};
+  allWords(false).forEach(function (w) { var k = gameKey(w.wort); (byKey[k] = byKey[k] || []).push(w.wort); });
+  Object.keys(byKey).forEach(function (k) { if (byKey[k].length > 1) byKey[k].forEach(function (w) { res[w] = true; }); });
+  return res;
+}
+function gamePool(game, a) {
+  var words = filterWords(a).filter(function (w) { return w.wort.indexOf("-") < 0 && w.welt !== "diktat"; });
+  if (game === "memory") return words.filter(function (w) { return silbenOf(w) >= 2; });
+  if (game === "salat") { var sp = salatGesperrt(); return words.filter(function (w) { return Array.from(w.wort).length >= 3 && !sp[w.wort]; }); }
+  return words;
+}
+function memoryPairs(words, n) {
+  var out = [], seen = {};
+  shuffle(words).forEach(function (w) {
+    if (out.length >= n) return;
+    var parts = w.silben.split("|"), a = parts[0], b = parts.slice(1).join("");
+    if (seen[a.toLowerCase()] || seen[b.toLowerCase()] || a.toLowerCase() === b.toLowerCase()) return;
+    seen[a.toLowerCase()] = seen[b.toLowerCase()] = true;
+    out.push({ wort: w.wort, a: a, b: b });
+  });
+  return out;
+}
+function recordGame(g) {
+  var d = now();
+  g.tag = dayKey(d); g.zeit = d.toISOString();
+  state.spiele.push(g);
+  saveState();
+  checkLevelUp();
+}
+function pickOther(pool, cur) {
+  var cands = pool.length > 1 && cur ? pool.filter(function (w) { return w.wort !== cur.wort; }) : pool;
+  return cands[Math.floor(Math.random() * cands.length)];
+}
+function renderSpielwahl() {
+  var a = state.settings.spielAuswahl;
+  $("swTitel").textContent = SPIELNAMEN[currentGame];
+  var cw = $("swWelten"); cw.textContent = "";
+  cw.appendChild(chip("Alle gemischt", "data-w", "alle", a.welten.indexOf("alle") >= 0));
+  content.welten.forEach(function (w) { cw.appendChild(chip(w.emoji + " " + w.name, "data-w", w["kürzel"], a.welten.indexOf(w["kürzel"]) >= 0)); });
+  cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
+  var ct = $("swThema"); ct.textContent = "";
+  ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
+  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
+  var warn = "", n = 0, min = CONFIG.spielMin[currentGame];
+  if (!a.welten.length) warn = "Wähl mindestens eine Welt.";
+  else {
+    var pool = gamePool(currentGame, a);
+    n = currentGame === "memory" ? memoryPairs(pool, 999).length : pool.length;
+    if (n < min) warn = "Zu wenige " + (currentGame === "memory" ? "verschiedene Wörter mit zwei oder mehr Silben" : "Wörter") +
+      " (mindestens " + min + "). Wähl mehr Welten oder „egal“.";
+  }
+  $("swCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") : "";
+  $("swWarn").textContent = warn;
+  $("swStart").disabled = !!warn;
+}
+function onSpielwahlClick(ev) {
+  var b = ev.target.closest ? ev.target.closest(".chip") : null;
+  if (!b) return;
+  var a = state.settings.spielAuswahl;
+  if (b.hasAttribute("data-w")) {
+    var w = b.getAttribute("data-w");
+    if (w === "alle") a.welten = a.welten.indexOf("alle") >= 0 ? [] : ["alle"];
+    else {
+      a.welten = a.welten.filter(function (x) { return x !== "alle"; });
+      var i = a.welten.indexOf(w);
+      if (i >= 0) a.welten.splice(i, 1); else a.welten.push(w);
+    }
+  }
+  if (b.hasAttribute("data-t")) a.thema = b.getAttribute("data-t");
+  saveState();
+  renderSpielwahl();
+}
+function startGame() {
+  if ($("swStart").disabled) return;
+  show(currentGame);
+  if (currentGame === "galgen") galgenNeu();
+  if (currentGame === "memory") memoryNeu();
+  if (currentGame === "salat") salatNeu();
+}
+
+// --- Galgenmännchen ---
+var GALGEN_BUCHSTABEN = "abcdefghijklmnopqrstuvwxyzäöüß";
+var G = null;
+function galgenNeu() {
+  var pool = gamePool("galgen", state.settings.spielAuswahl);
+  var e = pickOther(pool, G && G.entry);
+  G = { entry: e, lower: Array.from(e.wort).map(function (c) { return c.toLowerCase(); }), guessed: {}, misses: 0, done: false };
+  $("gHint").textContent = "Hinweis: " + (e.hinweis || (e.eigen ? "Eins deiner eigenen Wörter." : "–"));
+  var box = $("gKeys"); box.textContent = "";
+  Array.from(GALGEN_BUCHSTABEN).forEach(function (l) { var b = el("button", "key", l); b.setAttribute("data-key", l); box.appendChild(b); });
+  $("gNext").hidden = true;
+  galgenRender();
+}
+function galgenShown() {
+  return Array.from(G.entry.wort).map(function (c, i) { return G.guessed[G.lower[i]] || GALGEN_BUCHSTABEN.indexOf(G.lower[i]) < 0 ? c : "_"; }).join("");
+}
+function galgenRender() {
+  var shown = galgenShown();
+  $("gWord").textContent = shown;
+  $$("svg.gallows .part").forEach(function (part, i) { part.classList.toggle("on", i < G.misses); });
+  var won = shown === G.entry.wort, lost = G.misses >= CONFIG.galgenFehlversuche;
+  if ((won || lost) && !G.done) {
+    G.done = true;
+    recordGame({ spiel: "galgen", ergebnis: won ? "gewonnen" : "verloren", stufe: 1, wort: G.entry.wort });
+    $$("#gKeys .key").forEach(function (k) { k.disabled = true; });
+    $("gNext").hidden = false;
+  }
+  if (won) $("gMsg").textContent = "Geschafft! +" + CONFIG.punkte.galgenGewonnen + " Punkte";
+  else if (lost) { $("gWord").textContent = G.entry.wort; $("gMsg").textContent = "Leider verloren. Das Wort war: " + G.entry.wort + " · +" + CONFIG.punkte.galgenVerloren + " Punkte fürs Mitmachen"; }
+  else $("gMsg").textContent = "Noch " + (CONFIG.galgenFehlversuche - G.misses) + " Versuche";
+}
+function galgenRate(l) {
+  if (!G || G.done || G.guessed[l] || GALGEN_BUCHSTABEN.indexOf(l) < 0) return;
+  G.guessed[l] = true;
+  var hit = G.lower.indexOf(l) >= 0;
+  if (!hit) G.misses++;
+  var key = document.querySelector('#gKeys [data-key="' + l + '"]');
+  if (key) { key.disabled = true; if (hit) key.classList.add("hit"); }
+  galgenRender();
+}
+
+// --- Silben-Memory ---
+var M = null;
+function memoryNeu() {
+  var pairs = memoryPairs(gamePool("memory", state.settings.spielAuswahl), CONFIG.memoryPaare);
+  var cards = [];
+  pairs.forEach(function (pr, i) { cards.push({ t: pr.a, id: i }); cards.push({ t: pr.b, id: i }); });
+  cards = shuffle(cards);
+  M = { pairs: pairs, open: [], found: 0, lock: false, zuege: 0, done: false };
+  var box = $("mem"); box.textContent = "";
+  cards.forEach(function (c) {
+    var b = el("button", "card"); b.setAttribute("data-id", c.id); b.setAttribute("aria-label", "Karte");
+    b.appendChild(el("span", "face", c.t)); box.appendChild(b);
+  });
+  $("memMsg").textContent = "Gefunden: 0 von " + pairs.length;
+}
+function memoryFlip(b) {
+  if (!M || M.lock || M.done || b.classList.contains("open") || b.classList.contains("done")) return;   // Doppeltippen: kein Fehler
+  b.classList.add("open"); b.setAttribute("aria-label", b.textContent);
+  M.open.push(b);
+  if (M.open.length < 2) return;
+  M.zuege++;
+  var a = M.open[0], c = M.open[1];
+  if (a.getAttribute("data-id") === c.getAttribute("data-id")) {
+    a.classList.remove("open"); c.classList.remove("open"); a.classList.add("done"); c.classList.add("done");
+    M.found++; M.open = [];
+    var w = M.pairs[Number(a.getAttribute("data-id"))].wort;
+    if (M.found === M.pairs.length) {
+      M.done = true;
+      recordGame({ spiel: "memory", ergebnis: "geschafft", stufe: 1, wort: "" });
+      $("memMsg").textContent = "Alle gefunden in " + M.zuege + " Zügen! +" + CONFIG.punkte.memory + " Punkte";
+    } else $("memMsg").textContent = "Gefunden: " + M.found + " von " + M.pairs.length + " · „" + w + "“";
+  } else {
+    M.lock = true;
+    setTimeout(function () {
+      a.classList.remove("open"); c.classList.remove("open");
+      a.setAttribute("aria-label", "Karte"); c.setAttribute("aria-label", "Karte");
+      M.open = []; M.lock = false;
+    }, 900);
+  }
+}
+
+// --- Buchstabensalat ---
+var S = null;
+function salatNeu() {
+  var pool = gamePool("salat", state.settings.spielAuswahl);
+  var e = pickOther(pool, S && S.entry);
+  S = { entry: e, scored: false };
+  salatSetup();
+}
+// Gleiches Wort in der aktuellen Stufe neu mischen (auch beim Stufenwechsel)
+function salatSetup() {
+  var stufe = state.settings.salatStufe, w = S.entry;
+  var low = Array.from(w.wort.toLowerCase());
+  S.fixed = stufe === 2 ? low[0] : "";
+  var silben = w.eigen ? [w.wort] : w.silben.split("|");
+  var raw = stufe === 1 && silben.length > 1 ? silben.map(function (x) { return x.toLowerCase(); }) : low.slice(S.fixed ? 1 : 0);
+  var mixed = raw.slice(), tries = 0;
+  do { mixed = shuffle(mixed); tries++; } while (mixed.join("") === raw.join("") && tries < 20 && raw.length > 1);
+  S.pieces = mixed.map(function (t, i) { return { t: t, id: i, used: false }; });
+  S.placed = []; S.awaitCase = false;
+  $("sMsg").textContent = ""; $("sCase").hidden = true;
+  salatRender();
+}
+function salatRender() {
+  var cs = $("salatStufe"); cs.textContent = "";
+  [["1", "Silben"], ["2", "Buchstaben + Start"], ["3", "Buchstaben"]].forEach(function (x) {
+    cs.appendChild(chip(x[1], "data-st", x[0], String(state.settings.salatStufe) === x[0]));
+  });
+  var slots = $("sSlots"); slots.textContent = "";
+  if (S.fixed) { var f = el("button", "tile fixed", S.fixed); f.disabled = true; slots.appendChild(f); }
+  S.placed.forEach(function (pc) { var b = el("button", "tile placed", pc.t); b.setAttribute("data-back-id", pc.id); slots.appendChild(b); });
+  var tiles = $("sTiles"); tiles.textContent = "";
+  S.pieces.forEach(function (pc) { if (!pc.used) { var b = el("button", "tile", pc.t); b.setAttribute("data-id", pc.id); tiles.appendChild(b); } });
+}
+function salatCheck() {
+  if (S.placed.length !== S.pieces.length) return;
+  var guess = S.fixed + S.placed.map(function (pc) { return pc.t; }).join("");
+  if (guess === S.entry.wort.toLowerCase()) {
+    S.awaitCase = true;
+    var plus = "";
+    if (!S.scored) {
+      S.scored = true;
+      recordGame({ spiel: "salat", ergebnis: "geloest", stufe: state.settings.salatStufe, wort: S.entry.wort });
+      plus = " +" + CONFIG.punkte.salat[state.settings.salatStufe] + " Punkte.";
+    }
+    $("sMsg").textContent = "Reihenfolge stimmt!" + plus + " Groß oder klein am Anfang?";
+    $("sCase").hidden = false;
+  } else {
+    $("sMsg").textContent = "Noch nicht ganz. Tipp auf ein Plättchen oben, um es zurückzulegen.";
+  }
+}
+function salatCase(gross) {
+  var w = S.entry.wort, nomen = /^[A-ZÄÖÜ]/.test(w);
+  $("sCase").hidden = true;
+  $("sMsg").textContent = gross === nomen ? "Richtig: " + w : "Fast! Richtig ist „" + w + "“" + (nomen ? " – ein Nomen, also groß." : " – kein Nomen, also klein.");
+}
+
+// ================= Mein Fortschritt (4.7) =================
+var WOCHENTAGE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+var fAlleZeigen = false;
+function wortStatistik() {
+  var m = {};
+  state.versuche.forEach(function (v) {
+    if (v.quelle === "luecke") return;
+    var e = m[v.wort] = m[v.wort] || { wort: v.wort, n: 0, falsch: 0, zuletzt: "" };
+    e.n++; if (!zaehltRichtig(v)) e.falsch++;
+    if (v.tag > e.zuletzt) e.zuletzt = v.tag;
+  });
+  return Object.keys(m).map(function (k) { return m[k]; })
+    .sort(function (a, b) { return b.falsch - a.falsch || b.n - a.n || a.wort.localeCompare(b.wort); });
+}
+function renderFortschritt() {
+  var am = ampel(), box = $("fAmpel"); box.textContent = "";
+  THEMEN.concat([VERWECHSLUNG]).forEach(function (t) {
+    var row = el("div", "amp");
+    var left = el("span", "name", t); left.appendChild(el("small", "", "Stufe " + stufeInfo(t).stufe));
+    row.appendChild(left);
+    var a = am[t], n = state.versuche.filter(function (v) { return counted(v) && v.themen.indexOf(t) >= 0; }).length;
+    row.appendChild(el("span", "light", a ? (a.stufe === "sicher" ? "🟢 sicher" : a.stufe === "wackelig" ? "🟡 wackelig" : "🟠 mehr üben")
+      : "⚪ erst " + n + " von " + CONFIG.ampelMinVersuche));
+    box.appendChild(row);
+  });
+  // Woche
+  var today = dayKey(now()), days = [], max = 1, sumU = 0, sumS = 0;
+  for (var i = 6; i >= 0; i--) {
+    var k = shiftDay(today, -i), z = state.zeiten[k] || { ueben: 0, spiel: 0 };
+    var u = Math.round(z.ueben / 60), sp = Math.round(z.spiel / 60);
+    days.push({ k: k, u: u, s: sp }); max = Math.max(max, u + sp); sumU += u; sumS += sp;
+  }
+  var wk = $("fWoche"); wk.textContent = "";
+  days.forEach(function (d) {
+    var col = el("div"); col.setAttribute("data-day", d.k); col.setAttribute("data-min", d.u + d.s);
+    var stack = el("div", "stack");
+    var bs = el("div", "s"); bs.style.height = (d.s / max * 100) + "%";
+    var bu = el("div", "u"); bu.style.height = (d.u / max * 100) + "%";
+    stack.appendChild(bu); stack.appendChild(bs);
+    col.appendChild(el("span", "", String(d.u + d.s)));
+    col.appendChild(stack);
+    var dt = new Date(Number(d.k.slice(0, 4)), Number(d.k.slice(5, 7)) - 1, Number(d.k.slice(8, 10)));
+    col.appendChild(el("span", "", WOCHENTAGE[dt.getDay()]));
+    wk.appendChild(col);
+  });
+  $("fWocheSumme").textContent = (sumU + sumS) + " Min.";
+  $("fSumU").textContent = sumU + " Min."; $("fSumS").textContent = sumS + " Min.";
+  // Damals und heute
+  var dk = $("fDiktat"); dk.textContent = "";
+  dk.appendChild(el("div", "muted", "Damals und heute: Fehler im Diktat"));
+  var apps = state.diktate.filter(function (d) { return d.modus === "app"; });
+  if (!apps.length) dk.appendChild(el("div", "", "Noch kein Diktat in der App geschrieben."));
+  else {
+    var cmp = el("div", "compare"); cmp.style.marginTop = "8px";
+    [apps[0], apps[apps.length - 1]].slice(0, apps.length > 1 ? 2 : 1).forEach(function (d, idx) {
+      var c = el("div");
+      c.appendChild(el("div", "big", String(d.fehler)));
+      c.appendChild(el("div", "muted", (idx === 0 ? "erstes: " : "letztes: ") + d.titel + ", " + fmtKey(d.tag) + " · " + d.woerter + " Wörter"));
+      cmp.appendChild(c);
+    });
+    dk.appendChild(cmp);
+  }
+  // Wörter
+  var ws = wortStatistik(), tb = $("fWoerter"); tb.textContent = "";
+  (fAlleZeigen ? ws : ws.slice(0, 15)).forEach(function (w) {
+    var tr = el("tr");
+    tr.appendChild(el("td", "", w.wort)); tr.appendChild(el("td", "n", String(w.n)));
+    tr.appendChild(el("td", "n", String(w.falsch))); tr.appendChild(el("td", "n", fmtKey(w.zuletzt)));
+    tb.appendChild(tr);
+  });
+  $("fWoerterLeer").textContent = ws.length ? "" : "Noch keine Wörter geübt.";
+  $("fAlle").hidden = fAlleZeigen || ws.length <= 15;
+  // Titelreihe
+  var ft = $("fTitel"); ft.textContent = "";
+  Object.keys(TITELREIHEN).forEach(function (k) { ft.appendChild(chip(TITELREIHEN[k].join(" → "), "data-titel", k, state.settings.titelreihe === k)); });
+}
+
 // ================= Meine Wörter =================
 function renderMeine() {
   var ul = $("meineList"); ul.textContent = "";
@@ -2226,6 +2771,10 @@ function reportText() {
     lines.push("");
     lines.push(hang.length ? "Wörter, die noch hängen:\n" + hang.join(", ") : "Keine Wörter, die noch hängen.");
   }
+  var gs = state.spiele.filter(function (g) { return inP(g.tag); });
+  var ssec = zeitSekunden(startKey, endKey, "spiel");
+  if (gs.length || ssec >= 1) lines.push("", "Spielzeit: " + (ssec < 30 ? "unter 1 Minute" : plural(Math.round(ssec / 60), "Minute", "Minuten")) +
+    " · " + plural(gs.length, "Spiel", "Spiele") + " (zählen nicht für die Stufen)");
   var log = state.stufenLog.filter(function (l) { return inP(l.tag); });
   if (log.length) {
     lines.push("", "Stufen:");
@@ -2241,6 +2790,8 @@ function reportText() {
   state.wochenfragen.filter(function (f) { return inP(f.tag); }).forEach(function (f) {
     lines.push("", "Wochenfrage: " + f.frage, "„" + f.antwort + "“");
   });
+  var li = levelInfo(punkte()), se = serie();
+  lines.push("", "Level " + li.level + " · " + li.titel + " · 🔥 " + plural(se.tage, "Tag", "Tage") + " · " + li.punkte + " Punkte");
   lines.push("", "HD · Version " + APP_VERSION);
   return lines.join("\n");
 }
@@ -2433,6 +2984,61 @@ function wire() {
   });
   $("lNext").addEventListener("click", nextLuecke);
   $("lSpeak").addEventListener("click", function () { var l = currentLuecke(); if (l) speak(lueckeSpokenText(l)); });
+  // Spiele
+  $("spiele").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-game]") : null;
+    if (!b) return;
+    currentGame = b.getAttribute("data-game"); show("spielwahl");
+  });
+  $("spielwahl").addEventListener("click", onSpielwahlClick);
+  $("swStart").addEventListener("click", startGame);
+  $("gKeys").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-key]") : null;
+    if (b) galgenRate(b.getAttribute("data-key"));
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (activeScreen() !== "galgen" || ev.ctrlKey || ev.metaKey || ev.altKey || !ev.key || ev.key.length !== 1) return;
+    var l = ev.key.toLowerCase();
+    if (GALGEN_BUCHSTABEN.indexOf(l) >= 0) { ev.preventDefault(); galgenRate(l); }
+  });
+  $("gNext").addEventListener("click", galgenNeu);
+  $("mem").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest(".card") : null;
+    if (b) memoryFlip(b);
+  });
+  $("memNew").addEventListener("click", memoryNeu);
+  $("sTiles").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-id]") : null;
+    if (!b || !S || S.awaitCase) return;
+    var pc = S.pieces[Number(b.getAttribute("data-id"))]; if (pc.used) return;
+    pc.used = true; S.placed.push(pc); salatRender(); salatCheck();
+  });
+  $("sSlots").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-back-id]") : null;
+    if (!b || !S || S.awaitCase) return;
+    var id = Number(b.getAttribute("data-back-id"));
+    S.placed = S.placed.filter(function (pc) { return pc.id !== id; });
+    S.pieces[id].used = false; $("sMsg").textContent = ""; salatRender();
+  });
+  $("salatStufe").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-st]") : null;
+    if (!b || !S) return;
+    state.settings.salatStufe = Number(b.getAttribute("data-st")); saveState(); salatSetup();
+  });
+  $("sCase").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-case]") : null;
+    if (b) salatCase(b.getAttribute("data-case") === "gross");
+  });
+  $("sListen").addEventListener("click", function () { if (S) speak(spokenText(S.entry)); });
+  $("sTip").addEventListener("click", function () { if (S) $("sMsg").textContent = "Tipp: " + (S.entry.hinweis || "Eins deiner eigenen Wörter."); });
+  $("sNext").addEventListener("click", salatNeu);
+  // Fortschritt
+  $("fAlle").addEventListener("click", function () { fAlleZeigen = true; renderFortschritt(); });
+  $("fTitel").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-titel]") : null;
+    if (!b) return;
+    state.settings.titelreihe = b.getAttribute("data-titel"); saveState(); renderFortschritt();
+  });
   // Wochenfrage, Meldung
   $("wfSend").addEventListener("click", sendWochenfrage);
   $("wfLater").addEventListener("click", laterWochenfrage);
@@ -2477,6 +3083,11 @@ window.__test = {
   filterWords: filterWords, drawRound: drawRound, drawRoundStufe: drawRoundStufe, eligible: eligible, boxes: boxes,
   ampel: ampel, spokenText: spokenText, lueckeSpokenText: lueckeSpokenText, stufeInfo: stufeInfo, evaluateUnit: evaluateUnit,
   unitsOf: unitsOf, isoWeek: isoWeek, meldungFor: meldungFor,
+  punkte: punkte, levelInfo: levelInfo, serie: serie, gamePool: gamePool, memoryPairs: memoryPairs, salatGesperrt: salatGesperrt,
+  wortStatistik: wortStatistik,
+  galgen: function () { return G ? { wort: G.entry.wort, misses: G.misses, done: G.done } : null; },
+  salat: function () { return S ? { wort: S.entry.wort, fixed: S.fixed, pieces: S.pieces.map(function (p) { return p.t; }), placed: S.placed.length, awaitCase: S.awaitCase } : null; },
+  memory: function () { return M ? { pairs: M.pairs, found: M.found, zuege: M.zuege } : null; },
   reportText: reportText, importText: importText, exportJson: exportJson,
   state: function () { return JSON.parse(JSON.stringify(state)); },
   storageOk: function () { return storageOk; },
