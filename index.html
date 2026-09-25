@@ -57,6 +57,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 .btn.primary{background:var(--line);justify-content:center;font-weight:700}
 .btn.small{min-height:48px;font-size:1rem}
 .btn:disabled{opacity:.4;cursor:not-allowed}
+.btn .sub{display:block;font-size:.85rem;color:var(--muted)}
+.row{display:flex;gap:10px}
+.row .btn{flex:1;justify-content:center}
 .back{align-self:flex-start;background:none;border:0;color:var(--muted);padding:6px 0;font-size:1rem;min-height:44px}
 .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .today{font-size:1rem;color:var(--muted);text-align:right}
@@ -67,6 +70,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 .chip[aria-pressed="true"]{background:var(--line);border-color:var(--line)}
 .count{font-size:1rem}
 .warn{color:var(--err);font-size:.95rem;min-height:1.3em}
+.stufebox{display:flex;flex-direction:column;gap:8px}
+.stufebox .chips{gap:6px}
 /* Üben */
 .speaker{align-self:center;width:124px;height:124px;border-radius:50%;background:var(--panel);
   border:2px solid var(--line);font-size:2.8rem;display:grid;place-items:center}
@@ -78,6 +83,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 .inp{width:100%;min-height:58px;font:inherit;font-size:1.5rem;letter-spacing:.04em;padding:0 14px;
   background:#120f0f;color:var(--ink);border:1px solid var(--line);border-radius:6px}
 .inp.small{font-size:1.2rem;min-height:52px}
+textarea.inp{min-height:150px;font-size:1.2rem;padding:12px;line-height:1.6;resize:vertical;letter-spacing:.02em}
 .result{display:flex;flex-direction:column;gap:6px}
 .result .lbl{font-size:.9rem;color:var(--muted)}
 .result .w{font-size:1.6rem;letter-spacing:.06em;overflow-wrap:anywhere}
@@ -92,6 +98,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,label.btn:focus-
 pre.report{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);font-size:.95rem;margin:0}
 .big{font-size:2rem;font-weight:700}
 .lines{margin:6px 0 0;padding-left:1.1em}
+/* Diktat */
+.dtext{font-size:1.2rem;line-height:1.9;overflow-wrap:anywhere}
+.dtext .fix{color:var(--muted);font-size:.9rem}
+.dtext .c-err,.dtext .c-ok{margin-right:2px}
+/* Lückensatz */
+.lsatz{font-size:1.45rem;line-height:1.6;overflow-wrap:anywhere}
+.gap{display:inline-block;min-width:4.5em;border-bottom:3px solid var(--err);text-align:center}
+.opts{display:flex;gap:10px}
+.opts .btn{flex:1;justify-content:center;font-size:1.4rem;font-weight:700}
+.opts .btn.okbtn{border-color:var(--ok);color:var(--ok);opacity:1}
+.opts .btn.errbtn{border-color:var(--err);color:var(--err);opacity:1;text-decoration:underline wavy var(--err)}
+.regel{border-left:3px solid var(--line);padding:8px 12px;background:rgba(179,32,42,.08);font-size:.95rem}
 /* Meine Wörter */
 .addrow{display:flex;gap:8px}
 .addrow .inp{flex:1;min-width:0}
@@ -101,8 +119,14 @@ pre.report{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);f
   background:var(--panel);border:1px solid #5a3a3a;border-radius:6px;font-size:1.15rem}
 .mylist button{min-height:44px;min-width:44px;background:none;border:0;color:var(--muted);font-size:1.1rem}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+/* Wochenfrage, Meldung */
+.wf{display:flex;flex-direction:column;gap:10px}
+.wf .q{font-size:1.1rem}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:20px;z-index:30}
+.modal{max-width:440px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center}
+.modal .anchor{font-size:2.6rem}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));
-  background:#2a2322;border:1px solid var(--line);padding:10px 16px;border-radius:6px;z-index:20;max-width:90%}
+  background:#2a2322;border:1px solid var(--line);padding:10px 16px;border-radius:6px;z-index:40;max-width:90%}
 .banner{flex-shrink:0;display:flex;gap:10px;align-items:center;justify-content:space-between;
   padding:8px 14px;background:#2a0c0e;border-bottom:1px solid var(--line);font-size:.95rem}
 .banner button{min-height:44px;padding:0 14px;background:var(--line);border:0;border-radius:6px;font-weight:700}
@@ -128,7 +152,16 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     </div>
     <div class="note" id="storageWarn" hidden>Dieser Browser erlaubt gerade kein Speichern. Was du übst, ist nach dem Schließen weg.</div>
     <div class="note" id="dataWarn" hidden></div>
+    <div class="panel wf" id="wfCard" hidden>
+      <div class="muted">❓ Frage der Woche</div>
+      <div class="q" id="wfFrage"></div>
+      <textarea class="inp" id="wfInput" maxlength="300" rows="2" placeholder="Ein, zwei Sätze …" aria-label="Antwort auf die Frage der Woche" style="min-height:80px"></textarea>
+      <div class="warn" id="wfMsg" aria-live="polite"></div>
+      <div class="row"><button class="btn small" id="wfLater">Später</button><button class="btn primary small" id="wfSend">Antworten</button></div>
+    </div>
     <button class="btn" data-go="auswahl"><span class="ico">🎧</span>Üben</button>
+    <button class="btn" data-go="diktatwahl"><span class="ico">📝</span>Diktat</button>
+    <button class="btn" data-go="lueckewahl"><span class="ico">🧩</span>Lückensatz</button>
     <button class="btn" data-go="meine"><span class="ico">📒</span>Meine Wörter</button>
     <button class="btn" data-go="bericht"><span class="ico">📤</span>Bericht senden</button>
     <button class="btn" data-go="daten"><span class="ico">💾</span>Daten sichern</button>
@@ -144,6 +177,7 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <div class="chips" id="chipThema"></div>
     <div class="label">Silben</div>
     <div class="chips" id="chipSilben"></div>
+    <div class="panel stufebox" id="uStufe"></div>
     <div class="count" id="auswahlCount" aria-live="polite"></div>
     <div class="warn" id="auswahlWarn" aria-live="polite"></div>
     <button class="btn primary" id="auswahlStart">Los geht's</button>
@@ -155,10 +189,10 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <div class="head"><span class="muted" id="uebenInfo">Wort hören und schreiben</span><span class="muted" id="counter"></span></div>
     <button class="speaker" id="speaker" aria-label="Wort anhören">🔊</button>
     <div class="onlyword" id="onlyWord"></div>
-    <div class="msg" id="speechMsg" aria-live="polite"></div>
+    <div class="msg speechmsg" aria-live="polite"></div>
     <div class="slider"><span>Tempo</span>
-      <input type="range" id="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
-      <output id="rateOut" for="rate"></output></div>
+      <input type="range" class="rate" id="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
+      <output class="rateOut" id="rateOut"></output></div>
     <input class="inp" id="wordInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
       spellcheck="false" enterkeyhint="done" placeholder="Hier schreiben …" aria-label="Wort eingeben">
     <button class="btn primary" id="checkBtn">Prüfen</button>
@@ -177,8 +211,76 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <h2>Runde geschafft</h2>
     <div class="panel"><div class="big" id="doneScore"></div><div class="muted" id="doneText"></div>
       <ul class="lines" id="doneLines"></ul></div>
+    <div class="note" id="doneNote" hidden></div>
     <button class="btn primary" id="againBtn">Noch eine Runde</button>
     <button class="btn" data-home><span class="ico">⚓</span>Zum Start</button>
+  </section>
+
+  <!-- DIKTAT WÄHLEN -->
+  <section class="screen" id="diktatwahl">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Welches Diktat?</h2>
+    <div class="label">Wo schreibst du?</div>
+    <div class="chips" id="chipModus"></div>
+    <div id="diktatList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+
+  <!-- DIKTAT -->
+  <section class="screen" id="diktat">
+    <button class="back" data-back>‹ Zurück</button>
+    <div class="head"><span class="muted" id="dTitel"></span><span class="muted" id="dCounter"></span></div>
+    <button class="speaker" id="dNochmal" aria-label="Satzteil nochmal hören">🔊</button>
+    <div class="onlyword">Tipp auf den Lautsprecher, um den Satzteil nochmal zu hören.</div>
+    <div class="msg speechmsg" aria-live="polite"></div>
+    <div class="slider"><span>Tempo</span>
+      <input type="range" class="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
+      <output class="rateOut"></output></div>
+    <textarea class="inp" id="dInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+      placeholder="Hier schreiben …" aria-label="Diktat schreiben"></textarea>
+    <div class="note" id="dPapier" hidden>Schreib auf Papier mit. Die App liest vor, prüft aber nicht.</div>
+    <div class="warn" id="dMsg" aria-live="polite"></div>
+    <button class="btn primary" id="dWeiter">Weiter ➡</button>
+    <button class="btn small" id="dAlles" hidden><span class="ico">🔁</span>Ganzen Text noch mal hören</button>
+    <button class="btn primary" id="dFertig" hidden>Fertig – prüfen</button>
+  </section>
+
+  <!-- DIKTAT ERGEBNIS -->
+  <section class="screen" id="diktatErgebnis">
+    <h2 id="deTitel"></h2>
+    <div class="panel"><div class="big" id="deScore"></div><div class="muted" id="deText"></div></div>
+    <div class="panel dtext" id="deAnzeige"></div>
+    <div class="note" id="deNote" hidden></div>
+    <button class="btn" data-go="diktatwahl"><span class="ico">📝</span>Anderes Diktat</button>
+    <button class="btn" data-home><span class="ico">⚓</span>Zum Start</button>
+  </section>
+
+  <!-- LÜCKENSATZ WÄHLEN -->
+  <section class="screen" id="lueckewahl">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Welche Wörter?</h2>
+    <div class="muted">Wörter, die gleich oder ähnlich klingen. Der Satz zeigt, welches gemeint ist.</div>
+    <div class="chips" id="chipPaar"></div>
+    <div class="panel stufebox" id="lStufe"></div>
+    <div class="count" id="lCount"></div>
+    <button class="btn primary" id="lStart">Los geht's</button>
+  </section>
+
+  <!-- LÜCKENSATZ -->
+  <section class="screen" id="luecke">
+    <button class="back" data-back>‹ Zurück</button>
+    <div class="head"><span class="muted" id="lInfo"></span><span class="muted" id="lCounter"></span></div>
+    <div class="panel lsatz" id="lSatz"></div>
+    <button class="btn small" id="lSpeak"><span class="ico">🔊</span>Satz vorlesen</button>
+    <div class="msg speechmsg" aria-live="polite"></div>
+    <div class="opts" id="lOptions"></div>
+    <div id="lTypeBox" style="display:flex;flex-direction:column;gap:10px">
+      <input class="inp" id="lInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
+        spellcheck="false" enterkeyhint="done" placeholder="Wort für die Lücke …" aria-label="Wort für die Lücke">
+      <button class="btn primary" id="lCheck">Prüfen</button>
+    </div>
+    <div class="muted" id="lFeedback" aria-live="polite"></div>
+    <div class="regel" id="lRegel" hidden></div>
+    <button class="btn" id="lNext" hidden><span class="ico">➡️</span>Nächster Satz</button>
   </section>
 
   <!-- MEINE WÖRTER -->
@@ -220,6 +322,14 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
     <div class="muted">Tipp: Speicher ab und zu eine Sicherung. Mit „Sicherung laden“ holst du deinen Stand auch auf ein anderes Gerät.</div>
   </section>
 
+  <div class="overlay" id="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="panel modal">
+      <div class="anchor">⚓</div>
+      <h2 id="mTitle"></h2>
+      <div id="mText"></div>
+      <button class="btn primary" id="mOk">Weiter</button>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" hidden></div>
 </div>
 
@@ -228,32 +338,40 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.2.0";
-var SCHEMA_VERSION = 2;
+var APP_VERSION = "0.3.0";
+var SCHEMA_VERSION = 3;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
   stufeAufstiegQuote: 0.85,   // auch Ampel „sicher“
   stufeAufstiegWoerter: 30,   // auch Ampel: letzte 30 Wörter je Thema
-  stufeAufstiegTage: 3,       // ab 0.3
+  stufeAufstiegTage: 3,
   stufeAbstiegQuote: 0.60,    // auch Ampel „wackelig“ (darunter „mehr üben“)
-  stufeAbstiegWoerter: 20,    // ab 0.3
-  mischungAktuell: 0.8,       // ab 0.3
+  stufeAbstiegWoerter: 20,
+  stufeMax: 3,                // Inhalte gibt es bisher für Stufe 1–3
+  mischungAktuell: 0.8,
   inaktivSekunden: 60,
   woerterProRunde: 15,
+  lueckenProRunde: 10,
   minWoerterUebung: 5,
+  minFehlerwoerter: 1,        // „Meine Fehlerwörter“ auch mit wenigen Wörtern üben
   ampelMinVersuche: 10,
   leitnerGewichte: { 0: 4, 1: 8, 2: 4, 3: 2, 4: 1, 5: 0.5 },  // Fach → Ziehgewicht (0 = neu)
   tempoMin: 0.5, tempoMax: 1.5, tempoStandard: 0.9,
   berichtTage: 7,
-  zeitSpeichernSekunden: 15
+  zeitSpeichernSekunden: 15,
+  wochenfrageMaxZeichen: 300
 };
 
 var KATEGORIEN = ["Groß/klein", "Doppelkonsonant", "ck/k", "tz/z", "ie/i", "Dehnungs-h", "Doppelvokal",
   "s/ss/ß", "Endlaut", "Umlaut", "fehlender Buchstabe", "zusätzlicher Buchstabe", "vertauschte Buchstaben", "Sonstige"];
+// Rechtschreibthemen (Wortübung) – jedes braucht eine Regel gleichen Namens
+var THEMEN = ["Groß/klein", "Doppelte Buchstaben", "ck/tz", "s/ss/ß", "Dehnung", "Verlängern",
+  "Umlaute ableiten", "Merkwörter", "Vorsilben", "Fremdwörter"];
+var VERWECHSLUNG = "Verwechslungswörter";
 
 // ================= Inhalte (Spalten wie spätere Excel-Datei) =================
-// Wörter werden mit tools/csv_to_data.py aus docs/wortliste.csv übertragen.
+// Tabellen werden mit tools/csv_to_data.py aus docs/*.csv übertragen.
 var DATA = {
   welten: [
     { "kürzel": "segeln", name: "Segeln", emoji: "⛵" },
@@ -279,7 +397,15 @@ var DATA = {
     { id: "Vorsilben", text: "Die Vorsilben ver- und vor- schreibst du immer mit v." },
     { id: "Fremdwörter", text: "Das Wort kommt aus einer anderen Sprache. Man schreibt es anders, als man es spricht. Merk dir, wie es aussieht." },
     { id: "Verwechslungswörter", text: "Diese Wörter klingen gleich. Der Satz zeigt, welches gemeint ist." },
-    { id: "allgemein", text: "Sprich das Wort langsam in Silben mit und schreib Silbe für Silbe." }
+    { id: "allgemein", text: "Sprich das Wort langsam in Silben mit und schreib Silbe für Silbe." },
+    { id: "das/dass", text: "Kannst du „dieses“ oder „welches“ einsetzen? Dann „das“, sonst „dass“." },
+    { id: "seit/seid", text: "„seit“ sagt etwas über die Zeit (seit gestern). „seid“ gehört zu „ihr“ (ihr seid)." },
+    { id: "wieder/wider", text: "„wieder“ heißt noch einmal. „wider“ heißt gegen (Widerstand, widersprechen)." },
+    { id: "ihm/ihn", text: "Frag: Wem? → ihm. Wen? → ihn." },
+    { id: "dann/denn", text: "„dann“ heißt danach. „denn“ nennt einen Grund: …, denn es regnet." },
+    { id: "war/wahr", text: "„war“ kommt von sein (ist – war). „wahr“ heißt richtig, nicht gelogen." },
+    { id: "viel/fiel", text: "„viel“ ist eine große Menge. „fiel“ kommt von fallen." },
+    { id: "wenn/wen", text: "„wenn“ heißt falls oder immer dann. „wen“ fragt nach einer Person: Wen siehst du?" }
   ],
   woerter: [
     /*WOERTER-START*/
@@ -799,9 +925,117 @@ var DATA = {
     {"wort": "Traum", "silben": "Traum", "welt": "alltag", "nomen": "ja", "artikel": "der", "themen": [], "stufe": 1, "hinweis": "Das siehst du im Schlaf", "fremdwort": "nein", "ansage": ""}
     /*WOERTER-END*/
   ],
-  texte: [],
-  lueckensaetze: [],
-  meldungen: [],
+  texte: [
+    /*TEXTE-START*/
+    {"id": "d01", "titel": "Im Stall", "welt": "pferde", "stufe": 1, "text": "Das Pferd steht im Stall. Es hat Hunger. Ich gebe ihm Heu und einen Apfel.", "satzteile": "Das Pferd steht im Stall.|Es hat Hunger.|Ich gebe ihm Heu|und einen Apfel."},
+    {"id": "d02", "titel": "Mein Hund", "welt": "hunde", "stufe": 1, "text": "Mein Hund heißt Balu. Er bellt, wenn es klingelt. Dann will er raus.", "satzteile": "Mein Hund heißt Balu.|Er bellt,|wenn es klingelt.|Dann will er raus."},
+    {"id": "d03", "titel": "Am Morgen", "welt": "alltag", "stufe": 1, "text": "Am Morgen bin ich müde. Ich trinke Tee und esse ein Brot. Dann gehe ich los.", "satzteile": "Am Morgen bin ich müde.|Ich trinke Tee|und esse ein Brot.|Dann gehe ich los."},
+    {"id": "d04", "titel": "Der Wind dreht", "welt": "segeln", "stufe": 1, "text": "Heute ist viel Wind. Wir fahren mit dem Boot auf den See. Plötzlich dreht der Wind. Schnell holen wir das Segel ein.", "satzteile": "Heute ist viel Wind.|Wir fahren mit dem Boot|auf den See.|Plötzlich dreht der Wind.|Schnell holen wir das Segel ein."},
+    {"id": "d05", "titel": "Im Zelt", "welt": "pfadfinder", "stufe": 1, "text": "Wir schlafen im Zelt. Draußen ist es dunkel. Ein Stock knackt. Es ist nur ein Igel.", "satzteile": "Wir schlafen im Zelt.|Draußen ist es dunkel.|Ein Stock knackt.|Es ist nur ein Igel."},
+    {"id": "d06", "titel": "Level eins", "welt": "spiele", "stufe": 1, "text": "Ich starte das Spiel. Mein Held hat drei Leben. Im ersten Level finde ich einen Schatz.", "satzteile": "Ich starte das Spiel.|Mein Held hat drei Leben.|Im ersten Level|finde ich einen Schatz."},
+    {"id": "d07", "titel": "Training", "welt": "fechten", "stufe": 1, "text": "Heute ist Training. Ich ziehe die Jacke an und nehme die Maske. Mein Gegner ist schnell, aber ich bin schneller.", "satzteile": "Heute ist Training.|Ich ziehe die Jacke an|und nehme die Maske.|Mein Gegner ist schnell,|aber ich bin schneller."},
+    {"id": "d08", "titel": "Die Wette", "welt": "freundschaft", "stufe": 2, "text": "Tim und ich haben gewettet. Wer zuerst am Tor ist, bekommt ein Eis. Ich renne los, aber Tim ist schon da. Morgen gewinne ich.", "satzteile": "Tim und ich haben gewettet.|Wer zuerst am Tor ist,|bekommt ein Eis.|Ich renne los,|aber Tim ist schon da.|Morgen gewinne ich."},
+    {"id": "d09", "titel": "Salz im Wasser", "welt": "chemie", "stufe": 2, "text": "Wir machen einen Versuch. In das Glas kommt Wasser und ein bisschen Salz. Dann rühren wir, bis nichts mehr zu sehen ist. Das Salz ist nicht weg, es ist nur gelöst.", "satzteile": "Wir machen einen Versuch.|In das Glas kommt Wasser|und ein bisschen Salz.|Dann rühren wir,|bis nichts mehr zu sehen ist.|Das Salz ist nicht weg,|es ist nur gelöst."},
+    {"id": "d10", "titel": "Volleyball", "welt": "sport", "stufe": 2, "text": "Am Nachmittag spielen wir Volleyball. Meine Mannschaft ist gut. Nach dem Aufschlag fliegt der Ball über das Netz. Wir holen den Punkt und jubeln laut.", "satzteile": "Am Nachmittag spielen wir Volleyball.|Meine Mannschaft ist gut.|Nach dem Aufschlag|fliegt der Ball über das Netz.|Wir holen den Punkt|und jubeln laut."},
+    {"id": "d11", "titel": "Mitte oder Miete", "welt": "freundschaft", "stufe": 2, "text": "Ich schreibe meinem Freund: Wir treffen uns in der Mitte der Stadt. Fast hätte ich Miete geschrieben. Dann hätte er sich sehr gewundert.", "satzteile": "Ich schreibe meinem Freund:|Wir treffen uns in der Mitte der Stadt.|Fast hätte ich Miete geschrieben.|Dann hätte er sich sehr gewundert."},
+    {"id": "d12", "titel": "Das Turnier", "welt": "fechten", "stufe": 2, "text": "Am Samstag ist das Turnier. Ich bin ziemlich aufgeregt. Mein Trainer sagt: Bleib ruhig und schau genau hin. Im ersten Kampf hole ich fünf Treffer.", "satzteile": "Am Samstag ist das Turnier.|Ich bin ziemlich aufgeregt.|Mein Trainer sagt:|Bleib ruhig und schau genau hin.|Im ersten Kampf|hole ich fünf Treffer."},
+    {"id": "d13", "titel": "Der Ausritt", "welt": "pferde", "stufe": 2, "text": "Am Wochenende reiten wir in den Wald. Das Pferd läuft erst im Schritt, dann im Trab. Auf der Wiese galoppieren wir. Das Pferd hat Spaß und ich auch.", "satzteile": "Am Wochenende reiten wir in den Wald.|Das Pferd läuft erst im Schritt,|dann im Trab.|Auf der Wiese galoppieren wir.|Das Pferd hat Spaß|und ich auch."},
+    {"id": "d14", "titel": "Die Karte", "welt": "pfadfinder", "stufe": 2, "text": "Unsere Gruppe wandert durch den Wald. Wir haben eine Karte und einen Kompass. Plötzlich teilt sich der Weg. Der Kompass zeigt nach Norden, also gehen wir rechts.", "satzteile": "Unsere Gruppe wandert durch den Wald.|Wir haben eine Karte|und einen Kompass.|Plötzlich teilt sich der Weg.|Der Kompass zeigt nach Norden,|also gehen wir rechts."},
+    {"id": "d15", "titel": "Hundeschule", "welt": "hunde", "stufe": 3, "text": "Jeden Dienstag gehe ich mit Balu in die Hundeschule. Dort lernt er, an der Leine zu gehen. Das klappt noch nicht immer. Wenn er einen anderen Hund sieht, zieht er wie verrückt. Aber er wird jedes Mal ein bisschen besser.", "satzteile": "Jeden Dienstag gehe ich mit Balu|in die Hundeschule.|Dort lernt er,|an der Leine zu gehen.|Das klappt noch nicht immer.|Wenn er einen anderen Hund sieht,|zieht er wie verrückt.|Aber er wird jedes Mal ein bisschen besser."},
+    {"id": "d16", "titel": "Sturm auf dem See", "welt": "segeln", "stufe": 3, "text": "Am Nachmittag wird der Himmel plötzlich dunkel. Der Wind wird stärker und die Wellen werden höher. Wir ziehen schnell die Rettungswesten an und fahren zurück in den Hafen. Dort warten wir, bis der Sturm vorbei ist.", "satzteile": "Am Nachmittag wird der Himmel plötzlich dunkel.|Der Wind wird stärker|und die Wellen werden höher.|Wir ziehen schnell die Rettungswesten an|und fahren zurück in den Hafen.|Dort warten wir,|bis der Sturm vorbei ist."},
+    {"id": "d17", "titel": "Das Rätsel", "welt": "spiele", "stufe": 3, "text": "In meinem Spiel gibt es ein schweres Rätsel. Eine Tür ist verschlossen und der Schlüssel fehlt. Ich suche überall, aber ich finde nichts. Endlich entdecke ich einen Hinweis auf einem alten Schild. Der Schlüssel liegt die ganze Zeit unter der Treppe.", "satzteile": "In meinem Spiel gibt es ein schweres Rätsel.|Eine Tür ist verschlossen|und der Schlüssel fehlt.|Ich suche überall,|aber ich finde nichts.|Endlich entdecke ich einen Hinweis|auf einem alten Schild.|Der Schlüssel liegt die ganze Zeit|unter der Treppe."},
+    {"id": "d18", "titel": "Das Geschenk", "welt": "freundschaft", "stufe": 3, "text": "Nächste Woche hat meine Freundin Geburtstag. Ich weiß noch nicht, was ich ihr schenken soll. Vielleicht kaufe ich ihr ein Buch. Oder wir gehen zusammen ins Kino. Das wäre ein Geschenk, das wir beide gut finden.", "satzteile": "Nächste Woche hat meine Freundin Geburtstag.|Ich weiß noch nicht,|was ich ihr schenken soll.|Vielleicht kaufe ich ihr ein Buch.|Oder wir gehen zusammen ins Kino.|Das wäre ein Geschenk,|das wir beide gut finden."},
+    {"id": "d19", "titel": "Wasser wird Eis", "welt": "chemie", "stufe": 3, "text": "Wenn Wasser sehr kalt wird, wird es zu Eis. Im Winter frieren deshalb manche Seen zu. Wird es wärmer, schmilzt das Eis wieder. Wird Wasser sehr heiß, steigt Dampf auf. Das kann man beim Kochen gut sehen.", "satzteile": "Wenn Wasser sehr kalt wird,|wird es zu Eis.|Im Winter frieren deshalb manche Seen zu.|Wird es wärmer,|schmilzt das Eis wieder.|Wird Wasser sehr heiß,|steigt Dampf auf.|Das kann man beim Kochen gut sehen."},
+    {"id": "d20", "titel": "Das wichtige Spiel", "welt": "sport", "stufe": 3, "text": "Am Samstag haben wir ein wichtiges Spiel. Der Trainer sagt, dass wir fair spielen sollen. Nach der Pause liegen wir hinten. Trotzdem geben wir nicht auf. Kurz vor dem Ende schießt Lena das entscheidende Tor. Alle jubeln und der Pokal gehört uns.", "satzteile": "Am Samstag haben wir ein wichtiges Spiel.|Der Trainer sagt,|dass wir fair spielen sollen.|Nach der Pause liegen wir hinten.|Trotzdem geben wir nicht auf.|Kurz vor dem Ende|schießt Lena das entscheidende Tor.|Alle jubeln|und der Pokal gehört uns."}
+    /*TEXTE-END*/
+  ],
+  lueckensaetze: [
+    /*LUECKEN-START*/
+    {"id": "l01", "satz": "Ich hoffe, ___ du morgen kommst.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l02", "satz": "Siehst du ___ Boot dort drüben?", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l03", "satz": "Er sagt, ___ das Training ausfällt.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l04", "satz": "Wo ist ___ Buch, das ich dir geliehen habe?", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l05", "satz": "Ich weiß, ___ du recht hast.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l06", "satz": "Hast du ___ Spiel schon gespielt?", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l07", "satz": "Es ist gut, ___ du da bist.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "l08", "satz": "Wir warten schon ___ zwei Stunden.", "lösung": "seit", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l09", "satz": "Ihr ___ heute aber früh da!", "lösung": "seid", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l10", "satz": "Ich habe ___ gestern einen Welpen.", "lösung": "seit", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l11", "satz": "Wo ___ ihr gewesen?", "lösung": "seid", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l12", "satz": "Er fechtet ___ dem Sommer.", "lösung": "seit", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l13", "satz": "Ihr ___ ein gutes Team.", "lösung": "seid", "optionen": "seit|seid", "paar": "seit/seid", "regel": "seit/seid"},
+    {"id": "l14", "satz": "Morgen kommt die Sonne ___.", "lösung": "wieder", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l15", "satz": "Wir sehen uns bald ___.", "lösung": "wieder", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l16", "satz": "Er hat schon ___ gewonnen.", "lösung": "wieder", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l17", "satz": "Kannst du das Lied noch mal ___holen?", "lösung": "wieder", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l18", "satz": "Du sollst mir nicht ___sprechen.", "lösung": "wider", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l19", "satz": "Der Geruch ist ___lich.", "lösung": "wider", "optionen": "wieder|wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l20", "satz": "Der Hund leistet ___stand.", "lösung": "Wider", "optionen": "Wieder|Wider", "paar": "wieder/wider", "regel": "wieder/wider"},
+    {"id": "l21", "satz": "Ich gebe ___ den Ball.", "lösung": "ihm", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l22", "satz": "Ich sehe ___ jeden Tag.", "lösung": "ihn", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l23", "satz": "Kannst du ___ helfen?", "lösung": "ihm", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l24", "satz": "Wir rufen ___ morgen an.", "lösung": "ihn", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l25", "satz": "Das Geschenk gefällt ___.", "lösung": "ihm", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l26", "satz": "Der Hund beißt ___ nicht.", "lösung": "ihn", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l27", "satz": "Ich schreibe ___ eine Nachricht.", "lösung": "ihm", "optionen": "ihm|ihn", "paar": "ihm/ihn", "regel": "ihm/ihn"},
+    {"id": "l28", "satz": "Erst essen wir, ___ spielen wir.", "lösung": "dann", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l29", "satz": "Wir gehen nach Hause, ___ es wird dunkel.", "lösung": "denn", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l30", "satz": "Ich bleibe drinnen, ___ es regnet.", "lösung": "denn", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l31", "satz": "Wenn du fertig bist, ___ gehen wir.", "lösung": "dann", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l32", "satz": "Ich kann nicht kommen, ___ ich bin krank.", "lösung": "denn", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l33", "satz": "Zuerst der Aufschlag, ___ der Angriff.", "lösung": "dann", "optionen": "dann|denn", "paar": "dann/denn", "regel": "dann/denn"},
+    {"id": "l34", "satz": "Gestern ___ ich im Kino.", "lösung": "war", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l35", "satz": "Das ist nicht ___!", "lösung": "wahr", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l36", "satz": "Die Geschichte ist ___.", "lösung": "wahr", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l37", "satz": "Das Spiel ___ spannend.", "lösung": "war", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l38", "satz": "Ist das wirklich ___?", "lösung": "wahr", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l39", "satz": "Wo ___ der Hund?", "lösung": "war", "optionen": "war|wahr", "paar": "war/wahr", "regel": "war/wahr"},
+    {"id": "l40", "satz": "Wir haben ___ Spaß.", "lösung": "viel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l41", "satz": "Der Ball ___ ins Wasser.", "lösung": "fiel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l42", "satz": "Das kostet nicht ___.", "lösung": "viel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l43", "satz": "Mir ___ nichts ein.", "lösung": "fiel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l44", "satz": "Er trinkt ___ Wasser.", "lösung": "viel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l45", "satz": "Das Glas ___ vom Tisch.", "lösung": "fiel", "optionen": "viel|fiel", "paar": "viel/fiel", "regel": "viel/fiel"},
+    {"id": "l46", "satz": "Ruf mich an, ___ du da bist.", "lösung": "wenn", "optionen": "wenn|wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l47", "satz": "___ hast du getroffen?", "lösung": "Wen", "optionen": "Wenn|Wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l48", "satz": "Ich weiß nicht, ___ ich fragen soll.", "lösung": "wen", "optionen": "wenn|wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l49", "satz": "Wir bleiben drinnen, ___ es regnet.", "lösung": "wenn", "optionen": "wenn|wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l50", "satz": "Für ___ ist das Geschenk?", "lösung": "wen", "optionen": "wenn|wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l51", "satz": "Sag Bescheid, ___ du Hilfe brauchst.", "lösung": "wenn", "optionen": "wenn|wen", "paar": "wenn/wen", "regel": "wenn/wen"},
+    {"id": "l52", "satz": "___ rufst du an?", "lösung": "Wen", "optionen": "Wenn|Wen", "paar": "wenn/wen", "regel": "wenn/wen"}
+    /*LUECKEN-END*/
+  ],
+  meldungen: [
+    /*MELDUNGEN-START*/
+    {"thema": "Groß/klein", "varianten": ["{richtig} von {gesamt} Wörtern bei Groß/klein richtig – an {tage} verschiedenen Tagen. Deine Nachrichten lesen sich damit für andere viel schneller.", "Groß oder klein? {richtig} von {gesamt} richtig entschieden. Der Trick mit der, die, das sitzt.", "{richtig} von {gesamt} richtig. Wer deine Nachrichten liest, muss nicht mehr raten."]},
+    {"thema": "Doppelte Buchstaben", "varianten": ["{richtig} von {gesamt} Wörtern mit doppelten Buchstaben richtig. Du hörst jetzt, wann ein Laut kurz ist.", "Wetter, Sattel, Kette: {richtig} von {gesamt} richtig, verteilt auf {tage} Tage. Das sitzt.", "{richtig} von {gesamt} richtig. Kurze Laute erkennst du jetzt – das hilft dir bei jedem neuen Wort."]},
+    {"thema": "ck/tz", "varianten": ["{richtig} von {gesamt} Wörtern mit ck oder tz richtig. Zucker, Katze, Glück – kein Problem mehr.", "ck und tz: {richtig} von {gesamt} richtig an {tage} Tagen.", "{richtig} von {gesamt} richtig. Du weißt jetzt, wann ck statt k kommt."]},
+    {"thema": "s/ss/ß", "varianten": ["{richtig} von {gesamt} s-Wörtern richtig. „Wir treffen uns nach dem Spaß“ statt „nach dem Spas“: Bei deinen Nachrichten muss keiner zweimal lesen.", "s, ss oder ß: {richtig} von {gesamt} richtig. Das ist eine der kniffligsten Regeln – und du hast sie im Griff.", "{richtig} von {gesamt} richtig an {tage} Tagen. Langer oder kurzer Laut – du hörst den Unterschied."]},
+    {"thema": "Dehnung", "varianten": ["{richtig} von {gesamt} Wörtern mit langem Laut richtig. Spiel, Ziel, Zahn – sitzt.", "ie, h oder Doppelvokal: {richtig} von {gesamt} richtig an {tage} Tagen.", "{richtig} von {gesamt} richtig. Das lange i schreibst du jetzt fast immer richtig."]},
+    {"thema": "Verlängern", "varianten": ["Du hast den Trick drauf: Hund → Hunde. {richtig} von {gesamt} richtig. Damit hilfst du dir bei neuen Wörtern selbst.", "{richtig} von {gesamt} Wörtern mit b/p, d/t oder g/k am Ende richtig. Verlängern funktioniert bei dir.", "{richtig} von {gesamt} richtig an {tage} Tagen. Mit dem Verlängern knackst du auch Wörter, die du nie geübt hast."]},
+    {"thema": "Umlaute ableiten", "varianten": ["Hand → Hände, Baum → Bäume: {richtig} von {gesamt} richtig.", "{richtig} von {gesamt} Wörtern mit ä oder äu richtig. Du findest das verwandte Wort.", "{richtig} von {gesamt} richtig an {tage} Tagen. ä oder e – du weißt, wie du es herausfindest."]},
+    {"thema": "Merkwörter", "varianten": ["{richtig} von {gesamt} Merkwörtern richtig. Die folgen keiner Regel – du hast sie dir trotzdem gemerkt.", "vielleicht, nämlich, Vogel: {richtig} von {gesamt} richtig.", "{richtig} von {gesamt} richtig an {tage} Tagen. Diese Wörter kommen ständig vor – jetzt schreibst du sie sicher."]},
+    {"thema": "Vorsilben", "varianten": ["ver- und vor-: {richtig} von {gesamt} richtig. Immer mit v – sitzt.", "{richtig} von {gesamt} Wörtern mit Vorsilbe richtig, verteilt auf {tage} Tage.", "{richtig} von {gesamt} richtig. vergessen, verstehen, vorbei – kein Problem mehr."]},
+    {"thema": "Fremdwörter", "varianten": ["{richtig} von {gesamt} Fremdwörtern richtig. Level, Team, Controller – die schreibst du wie in deinen Spielen.", "{richtig} von {gesamt} richtig. Wörter aus anderen Sprachen sind knifflig – du kennst jetzt ihr Wortbild."]},
+    {"thema": "Verwechslungswörter", "varianten": ["{richtig} von {gesamt} Lücken richtig gefüllt. das oder dass, seit oder seid – du erkennst es am Satz.", "{richtig} von {gesamt} richtig an {tage} Tagen. Wer deine Nachricht liest, versteht jetzt genau, was du meinst.", "{richtig} von {gesamt} richtig. Genau diese Wörter verwechseln viele – du immer seltener."]},
+    {"thema": "Silben", "varianten": ["{richtig} von {gesamt} Wörtern mit {silben} richtig. Silbe für Silbe klappt.", "{richtig} von {gesamt} richtig an {tage} Tagen. Auch längere Wörter schaffst du jetzt Stück für Stück."]},
+    {"thema": "alle", "varianten": ["{richtig} von {gesamt} Wörtern richtig, verteilt auf {tage} Tage. Eine E-Mail an deinen Trainer schreibst du so fast fehlerfrei.", "{richtig} von {gesamt} richtig. Eine neue Stufe – mit echten Zahlen."]}
+    /*MELDUNGEN-END*/
+  ],
+  wochenfragen: [
+    /*WOCHENFRAGEN-START*/
+    {"id": "w01", "frage": "Wo hast du diese Woche etwas gelesen, das dir geholfen hat?"},
+    {"id": "w02", "frage": "Welche Nachricht hast du diese Woche geschrieben, auf die du stolz bist?"},
+    {"id": "w03", "frage": "Wofür möchtest du besser schreiben können?"},
+    {"id": "w04", "frage": "Was war diese Woche beim Üben leicht, was war schwer?"},
+    {"id": "w05", "frage": "Welches Wort hat dich diese Woche geärgert?"},
+    {"id": "w06", "frage": "Wo hast du diese Woche etwas geschrieben, außer in der App?"},
+    {"id": "w07", "frage": "Was hat dir beim Lesen von Spielregeln oder Anleitungen geholfen?"},
+    {"id": "w08", "frage": "Welche Übung in der App machst du am liebsten – und warum?"},
+    {"id": "w09", "frage": "Was möchtest du nächste Woche schaffen?"},
+    {"id": "w10", "frage": "Gab es diese Woche einen Moment, in dem Schreiben leichter war als früher?"}
+    /*WOCHENFRAGEN-END*/
+  ],
   inseln: []
 };
 
@@ -811,11 +1045,25 @@ function now() { return testHooks.fakeNow ? new Date(testHooks.fakeNow) : new Da
 function pad(n) { return (n < 10 ? "0" : "") + n; }
 function dayKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
 function fmtDay(d) { return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
+function fmtKey(k) { return k.slice(8, 10) + "." + k.slice(5, 7) + "."; }
+function isoWeek(d) {
+  var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  var y = t.getUTCFullYear();
+  return y + "-W" + pad(Math.ceil(((t - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7));
+}
 function $(id) { return document.getElementById(id); }
+function $$(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
 function norm(s) { return String(s == null ? "" : s).normalize("NFC").replace(/\s+/g, " ").trim(); }
 function isYesNo(v) { return v === "ja" || v === "nein"; }
 function plural(n, one, many) { return n + " " + (n === 1 ? one : many); }
 function uniq(arr) { return arr.filter(function (x, i) { return arr.indexOf(x) === i; }); }
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
 function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 var toastTimer = null;
 function toast(text) {
@@ -823,11 +1071,12 @@ function toast(text) {
   clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2500);
 }
 
-// ================= Validierung der Inhalte (T2) =================
+// ================= Validierung der Inhalte (T2, C5, V1) =================
 function validate(data) {
   var errors = [];
+  function list(x) { return Array.isArray(x) ? x : []; }
   var welten = [], weltKeys = {};
-  (Array.isArray(data.welten) ? data.welten : []).forEach(function (w, i) {
+  list(data.welten).forEach(function (w, i) {
     var nr = "Welten Zeile " + (i + 1);
     if (!w || typeof w["kürzel"] !== "string" || !w["kürzel"] || typeof w.name !== "string" || !w.name || typeof w.emoji !== "string") {
       errors.push(nr + ": Pflichtfeld fehlt"); return;
@@ -836,12 +1085,13 @@ function validate(data) {
     weltKeys[w["kürzel"]] = true; welten.push(w);
   });
   var regeln = [], regelIds = {};
-  (Array.isArray(data.regeln) ? data.regeln : []).forEach(function (r, i) {
+  list(data.regeln).forEach(function (r, i) {
     if (!r || typeof r.id !== "string" || !r.id || typeof r.text !== "string" || !r.text) { errors.push("Regeln Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
     regelIds[r.id] = true; regeln.push(r);
   });
+  var themenOk = {}; THEMEN.concat([VERWECHSLUNG]).forEach(function (t) { themenOk[t] = true; });
   var woerter = [], seen = {};
-  (Array.isArray(data.woerter) ? data.woerter : []).forEach(function (e, i) {
+  list(data.woerter).forEach(function (e, i) {
     var nr = "Wörter Zeile " + (i + 1) + (e && e.wort ? " („" + e.wort + "“)" : "");
     if (!e || typeof e.wort !== "string" || !norm(e.wort)) { errors.push(nr + ": Wort fehlt"); return; }
     if (typeof e.silben !== "string" || !e.silben) { errors.push(nr + ": Silben fehlen"); return; }
@@ -853,7 +1103,7 @@ function validate(data) {
     if (e.nomen === "ja" && ["der", "die", "das"].indexOf(art) < 0) { errors.push(nr + ": Artikel fehlt"); return; }
     if (e.nomen === "nein" && art) { errors.push(nr + ": Artikel nur bei Nomen"); return; }
     if (typeof e.stufe !== "number" || e.stufe % 1 !== 0 || e.stufe < 1 || e.stufe > 5) { errors.push(nr + ": Stufe muss 1 bis 5 sein"); return; }
-    if (!Array.isArray(e.themen) || e.themen.some(function (t) { return !regelIds[t] || t === "allgemein"; })) { errors.push(nr + ": unbekanntes Thema"); return; }
+    if (!Array.isArray(e.themen) || e.themen.some(function (t) { return !themenOk[t] || !regelIds[t]; })) { errors.push(nr + ": unbekanntes Thema"); return; }
     if (typeof e.hinweis !== "string") { errors.push(nr + ": Hinweis fehlt"); return; }
     var ans = e.ansage == null ? "" : e.ansage;
     if (typeof ans !== "string") { errors.push(nr + ": Ansage ungültig"); return; }
@@ -863,20 +1113,64 @@ function validate(data) {
     woerter.push({ wort: e.wort, silben: e.silben, welt: e.welt, nomen: e.nomen, artikel: art, themen: e.themen.slice(),
       stufe: e.stufe, hinweis: e.hinweis, fremdwort: e.fremdwort, ansage: ans });
   });
-  return { welten: welten, regeln: regeln, woerter: woerter, errors: errors };
+  var texte = [], textIds = {};
+  list(data.texte).forEach(function (x, i) {
+    var nr = "Texte Zeile " + (i + 1) + (x && x.id ? " (" + x.id + ")" : "");
+    if (!x || typeof x.id !== "string" || !x.id || typeof x.titel !== "string" || !x.titel || typeof x.text !== "string" || typeof x.satzteile !== "string") { errors.push(nr + ": Pflichtfeld fehlt"); return; }
+    if (textIds[x.id]) { errors.push(nr + ": ID doppelt"); return; }
+    if (!weltKeys[x.welt]) { errors.push(nr + ": Welt unbekannt"); return; }
+    if (typeof x.stufe !== "number" || x.stufe < 1 || x.stufe > 5 || x.stufe % 1 !== 0) { errors.push(nr + ": Stufe muss 1 bis 5 sein"); return; }
+    var teile = x.satzteile.split("|").map(norm);
+    if (teile.some(function (t) { return !t; })) { errors.push(nr + ": leerer Satzteil"); return; }
+    if (teile.join(" ") !== norm(x.text)) { errors.push(nr + ": Satzteile ergeben nicht den Text"); return; }
+    textIds[x.id] = true;
+    texte.push({ id: x.id, titel: x.titel, welt: x.welt, stufe: x.stufe, text: norm(x.text), teile: teile });
+  });
+  var luecken = [], lIds = {};
+  list(data.lueckensaetze).forEach(function (x, i) {
+    var nr = "Lückensätze Zeile " + (i + 1) + (x && x.id ? " (" + x.id + ")" : "");
+    if (!x || typeof x.id !== "string" || !x.id || typeof x.satz !== "string" || typeof x["lösung"] !== "string" || typeof x.optionen !== "string" || typeof x.paar !== "string") { errors.push(nr + ": Pflichtfeld fehlt"); return; }
+    if (lIds[x.id]) { errors.push(nr + ": ID doppelt"); return; }
+    if (x.satz.split("___").length !== 2) { errors.push(nr + ": Satz braucht genau eine Lücke ___"); return; }
+    var opts = x.optionen.split("|").map(norm).filter(Boolean);
+    if (opts.length < 2 || uniq(opts).length !== opts.length) { errors.push(nr + ": mindestens zwei verschiedene Optionen nötig"); return; }
+    if (opts.indexOf(x["lösung"]) < 0) { errors.push(nr + ": Lösung steht nicht in den Optionen"); return; }
+    if (!regelIds[x.regel]) { errors.push(nr + ": Regel unbekannt"); return; }
+    lIds[x.id] = true;
+    luecken.push({ id: x.id, satz: x.satz, loesung: x["lösung"], optionen: opts, paar: x.paar, regel: x.regel });
+  });
+  var meldungen = {};
+  list(data.meldungen).forEach(function (m, i) {
+    if (!m || typeof m.thema !== "string" || !Array.isArray(m.varianten) || !m.varianten.length ||
+        m.varianten.some(function (v) { return typeof v !== "string" || !v; })) { errors.push("Meldungen Zeile " + (i + 1) + ": ungültig"); return; }
+    meldungen[m.thema] = m.varianten.slice();
+  });
+  var fragen = [];
+  list(data.wochenfragen).forEach(function (f, i) {
+    if (!f || typeof f.id !== "string" || !f.id || typeof f.frage !== "string" || !f.frage) { errors.push("Wochenfragen Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
+    fragen.push({ id: f.id, frage: f.frage });
+  });
+  return { welten: welten, regeln: regeln, woerter: woerter, texte: texte, luecken: luecken, meldungen: meldungen,
+    wochenfragen: fragen, errors: errors };
 }
 
-var content = { welten: [], regeln: [], woerter: [], errors: [] };
+var content = { welten: [], regeln: [], woerter: [], texte: [], luecken: [], meldungen: {}, wochenfragen: [], errors: [] };
 try { content = validate(DATA); } catch (err) { content.errors = ["Inhalte konnten nicht gelesen werden: " + err.message]; }
-function themenListe() { return content.regeln.map(function (r) { return r.id; }).filter(function (id) { return id !== "allgemein" && id !== "Verwechslungswörter"; }); }
+function themenListe() { return THEMEN.slice(); }
 function regelText(id) { for (var i = 0; i < content.regeln.length; i++) if (content.regeln[i].id === id) return content.regeln[i].text; return ""; }
+var wordIndex = {};
+content.woerter.forEach(function (w) { wordIndex[w.wort] = w; });
+function findWord(wort) { return wordIndex[wort] || null; }
+function silbenOf(w) { return w && !w.eigen ? w.silben.split("|").length : 0; }
 
 // ================= Speicher =================
 var storageOk = true;
 function defaultAuswahl() { return { welten: ["alle"], thema: "egal", silben: "egal" }; }
 function emptyState() {
   return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
-    settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl() }, versuche: [], meineWoerter: [], zeiten: {} };
+    settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle" },
+    versuche: [], meineWoerter: [], zeiten: {}, stufen: {}, stufenLog: [], diktate: [], wochenfragen: [],
+    wochenfrageSpaeter: "", letzteMeldung: "" };
 }
 function clampRate(r) {
   r = Number(r);
@@ -884,11 +1178,12 @@ function clampRate(r) {
   return Math.round(Math.min(CONFIG.tempoMax, Math.max(CONFIG.tempoMin, r)) * 10) / 10;
 }
 var DAY_RE = /^\d{4}-\d\d-\d\d$/;
+function isStr(x) { return typeof x === "string"; }
 function cleanAuswahl(a) {
   var d = defaultAuswahl();
   if (!a || typeof a !== "object") return d;
-  if (Array.isArray(a.welten) && a.welten.length && a.welten.every(function (w) { return typeof w === "string"; })) d.welten = a.welten.slice();
-  if (typeof a.thema === "string") d.thema = a.thema;
+  if (Array.isArray(a.welten) && a.welten.every(isStr)) d.welten = a.welten.slice();
+  if (isStr(a.thema)) d.thema = a.thema;
   if (["egal", "1", "2", "3", "4+"].indexOf(a.silben) >= 0) d.silben = a.silben;
   return d;
 }
@@ -899,34 +1194,70 @@ function sanitize(obj) {
   if (obj.schema > SCHEMA_VERSION) return { error: "Diese Sicherung stammt aus einer neueren Version von HD. Bitte zuerst die App aktualisieren." };
   if (!Array.isArray(obj.versuche)) return { error: "Die Sicherung ist beschädigt (Übungen fehlen)." };
   var st = emptyState();
-  st.erstellt = typeof obj.erstellt === "string" ? obj.erstellt : st.erstellt;
+  st.erstellt = isStr(obj.erstellt) ? obj.erstellt : st.erstellt;
   var set = obj.settings || {};
   st.settings.rate = clampRate(set.rate);
   st.settings.auswahl = cleanAuswahl(set.auswahl);
+  if (set.diktatModus === "papier") st.settings.diktatModus = "papier";
+  if (isStr(set.paar)) st.settings.paar = set.paar;
   obj.versuche.forEach(function (v) {
-    if (!v || typeof v.wort !== "string" || typeof v.richtig !== "boolean" || typeof v.tag !== "string" || !DAY_RE.test(v.tag)) return;
+    if (!v || !isStr(v.wort) || typeof v.richtig !== "boolean" || !isStr(v.tag) || !DAY_RE.test(v.tag)) return;
     var kat = Array.isArray(v.kategorien) ? v.kategorien.filter(function (k) { return KATEGORIEN.indexOf(k) >= 0; })
       : (v.kategorie && KATEGORIEN.indexOf(v.kategorie) >= 0 ? [v.kategorie] : []);   // Schema 1
     var w = findWord(v.wort);
-    st.versuche.push({ wort: v.wort, richtig: v.richtig, hilfe: v.hilfe === 1 || v.hilfe === 2 ? v.hilfe : 0,
-      eingabe: typeof v.eingabe === "string" ? v.eingabe : "", zeit: typeof v.zeit === "string" ? v.zeit : "", tag: v.tag,
+    var quelle = ["uebung", "diktat", "luecke"].indexOf(v.quelle) >= 0 ? v.quelle : "uebung";
+    var n = { wort: v.wort, richtig: v.richtig, hilfe: v.hilfe === 1 || v.hilfe === 2 ? v.hilfe : 0,
+      eingabe: isStr(v.eingabe) ? v.eingabe : "", zeit: isStr(v.zeit) ? v.zeit : "", tag: v.tag,
       kategorien: kat,
-      themen: Array.isArray(v.themen) ? v.themen.filter(function (t) { return typeof t === "string"; }) : (w ? w.themen.slice() : []),
-      welt: typeof v.welt === "string" ? v.welt : (w ? w.welt : "") });
+      themen: Array.isArray(v.themen) ? v.themen.filter(isStr) : (w ? w.themen.slice() : []),
+      welt: isStr(v.welt) ? v.welt : (w ? w.welt : ""),
+      quelle: quelle,
+      silbenZahl: typeof v.silbenZahl === "number" ? v.silbenZahl : (quelle === "luecke" ? 0 : silbenOf(w)) };
+    if (v.zaehlt === false) n.zaehlt = false;
+    if (isStr(v.satz)) n.satz = v.satz;
+    if (isStr(v.satzId)) n.satzId = v.satzId;
+    st.versuche.push(n);
   });
   (Array.isArray(obj.meineWoerter) ? obj.meineWoerter : []).forEach(function (m) {
-    if (m && typeof m.wort === "string" && checkOwnWord(m.wort, st.meineWoerter) === null) {
-      st.meineWoerter.push({ wort: norm(m.wort), tag: typeof m.tag === "string" && DAY_RE.test(m.tag) ? m.tag : dayKey(now()) });
+    if (m && isStr(m.wort) && checkOwnWord(m.wort, st.meineWoerter) === null) {
+      st.meineWoerter.push({ wort: norm(m.wort), tag: isStr(m.tag) && DAY_RE.test(m.tag) ? m.tag : dayKey(now()) });
     }
   });
   if (obj.zeiten && typeof obj.zeiten === "object") {
     Object.keys(obj.zeiten).forEach(function (k) {
       var z = obj.zeiten[k];
-      if (DAY_RE.test(k) && z && typeof z === "object") {
-        st.zeiten[k] = { ueben: Math.max(0, Number(z.ueben) || 0), spiel: Math.max(0, Number(z.spiel) || 0) };
+      if (DAY_RE.test(k) && z && typeof z === "object") st.zeiten[k] = { ueben: Math.max(0, Number(z.ueben) || 0), spiel: Math.max(0, Number(z.spiel) || 0) };
+    });
+  }
+  if (obj.stufen && typeof obj.stufen === "object") {
+    Object.keys(obj.stufen).forEach(function (u) {
+      var s = obj.stufen[u];
+      if (s && typeof s.stufe === "number" && s.stufe >= 1 && s.stufe <= 5 && s.stufe % 1 === 0) {
+        st.stufen[u] = { stufe: Math.min(s.stufe, CONFIG.stufeMax), ab: Math.max(0, Math.min(st.versuche.length, Number(s.ab) || 0)),
+          wiederholung: s.wiederholung === true };
       }
     });
   }
+  (Array.isArray(obj.stufenLog) ? obj.stufenLog : []).forEach(function (l) {
+    if (l && isStr(l.unit) && typeof l.von === "number" && typeof l.nach === "number" && ["auf", "ab", "manuell"].indexOf(l.grund) >= 0 && isStr(l.tag)) {
+      st.stufenLog.push({ unit: l.unit, von: l.von, nach: l.nach, grund: l.grund, tag: l.tag,
+        richtig: Number(l.richtig) || 0, gesamt: Number(l.gesamt) || 0, tage: Number(l.tage) || 0 });
+    }
+  });
+  (Array.isArray(obj.diktate) ? obj.diktate : []).forEach(function (d) {
+    if (d && isStr(d.id) && isStr(d.tag) && DAY_RE.test(d.tag)) {
+      st.diktate.push({ id: d.id, titel: isStr(d.titel) ? d.titel : d.id, tag: d.tag, zeit: isStr(d.zeit) ? d.zeit : "",
+        modus: d.modus === "papier" ? "papier" : "app", fehler: Number(d.fehler) || 0, woerter: Number(d.woerter) || 0,
+        eingabe: isStr(d.eingabe) ? d.eingabe : "" });
+    }
+  });
+  (Array.isArray(obj.wochenfragen) ? obj.wochenfragen : []).forEach(function (f) {
+    if (f && isStr(f.woche) && isStr(f.antwort) && isStr(f.tag)) {
+      st.wochenfragen.push({ woche: f.woche, id: isStr(f.id) ? f.id : "", frage: isStr(f.frage) ? f.frage : "", antwort: f.antwort, tag: f.tag });
+    }
+  });
+  if (isStr(obj.wochenfrageSpaeter)) st.wochenfrageSpaeter = obj.wochenfrageSpaeter;
+  if (isStr(obj.letzteMeldung)) st.letzteMeldung = obj.letzteMeldung;
   return { state: st };
 }
 function loadState() {
@@ -947,12 +1278,6 @@ function saveState() {
 }
 
 // ================= Wörter, eigene Wörter, Filter =================
-var wordIndex = {};
-content.woerter.forEach(function (w) { wordIndex[w.wort] = w; });
-function findWord(wort) {
-  if (wordIndex[wort]) return wordIndex[wort];
-  return null;
-}
 function ownWordEntry(wort) {
   return { wort: wort, silben: wort, welt: "meine", nomen: /^[A-ZÄÖÜ]/.test(wort) ? "ja" : "nein", artikel: "",
     themen: [], stufe: 1, hinweis: "", fremdwort: "nein", ansage: "", eigen: true };
@@ -965,35 +1290,49 @@ function checkOwnWord(wort, list) {
   if (list.some(function (m) { return m.wort === wort; })) return "Das Wort steht schon in deiner Liste.";
   return null;
 }
-function allWords() {
-  var list = content.woerter.slice();
-  state.meineWoerter.forEach(function (m) { if (!wordIndex[m.wort]) list.push(ownWordEntry(m.wort)); });
-  return list;
-}
-function silbenZahl(w) { return w.eigen ? 0 : w.silben.split("|").length; }
+function counted(v) { return v.zaehlt !== false; }
+function zaehltRichtig(v) { return v.richtig && v.hilfe < 2; }
 function boxes() {
   var b = {};
   state.versuche.forEach(function (v) {
-    var ok = v.richtig && v.hilfe < 2;
-    b[v.wort] = ok ? Math.min(5, (b[v.wort] || 1) + 1) : 1;
+    if (v.quelle === "luecke") return;
+    b[v.wort] = zaehltRichtig(v) ? Math.min(5, (b[v.wort] || 1) + 1) : 1;
   });
   return b;
 }
+// Diktat-Fehlerwörter, die nicht in der Wortliste stehen (nur für „Meine Fehlerwörter“)
+function diktatEntries() {
+  var res = {}, own = {};
+  state.meineWoerter.forEach(function (m) { own[m.wort] = true; });
+  state.versuche.forEach(function (v) {
+    if (v.quelle === "diktat" && v.zaehlt === false && !wordIndex[v.wort] && !own[v.wort]) {
+      var e = ownWordEntry(v.wort); e.welt = "diktat"; e.ansage = v.satz || ""; res[v.wort] = e;
+    }
+  });
+  return Object.keys(res).map(function (k) { return res[k]; });
+}
+function allWords(withDiktat) {
+  var list = content.woerter.slice();
+  state.meineWoerter.forEach(function (m) { if (!wordIndex[m.wort]) list.push(ownWordEntry(m.wort)); });
+  if (withDiktat) list = list.concat(diktatEntries());
+  return list;
+}
 function filterWords(a) {
-  var bx = a.thema === "fehler" ? boxes() : null;
+  var fehler = a.thema === "fehler";
+  var bx = fehler ? boxes() : null;
   var alle = a.welten.indexOf("alle") >= 0;
-  return allWords().filter(function (w) {
-    if (!alle) {
+  return allWords(fehler).filter(function (w) {
+    if (!alle && w.welt !== "diktat") {
       var weltOk = w.eigen ? a.welten.indexOf("meine") >= 0 : a.welten.indexOf(w.welt) >= 0;
       if (!weltOk) return false;
     }
-    if (a.thema === "fehler") { if (bx[w.wort] !== 1) return false; }
+    if (fehler) { if (bx[w.wort] !== 1) return false; }
     else if (a.thema !== "egal") {
       if (w.themen.indexOf(a.thema) < 0) return false;
       if (a.thema !== "Fremdwörter" && w.fremdwort === "ja") return false;
     }
     if (a.silben !== "egal") {
-      var n = silbenZahl(w);
+      var n = silbenOf(w);
       if (a.silben === "4+" ? n < 4 : n !== Number(a.silben)) return false;
     }
     return true;
@@ -1006,6 +1345,92 @@ function drawRound(words, n) {
     var weight = CONFIG.leitnerGewichte[bx[w.wort] || 0];
     return { w: w, key: Math.pow(Math.random(), 1 / weight) };
   }).sort(function (x, y) { return y.key - x.key; }).slice(0, n).map(function (x) { return x.w; });
+}
+
+// ================= Stufen-Automatik (5.2) =================
+function unitName(u) {
+  if (u === "gesamt") return "Alle Themen";
+  if (u.indexOf("silben:") === 0) { var n = u.slice(7); return n === "1" ? "1 Silbe" : n + " Silben"; }
+  return u;
+}
+function unitsOf(v) {
+  if (!counted(v)) return [];
+  var us = v.themen.slice();
+  if (v.quelle !== "luecke") {
+    if (v.silbenZahl > 0) us.push("silben:" + (v.silbenZahl >= 4 ? "4+" : v.silbenZahl));
+    us.push("gesamt");
+  }
+  return us;
+}
+function stufeInfo(u) { return state.stufen[u] || { stufe: 1, ab: 0, wiederholung: false }; }
+function unitVersuche(u, ab) {
+  var res = [];
+  for (var i = ab || 0; i < state.versuche.length; i++) if (unitsOf(state.versuche[i]).indexOf(u) >= 0) res.push(state.versuche[i]);
+  return res;
+}
+function changeStufe(u, nach, grund, zahlen) {
+  var info = stufeInfo(u);
+  var entry = { unit: u, von: info.stufe, nach: nach, grund: grund, tag: dayKey(now()),
+    richtig: zahlen ? zahlen.richtig : 0, gesamt: zahlen ? zahlen.gesamt : 0, tage: zahlen ? zahlen.tage : 0 };
+  state.stufen[u] = { stufe: nach, ab: state.versuche.length, wiederholung: grund === "ab" };
+  state.stufenLog.push(entry);
+  return entry;
+}
+function evaluateUnit(u) {
+  var info = stufeInfo(u);
+  var vs = unitVersuche(u, info.ab);
+  var n30 = CONFIG.stufeAufstiegWoerter, n20 = CONFIG.stufeAbstiegWoerter;
+  if (vs.length >= n30 && info.stufe < CONFIG.stufeMax) {
+    var last = vs.slice(-n30), ok = last.filter(zaehltRichtig).length;
+    var tage = uniq(last.map(function (v) { return v.tag; })).length;
+    if (ok / n30 >= CONFIG.stufeAufstiegQuote && tage >= CONFIG.stufeAufstiegTage) {
+      return changeStufe(u, info.stufe + 1, "auf", { richtig: ok, gesamt: n30, tage: tage });
+    }
+  }
+  if (vs.length >= n20 && info.stufe > 1) {
+    var l20 = vs.slice(-n20), ok20 = l20.filter(zaehltRichtig).length;
+    if (ok20 / n20 < CONFIG.stufeAbstiegQuote) {
+      return changeStufe(u, info.stufe - 1, "ab", { richtig: ok20, gesamt: n20, tage: uniq(l20.map(function (v) { return v.tag; })).length });
+    }
+  }
+  return null;
+}
+function recordAttempt(v, events) {
+  state.versuche.push(v);
+  unitsOf(v).forEach(function (u) { var e = evaluateUnit(u); if (e && events) events.push(e); });
+}
+function setStufeManuell(u, n) {
+  if (n === stufeInfo(u).stufe || n < 1 || n > CONFIG.stufeMax) return null;
+  var e = changeStufe(u, n, "manuell");
+  saveState();
+  return e;
+}
+function unitForAuswahl(a) {
+  if (a.thema === "fehler") return null;
+  if (a.thema !== "egal") return a.thema;
+  if (a.silben !== "egal") return "silben:" + a.silben;
+  return "gesamt";
+}
+// Wörter bis zur aktuellen Stufe; reichen sie nicht, wird mit der nächsten Stufe ergänzt
+function eligible(words, S) {
+  var limit = S, res;
+  for (;;) {
+    res = words.filter(function (w) { return w.eigen || w.stufe <= limit; });
+    if (res.length >= CONFIG.minWoerterUebung || limit >= 5) break;
+    limit++;
+  }
+  return { words: res, limit: limit };
+}
+// 80 % aktuelle Stufe (und ergänzte höhere), 20 % frühere Stufen
+function drawRoundStufe(words, n, S) {
+  var cur = words.filter(function (w) { return w.eigen || w.stufe >= S; });
+  var low = words.filter(function (w) { return !w.eigen && w.stufe < S; });
+  n = Math.min(n, words.length);
+  var nLow = S > 1 && low.length ? Math.round(n * (1 - CONFIG.mischungAktuell)) : 0;
+  nLow = Math.min(nLow, low.length);
+  var nCur = Math.min(n - nLow, cur.length);
+  if (nCur + nLow < n) nLow = Math.min(low.length, n - nCur);
+  return shuffle(drawRound(cur, nCur).concat(drawRound(low, nLow)));
 }
 
 // ================= Buchstabenvergleich (LCS) =================
@@ -1049,20 +1474,17 @@ function classify(target, input) {
   var a = Array.from(target), b = Array.from(input);
   var al = Array.from(target.toLowerCase()), bl = Array.from(input.toLowerCase());
   if (al.length !== a.length || bl.length !== b.length) return ["Sonstige"];
-  // nur Groß/klein falsch?
   if (al.join("") === bl.join("")) {
     var onlyFirst = a.every(function (c, i) { return i === 0 || c === b[i]; });
     return [onlyFirst ? "Groß/klein" : "Sonstige"];
   }
   if (al[0] === bl[0] && a[0] !== b[0]) cats.push("Groß/klein");
-  // zwei benachbarte Buchstaben vertauscht?
   if (al.length === bl.length && al.length >= 2) {
     var diff = []; for (var k = 0; k < al.length; k++) if (al[k] !== bl[k]) diff.push(k);
     if (diff.length === 2 && diff[1] === diff[0] + 1 && al[diff[0]] === bl[diff[1]] && al[diff[1]] === bl[diff[0]]) {
       cats.push("vertauschte Buchstaben"); return uniq(cats);
     }
   }
-  // Abschnitte mit Unterschieden sammeln
   var ops = align(al, bl, function (x, y) { return x === y; });
   var regions = [], cur = null;
   ops.forEach(function (o) {
@@ -1076,36 +1498,27 @@ function classify(target, input) {
 }
 function classifyRegion(r, al, bl) {
   var T = r.T, I = r.I;
-  var tEnd = r.i + Array.from(T).length;              // Index nach dem Abschnitt im Zielwort
+  var tEnd = r.i + Array.from(T).length;
   var prevT = al[r.i - 1], nextT = al[tEnd];
   var jEnd = r.j + Array.from(I).length;
   var prevI = bl[r.j - 1], nextI = bl[jEnd];
   var sSet = { "s": 1, "ss": 1, "ß": 1 };
-  // s/ss/ß
   if ((sSet[T] || T === "") && (sSet[I] || I === "") && (T + I).replace(/[sß]/g, "") === "" &&
       (T.indexOf("ß") >= 0 || I.indexOf("ß") >= 0 || prevT === "s" || nextT === "s" || prevI === "s" || nextI === "s")) return "s/ss/ß";
-  // ck/k
   if ((T === "c" && I === "" && nextT === "k") || (T === "" && I === "c" && nextI === "k") ||
       (T === "c" && I === "k" && nextT === "k") || (T === "" && I === "k" && (prevI === "k" || nextI === "k") && prevT !== "c")) return "ck/k";
-  // tz/z
   if ((T === "t" && I === "" && nextT === "z") || (T === "" && I === "t" && nextI === "z") ||
       (T === "t" && I === "z" && nextT === "z") || (T === "" && I === "z" && (prevI === "z" || nextI === "z"))) return "tz/z";
-  // ie/i
   if ((T === "e" && I === "" && prevT === "i") || (T === "" && I === "e" && prevI === "i")) return "ie/i";
-  // Dehnungs-h (h nach Selbstlaut, danach Mitlaut oder Wortende)
   if ((T === "h" && I === "" && isVowel(prevT) && (nextT === undefined || isCons(nextT))) ||
       (T === "" && I === "h" && isVowel(prevI) && (nextI === undefined || isCons(nextI)))) return "Dehnungs-h";
-  // Doppelvokal
   if ((T.length === 1 && I === "" && "aeo".indexOf(T) >= 0 && (prevT === T || nextT === T)) ||
       (I.length === 1 && T === "" && "aeo".indexOf(I) >= 0 && (prevI === I || nextI === I))) return "Doppelvokal";
-  // Doppelkonsonant
   if ((T.length === 1 && I === "" && isCons(T) && (prevT === T || nextT === T)) ||
       (I.length === 1 && T === "" && isCons(I) && (prevI === I || nextI === I))) return "Doppelkonsonant";
-  // Endlaut (b/p, d/t, g/k, -ig/-ich) am Wortende oder vor einem Mitlaut
   if ((T.length === 1 && I.length === 1 && ENDLAUT[T] === I) || (T === "g" && I === "ch")) {
     if (nextT === undefined || isCons(nextT)) return "Endlaut";
   }
-  // Umlaut ä/e (auch äu/eu)
   if ((T === "ä" && I === "e") || (T === "e" && I === "ä")) return "Umlaut";
   if (T.length === 1 && I === "") return "fehlender Buchstabe";
   if (I.length === 1 && T === "") return "zusätzlicher Buchstabe";
@@ -1113,11 +1526,10 @@ function classifyRegion(r, al, bl) {
 }
 
 // ================= Statistik =================
-function zaehltRichtig(v) { return v.richtig && v.hilfe < 2; }
 function ampel() {
   var res = {};
-  themenListe().forEach(function (t) {
-    var vs = state.versuche.filter(function (v) { return v.themen.indexOf(t) >= 0; }).slice(-CONFIG.stufeAufstiegWoerter);
+  THEMEN.concat([VERWECHSLUNG]).forEach(function (t) {
+    var vs = state.versuche.filter(function (v) { return counted(v) && v.themen.indexOf(t) >= 0; }).slice(-CONFIG.stufeAufstiegWoerter);
     if (vs.length < CONFIG.ampelMinVersuche) return;
     var q = vs.filter(zaehltRichtig).length / vs.length;
     res[t] = { n: vs.length, quote: q,
@@ -1159,26 +1571,29 @@ if (hasSpeech()) {
     else window.speechSynthesis.onvoiceschanged = loadVoices;
   } catch (err) { /* egal */ }
 }
+function speechMsg(text) {
+  $$(".screen.active .speechmsg").forEach(function (m) { m.textContent = text; });
+}
 function speak(text) {
-  var msg = $("speechMsg"); msg.textContent = "";
-  if (!hasSpeech()) { msg.textContent = "Dieser Browser kann nicht vorlesen. Probier Safari, Chrome oder Edge."; return false; }
+  speechMsg("");
+  if (!hasSpeech()) { speechMsg("Dieser Browser kann nicht vorlesen. Probier Safari, Chrome oder Edge."); return false; }
   loadVoices();
   var voice = pickVoice();
   if (voices.length > 0 && !voice) {
-    msg.textContent = "Keine deutsche Stimme gefunden. In den Geräte-Einstellungen unter Sprache kannst du eine deutsche Stimme laden.";
+    speechMsg("Keine deutsche Stimme gefunden. In den Geräte-Einstellungen unter Sprache kannst du eine deutsche Stimme laden.");
     return false;
   }
   var u = new window.SpeechSynthesisUtterance(text);
   u.lang = voice ? voice.lang : "de-DE";
   if (voice) u.voice = voice;
   u.rate = state.settings.rate;
-  var sp = $("speaker");
-  u.onstart = function () { sp.classList.add("playing"); };
-  u.onend = function () { sp.classList.remove("playing"); };
+  var sps = $$(".speaker");
+  u.onstart = function () { sps.forEach(function (s) { s.classList.add("playing"); }); };
+  u.onend = function () { sps.forEach(function (s) { s.classList.remove("playing"); }); };
   u.onerror = function (e) {
-    sp.classList.remove("playing");
+    sps.forEach(function (s) { s.classList.remove("playing"); });
     if (e && (e.error === "interrupted" || e.error === "canceled")) return;
-    msg.textContent = "Vorlesen hat nicht geklappt" + (e && e.error ? " (" + e.error + ")" : "") + ". Tipp nochmal auf den Lautsprecher.";
+    speechMsg("Vorlesen hat nicht geklappt" + (e && e.error ? " (" + e.error + ")" : "") + ". Tipp nochmal auf den Lautsprecher.");
   };
   currentUtterance = u;
   try {
@@ -1186,7 +1601,7 @@ function speak(text) {
     window.speechSynthesis.speak(u);
     if (window.speechSynthesis.paused) window.speechSynthesis.resume();
   } catch (err) {
-    msg.textContent = "Vorlesen hat nicht geklappt. Tipp nochmal auf den Lautsprecher.";
+    speechMsg("Vorlesen hat nicht geklappt. Tipp nochmal auf den Lautsprecher.");
     return false;
   }
   speakLog.push({ text: text, rate: u.rate, lang: u.lang });
@@ -1205,8 +1620,9 @@ function onlyWordHint(w) {
 
 // ================= Zeiterfassung (5.6) =================
 var lastTick = 0, lastActivity = 0, unsavedSeconds = 0;
+var ZEIT_SCREENS = { ueben: "ueben", diktat: "ueben", luecke: "ueben" };
 function activeScreen() { var s = document.querySelector(".screen.active"); return s ? s.id : ""; }
-function zeitArt() { return activeScreen() === "ueben" ? "ueben" : null; }
+function zeitArt() { return ZEIT_SCREENS[activeScreen()] || null; }
 function markActivity() { lastActivity = now().getTime(); }
 function timeTick() {
   var t = now().getTime();
@@ -1233,6 +1649,8 @@ function show(id) {
   markActivity();
   if (id === "start") renderStart();
   if (id === "auswahl") renderAuswahl();
+  if (id === "diktatwahl") renderDiktatWahl();
+  if (id === "lueckewahl") renderLueckeWahl();
   if (id === "meine") renderMeine();
   if (id === "bericht") renderReport();
   if (id === "daten") renderData();
@@ -1243,13 +1661,45 @@ function goBack() {
 }
 function goHome() { navStack = ["start"]; show("start"); }
 
-// ================= Start =================
+// ================= Können-Meldungen (5.4) =================
+var modalQueue = [];
+function meldungFor(e) {
+  var key = e.unit.indexOf("silben:") === 0 ? "Silben" : (e.unit === "gesamt" ? "alle" : e.unit);
+  var vars = content.meldungen[key] || content.meldungen["alle"] || ["{richtig} von {gesamt} richtig."];
+  var cands = vars.length > 1 ? vars.filter(function (v) { return fill(v) !== state.letzteMeldung; }) : vars;
+  var text = fill(cands[Math.floor(Math.random() * cands.length)]);
+  state.letzteMeldung = text;
+  return text;
+  function fill(v) {
+    return v.replace(/\{richtig\}/g, e.richtig).replace(/\{gesamt\}/g, e.gesamt).replace(/\{tage\}/g, e.tage)
+      .replace(/\{silben\}/g, unitName(e.unit));
+  }
+}
+function showEvents(events) {
+  var notes = [];
+  events.forEach(function (e) {
+    if (e.grund === "auf") modalQueue.push({ title: "Stufe " + e.nach + " geschafft: " + unitName(e.unit), text: meldungFor(e) });
+    if (e.grund === "ab") notes.push("Wiederholungsrunde: " + unitName(e.unit) + " üben wir noch mal auf Stufe " + e.nach + ". Freigelegtes bleibt freigelegt.");
+  });
+  saveState();
+  nextModal();
+  return notes;
+}
+function nextModal() {
+  var m = modalQueue.shift();
+  if (!m) { $("overlay").hidden = true; return; }
+  $("mTitle").textContent = m.title; $("mText").textContent = m.text;
+  $("overlay").hidden = false;
+  try { $("mOk").focus(); } catch (err) { /* egal */ }
+}
+
+// ================= Start & Wochenfrage =================
 function renderStart() {
   var today = dayKey(now());
-  var n = state.versuche.filter(function (v) { return v.tag === today; }).length;
+  var n = state.versuche.filter(function (v) { return v.tag === today && counted(v); }).length;
   var min = Math.floor(zeitSekunden(today, today) / 60);
   var parts = [];
-  if (n) parts.push("Heute: " + plural(n, "Wort", "Wörter"));
+  if (n) parts.push("Heute: " + plural(n, "Übung", "Übungen"));
   if (min) parts.push(min + " Min.");
   $("todayStat").textContent = parts.join(" · ");
   $("storageWarn").hidden = storageOk;
@@ -1258,6 +1708,54 @@ function renderStart() {
     $("dataWarn").textContent = content.errors.length + (content.errors.length === 1 ? " Eintrag" : " Einträge") +
       " in den Inhalten fehlerhaft und übersprungen: " + content.errors.join("; ");
   }
+  renderWochenfrage();
+}
+function wochenfrageAktuell() {
+  if (!content.wochenfragen.length) return null;
+  var d = now(), woche = isoWeek(d);
+  if (state.wochenfragen.some(function (f) { return f.woche === woche; })) return null;
+  if (state.wochenfrageSpaeter === dayKey(d)) return null;
+  return content.wochenfragen[state.wochenfragen.length % content.wochenfragen.length];
+}
+function renderWochenfrage() {
+  var f = wochenfrageAktuell();
+  $("wfCard").hidden = !f;
+  if (f) { $("wfFrage").textContent = f.frage; $("wfMsg").textContent = ""; }
+}
+function sendWochenfrage() {
+  var f = wochenfrageAktuell(); if (!f) return;
+  var a = norm($("wfInput").value).slice(0, CONFIG.wochenfrageMaxZeichen);
+  if (!a) { $("wfMsg").textContent = "Schreib zuerst eine Antwort – oder tipp auf „Später“."; return; }
+  state.wochenfragen.push({ woche: isoWeek(now()), id: f.id, frage: f.frage, antwort: a, tag: dayKey(now()) });
+  saveState(); $("wfInput").value = "";
+  toast("Danke! Deine Antwort steht im nächsten Bericht.");
+  renderWochenfrage();
+}
+function laterWochenfrage() { state.wochenfrageSpaeter = dayKey(now()); saveState(); renderWochenfrage(); }
+
+// ================= Stufen-Anzeige (Auswahl, Lückensatz) =================
+function renderStufeBox(box, unit) {
+  box.textContent = "";
+  box.hidden = !unit;
+  if (!unit) return;
+  var info = stufeInfo(unit);
+  box.appendChild(el("div", "", "Deine Stufe hier (" + unitName(unit) + "): Stufe " + info.stufe + (info.wiederholung ? " · Wiederholungsrunde" : "")));
+  box.appendChild(el("div", "muted", "Du kannst sie selbst ändern:"));
+  var chips = el("div", "chips");
+  for (var s = 1; s <= CONFIG.stufeMax; s++) {
+    var b = chip("Stufe " + s, "data-stufe", String(s), s === info.stufe);
+    b.setAttribute("data-unit", unit);
+    chips.appendChild(b);
+  }
+  box.appendChild(chips);
+}
+function onStufeChip(ev, rerender) {
+  var b = ev.target.closest ? ev.target.closest("[data-stufe]") : null;
+  if (!b) return false;
+  var e = setStufeManuell(b.getAttribute("data-unit"), Number(b.getAttribute("data-stufe")));
+  if (e) toast("Stufe selbst auf " + e.nach + " gestellt.");
+  rerender();
+  return true;
 }
 
 // ================= Auswahl (4.2) =================
@@ -1274,28 +1772,38 @@ function renderAuswahl() {
   cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
   var ct = $("chipThema"); ct.textContent = "";
   ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
-  themenListe().forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
+  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
   ct.appendChild(chip("Meine Fehlerwörter", "data-t", "fehler", a.thema === "fehler"));
   var cs = $("chipSilben"); cs.textContent = "";
   ["egal", "1", "2", "3", "4+"].forEach(function (s) { cs.appendChild(chip(s, "data-s", s, a.silben === s)); });
+  renderStufeBox($("uStufe"), unitForAuswahl(a));
   updateAuswahlCount();
+}
+function minFor(a) { return a.thema === "fehler" ? CONFIG.minFehlerwoerter : CONFIG.minWoerterUebung; }
+function roundPool(a) {
+  var words = filterWords(a), unit = unitForAuswahl(a);
+  if (!unit) return { words: words, stufe: 0, limit: 0 };
+  var S = stufeInfo(unit).stufe, el2 = eligible(words, S);
+  return { words: el2.words, stufe: S, limit: el2.limit };
 }
 function updateAuswahlCount() {
   var a = state.settings.auswahl;
-  var warn = "", n = 0;
+  var warn = "", n = 0, extra = "";
   if (!a.welten.length) warn = "Wähl mindestens eine Welt.";
   else {
-    n = filterWords(a).length;
-    if (n < CONFIG.minWoerterUebung) {
+    var p = roundPool(a); n = p.words.length;
+    if (p.limit > p.stufe && p.stufe) extra = " (mit Wörtern aus Stufe " + p.limit + " ergänzt)";
+    if (n < minFor(a)) {
       warn = a.thema === "fehler" && n === 0 ? "Gerade hast du keine Fehlerwörter. Stark!" :
         "Zu wenige Wörter für eine Runde (mindestens " + CONFIG.minWoerterUebung + "). Wähl mehr Welten oder „egal“.";
     }
   }
-  $("auswahlCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") : "";
+  $("auswahlCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") + extra : "";
   $("auswahlWarn").textContent = warn;
   $("auswahlStart").disabled = !!warn;
 }
 function onAuswahlClick(ev) {
+  if (onStufeChip(ev, renderAuswahl)) return;
   var b = ev.target.closest ? ev.target.closest(".chip") : null;
   if (!b) return;
   var a = state.settings.auswahl;
@@ -1315,12 +1823,15 @@ function onAuswahlClick(ev) {
 }
 
 // ================= Üben (4.3) =================
-var round = null;
+var round = null, lastKind = "uebung";
 function startRound() {
   var a = state.settings.auswahl;
-  var words = filterWords(a);
-  if (words.length < CONFIG.minWoerterUebung) { show("auswahl"); return; }
-  round = { words: drawRound(words, Math.min(CONFIG.woerterProRunde, words.length)), idx: 0, results: [] };
+  var p = roundPool(a);
+  if (p.words.length < minFor(a)) { show("auswahl"); return; }
+  var n = Math.min(CONFIG.woerterProRunde, p.words.length);
+  var words = p.stufe ? drawRoundStufe(p.words, n, p.stufe) : drawRound(p.words, n);
+  round = { words: words, idx: 0, results: [], events: [] };
+  lastKind = "uebung";
   show("ueben");
   showWord();
 }
@@ -1389,8 +1900,10 @@ function check() {
   if (!round.recorded) {
     var d = now();
     var v = { wort: target, richtig: res.correct, hilfe: round.hilfe, eingabe: input, zeit: d.toISOString(), tag: dayKey(d),
-      kategorien: res.correct ? [] : classify(target, input), themen: w.themen.slice(), welt: w.welt };
-    state.versuche.push(v);
+      kategorien: res.correct ? [] : classify(target, input), themen: w.themen.slice(), welt: w.welt,
+      quelle: "uebung", silbenZahl: silbenOf(w) };
+    if (w.welt === "diktat") { v.zaehlt = false; v.satz = w.ansage; }
+    recordAttempt(v, round.events);
     saveState();
     round.recorded = true;
     round.results.push(v);
@@ -1402,24 +1915,238 @@ function check() {
 function next() {
   if (!round) return;
   round.idx++;
-  if (round.idx >= round.words.length) { showDone(); return; }
+  if (round.idx >= round.words.length) { showDone(round.results, round.events, "uebung"); return; }
   showWord();
 }
-function showDone() {
-  var rs = round.results, n = rs.length;
+function showDone(rs, events, kind) {
+  var n = rs.length;
   var ok = rs.filter(zaehltRichtig).length;
   var mitHilfe = rs.filter(function (v) { return v.hilfe === 2; }).length;
   $("doneScore").textContent = ok + " von " + n;
-  $("doneText").textContent = "beim ersten Versuch richtig" + (mitHilfe ? " · " + mitHilfe + " mit Silbenhilfe" : "") + ".";
+  $("doneText").textContent = (kind === "luecke" ? "Lücken richtig gefüllt" : "beim ersten Versuch richtig") +
+    (mitHilfe ? " · " + mitHilfe + " mit Silbenhilfe" : "") + ".";
   var ul = $("doneLines"); ul.textContent = "";
   var per = {};
-  rs.forEach(function (v) { v.themen.forEach(function (t) { per[t] = per[t] || { n: 0, ok: 0 }; per[t].n++; if (zaehltRichtig(v)) per[t].ok++; }); });
-  Object.keys(per).filter(function (t) { return per[t].n >= 3; }).forEach(function (t) {
+  rs.forEach(function (v) {
+    var keys = kind === "luecke" ? [v.paar] : v.themen;
+    keys.forEach(function (t) { per[t] = per[t] || { n: 0, ok: 0 }; per[t].n++; if (zaehltRichtig(v)) per[t].ok++; });
+  });
+  Object.keys(per).filter(function (t) { return per[t].n >= (kind === "luecke" ? 2 : 3); }).forEach(function (t) {
     ul.appendChild(el("li", "", t + ": " + per[t].ok + " von " + per[t].n + " richtig"));
   });
-  var wrong = rs.filter(function (v) { return !zaehltRichtig(v); }).map(function (v) { return v.wort; });
-  if (wrong.length) ul.appendChild(el("li", "", "Kommen bald wieder: " + wrong.join(", ")));
+  var wrong = uniq(rs.filter(function (v) { return !zaehltRichtig(v); }).map(function (v) { return v.wort; }));
+  if (wrong.length && kind !== "luecke") ul.appendChild(el("li", "", "Kommen bald wieder: " + wrong.join(", ")));
+  var notes = showEvents(events);
+  $("doneNote").hidden = !notes.length; $("doneNote").textContent = notes.join(" ");
+  lastKind = kind;
   show("fertig");
+}
+
+// ================= Diktat (4.4) =================
+var PUNCT = /^[.,!?;:„“"'»«()–…-]+|[.,!?;:„“"'»«()–…-]+$/g;
+function tokens(text) {
+  return norm(text).split(" ").filter(Boolean).map(function (raw) { return { raw: raw, w: raw.replace(PUNCT, "") }; })
+    .filter(function (t) { return t.w; });
+}
+// Wort-für-Wort-Vergleich: Groß/klein zählt, Satzzeichen nicht (C2)
+function compareDiktat(text, input) {
+  var T = tokens(text), I = tokens(input);
+  var ops = align(T.map(function (t) { return t.w; }), I.map(function (t) { return t.w; }), function (x, y) { return x === y; });
+  var items = [], dels = [], ins = [];
+  function flush() {
+    var k = 0;
+    for (; k < Math.min(dels.length, ins.length); k++) items.push({ soll: T[dels[k]].w, raw: T[dels[k]].raw, ist: I[ins[k]].w, status: "falsch", ti: dels[k] });
+    for (var d = k; d < dels.length; d++) items.push({ soll: T[dels[d]].w, raw: T[dels[d]].raw, ist: "", status: "fehlt", ti: dels[d] });
+    for (var e = k; e < ins.length; e++) items.push({ soll: "", raw: "", ist: I[ins[e]].w, status: "extra", ti: -1 });
+    dels = []; ins = [];
+  }
+  ops.forEach(function (o) {
+    if (o.t === "same") { flush(); items.push({ soll: T[o.i].w, raw: T[o.i].raw, ist: I[o.j].w, status: "ok", ti: o.i }); }
+    else if (o.t === "del") dels.push(o.i); else ins.push(o.j);
+  });
+  flush();
+  return { items: items, woerter: T.length, fehler: items.filter(function (x) { return x.status !== "ok"; }).length };
+}
+var dRun = null;
+function renderDiktatWahl() {
+  var cm = $("chipModus"); cm.textContent = "";
+  cm.appendChild(chip("In der App", "data-modus", "app", state.settings.diktatModus === "app"));
+  cm.appendChild(chip("Auf Papier", "data-modus", "papier", state.settings.diktatModus === "papier"));
+  var list = $("diktatList"); list.textContent = "";
+  var welten = {}; content.welten.forEach(function (w) { welten[w["kürzel"]] = w; });
+  content.texte.forEach(function (t) {
+    var b = el("button", "btn");
+    b.setAttribute("data-text", t.id);
+    b.appendChild(el("span", "ico", welten[t.welt] ? welten[t.welt].emoji : "📝"));
+    var lab = el("span", "", t.titel);
+    var last = state.diktate.filter(function (d) { return d.id === t.id && d.modus === "app"; }).slice(-1)[0];
+    var sub = "Stufe " + t.stufe + " · " + plural(t.teile.length, "Teil", "Teile") + (last ? " · zuletzt " + plural(last.fehler, "Fehler", "Fehler") : "");
+    lab.appendChild(el("span", "sub", sub));
+    b.appendChild(lab);
+    list.appendChild(b);
+  });
+}
+function textById(id) { for (var i = 0; i < content.texte.length; i++) if (content.texte[i].id === id) return content.texte[i]; return null; }
+function startDiktat(id) {
+  var t = textById(id); if (!t) return;
+  dRun = { text: t, idx: 0, modus: state.settings.diktatModus, events: [] };
+  $("dTitel").textContent = t.titel;
+  $("dInput").value = ""; $("dMsg").textContent = "";
+  var papier = dRun.modus === "papier";
+  $("dInput").hidden = papier; $("dPapier").hidden = !papier;
+  show("diktat");
+  showDiktatTeil();
+}
+function showDiktatTeil() {
+  var last = dRun.idx >= dRun.text.teile.length - 1;
+  $("dCounter").textContent = "Teil " + (dRun.idx + 1) + " von " + dRun.text.teile.length;
+  $("dWeiter").hidden = last; $("dFertig").hidden = !last; $("dAlles").hidden = !last;
+  $("dFertig").textContent = dRun.modus === "papier" ? "Fertig" : "Fertig – prüfen";
+  speak(dRun.text.teile[dRun.idx]);
+}
+function diktatWeiter() { if (!dRun) return; dRun.idx = Math.min(dRun.idx + 1, dRun.text.teile.length - 1); showDiktatTeil(); markActivity(); }
+function diktatNochmal() { if (dRun) speak(dRun.text.teile[dRun.idx]); }
+function diktatAlles() { if (dRun) speak(dRun.text.text); }
+function teilOfToken(t, ti) {
+  var count = 0;
+  for (var i = 0; i < t.teile.length; i++) { count += tokens(t.teile[i]).length; if (ti < count) return t.teile[i]; }
+  return t.text;
+}
+function diktatFertig() {
+  if (!dRun) return;
+  var t = dRun.text, d = now();
+  if (dRun.modus === "papier") {
+    state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "papier", fehler: 0, woerter: tokens(t.text).length, eingabe: "" });
+    saveState();
+    $("deTitel").textContent = t.titel;
+    $("deScore").textContent = "Auf Papier geschrieben";
+    $("deText").textContent = "Vergleich selbst mit dem Text. Dann mach ein Foto und schick es an Mama.";
+    var box = $("deAnzeige"); box.textContent = t.text;
+    $("deNote").hidden = true;
+    dRun = null;
+    show("diktatErgebnis");
+    return;
+  }
+  var input = $("dInput").value;
+  if (!norm(input)) { $("dMsg").textContent = "Schreib zuerst den Text."; return; }
+  var res = compareDiktat(t.text, input);
+  var prev = state.diktate.filter(function (x) { return x.id === t.id && x.modus === "app"; }).slice(-1)[0];
+  state.diktate.push({ id: t.id, titel: t.titel, tag: dayKey(d), zeit: d.toISOString(), modus: "app", fehler: res.fehler, woerter: res.woerter, eingabe: norm(input) });
+  res.items.forEach(function (it) {
+    if (!it.soll) return;
+    var w = findWord(it.soll), ok = it.status === "ok";
+    var v = { wort: it.soll, richtig: ok, hilfe: 0, eingabe: it.ist, zeit: d.toISOString(), tag: dayKey(d),
+      kategorien: ok ? [] : (it.ist ? classify(it.soll, it.ist) : []), themen: w ? w.themen.slice() : [], welt: w ? w.welt : "",
+      quelle: "diktat", silbenZahl: silbenOf(w) };
+    if (!w) { if (ok) return; v.zaehlt = false; v.satz = teilOfToken(t, it.ti); }
+    recordAttempt(v, dRun.events);
+  });
+  saveState();
+  $("deTitel").textContent = t.titel;
+  $("deScore").textContent = plural(res.fehler, "Fehler", "Fehler");
+  $("deText").textContent = "bei " + res.woerter + " Wörtern" + (prev ? " · letztes Mal: " + plural(prev.fehler, "Fehler", "Fehler") : " · erstes Mal") +
+    ". Groß/klein zählt, Satzzeichen nicht.";
+  var box2 = $("deAnzeige"); box2.textContent = "";
+  res.items.forEach(function (it) {
+    if (it.status === "ok") box2.appendChild(el("span", "c-ok", it.raw));
+    else if (it.status === "falsch") { box2.appendChild(el("span", "c-err", it.raw)); box2.appendChild(el("span", "fix", " (du: " + it.ist + ")")); }
+    else if (it.status === "fehlt") { box2.appendChild(el("span", "c-err", it.raw)); box2.appendChild(el("span", "fix", " (fehlt)")); }
+    else box2.appendChild(el("span", "c-err", "+" + it.ist));
+    box2.appendChild(document.createTextNode(" "));
+  });
+  var wrong = uniq(res.items.filter(function (it) { return it.soll && it.status !== "ok"; }).map(function (it) { return it.soll; }));
+  var notes = showEvents(dRun.events);
+  var txt = wrong.length ? "Diese Wörter kommen in deine Fehlerwörter: " + wrong.join(", ") + "." : "Kein einziger Fehler!";
+  $("deNote").hidden = false; $("deNote").textContent = txt + (notes.length ? " " + notes.join(" ") : "");
+  dRun = null;
+  show("diktatErgebnis");
+}
+
+// ================= Lückensatz (4.5) =================
+var lRun = null;
+function paare() { return uniq(content.luecken.map(function (l) { return l.paar; })); }
+function renderLueckeWahl() {
+  var cp = $("chipPaar"); cp.textContent = "";
+  var cur = state.settings.paar;
+  if (cur !== "alle" && paare().indexOf(cur) < 0) cur = state.settings.paar = "alle";
+  cp.appendChild(chip("alle", "data-p", "alle", cur === "alle"));
+  paare().forEach(function (p) { cp.appendChild(chip(p, "data-p", p, cur === p)); });
+  renderStufeBox($("lStufe"), VERWECHSLUNG);
+  var st = stufeInfo(VERWECHSLUNG).stufe;
+  var n = lueckenPool().length;
+  $("lCount").textContent = plural(n, "Satz", "Sätze") + " · " + (st === 1 ? "Du wählst per Knopf." : "Du tippst das Wort.");
+  $("lStart").disabled = n === 0;
+}
+function lueckenPool() {
+  var p = state.settings.paar;
+  return content.luecken.filter(function (l) { return p === "alle" || l.paar === p; });
+}
+function startLuecke() {
+  var pool = lueckenPool(); if (!pool.length) return;
+  var wrongIds = {};
+  state.versuche.forEach(function (v) { if (v.quelle === "luecke" && v.satzId) wrongIds[v.satzId] = !v.richtig; });
+  var items = pool.map(function (l) { return { l: l, key: Math.pow(Math.random(), 1 / (wrongIds[l.id] ? 3 : 1)) }; })
+    .sort(function (x, y) { return y.key - x.key; }).slice(0, CONFIG.lueckenProRunde).map(function (x) { return x.l; });
+  lRun = { items: items, idx: 0, results: [], events: [], tippen: stufeInfo(VERWECHSLUNG).stufe >= 2 };
+  lastKind = "luecke";
+  show("luecke");
+  showLuecke();
+}
+function currentLuecke() { return lRun && lRun.items[lRun.idx] ? lRun.items[lRun.idx] : null; }
+function lueckeSpokenText(l) { return l.satz.replace("___", " Lücke ").replace(/\s+/g, " ").trim(); }
+function renderSatz(l, filled, ok) {
+  var box = $("lSatz"); box.textContent = "";
+  var parts = l.satz.split("___");
+  box.appendChild(document.createTextNode(parts[0]));
+  var gap = el("span", filled ? (ok ? "c-ok" : "c-err") : "gap", filled || " ");
+  box.appendChild(gap);
+  box.appendChild(document.createTextNode(parts[1]));
+}
+function showLuecke() {
+  var l = currentLuecke();
+  lRun.answered = false;
+  $("lCounter").textContent = "Satz " + (lRun.idx + 1) + " von " + lRun.items.length;
+  $("lInfo").textContent = l.paar;
+  renderSatz(l, "", false);
+  $("lFeedback").textContent = ""; $("lRegel").hidden = true; $("lNext").hidden = true;
+  var opts = $("lOptions"); opts.textContent = "";
+  $("lTypeBox").hidden = !lRun.tippen; opts.hidden = lRun.tippen;
+  if (!lRun.tippen) {
+    shuffle(l.optionen).forEach(function (o) { var b = el("button", "btn", o); b.setAttribute("data-opt", o); opts.appendChild(b); });
+  } else {
+    $("lInput").value = ""; $("lInput").disabled = false; $("lCheck").disabled = false;
+    try { $("lInput").focus(); } catch (err) { /* egal */ }
+  }
+}
+function answerLuecke(given) {
+  var l = currentLuecke(); if (!l || lRun.answered) return;
+  given = norm(given);
+  if (!given) { $("lFeedback").textContent = "Schreib zuerst ein Wort."; return; }
+  lRun.answered = true;
+  var ok = given === l.loesung;
+  renderSatz(l, l.loesung, ok);
+  $("lFeedback").textContent = ok ? "Richtig." : "Hier gehört „" + l.loesung + "“ hin" + (given ? " – du hattest „" + given + "“." : ".");
+  $("lRegel").textContent = regelText(l.regel); $("lRegel").hidden = false;
+  $$("#lOptions button").forEach(function (b) {
+    b.disabled = true;
+    var o = b.getAttribute("data-opt");
+    if (o === l.loesung) b.classList.add("okbtn"); else if (o === given) b.classList.add("errbtn");
+  });
+  $("lInput").disabled = true; $("lCheck").disabled = true;
+  var d = now();
+  var v = { wort: l.loesung, richtig: ok, hilfe: 0, eingabe: given, zeit: d.toISOString(), tag: dayKey(d),
+    kategorien: ok ? [] : ["Sonstige"], themen: [VERWECHSLUNG], welt: "", quelle: "luecke", silbenZahl: 0, satzId: l.id };
+  recordAttempt(v, lRun.events);
+  saveState();
+  lRun.results.push(Object.assign({ paar: l.paar }, v));
+  $("lNext").hidden = false;
+  markActivity();
+}
+function nextLuecke() {
+  if (!lRun) return;
+  lRun.idx++;
+  if (lRun.idx >= lRun.items.length) { showDone(lRun.results, lRun.events, "luecke"); return; }
+  showLuecke();
 }
 
 // ================= Meine Wörter =================
@@ -1454,14 +2181,19 @@ function reportText() {
   var end = now();
   var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (CONFIG.berichtTage - 1));
   var startKey = dayKey(start), endKey = dayKey(end);
-  var vs = state.versuche.filter(function (v) { return v.tag >= startKey && v.tag <= endKey; });
+  function inP(k) { return k >= startKey && k <= endKey; }
+  var alle = state.versuche.filter(function (v) { return inP(v.tag); });
+  var vs = alle.filter(function (v) { return v.quelle === "uebung" && counted(v); });
+  var ls = alle.filter(function (v) { return v.quelle === "luecke"; });
+  var ds = state.diktate.filter(function (d) { return inP(d.tag); });
   var lines = ["⚓ HD – Übungsbericht", "Zeitraum: " + fmtDay(start) + "–" + fmtDay(end) + end.getFullYear(), ""];
   var days = {};
-  vs.forEach(function (v) { days[v.tag] = true; });
-  Object.keys(state.zeiten).forEach(function (k) { if (k >= startKey && k <= endKey && state.zeiten[k].ueben >= 1) days[k] = true; });
+  alle.forEach(function (v) { days[v.tag] = true; });
+  ds.forEach(function (d) { days[d.tag] = true; });
+  Object.keys(state.zeiten).forEach(function (k) { if (inP(k) && state.zeiten[k].ueben >= 1) days[k] = true; });
   var nDays = Object.keys(days).length;
   var min = Math.round(zeitSekunden(startKey, endKey, "ueben") / 60);
-  if (!vs.length && !min) {
+  if (!alle.length && !ds.length && !min) {
     lines.push("In diesem Zeitraum noch nicht geübt.");
   } else {
     lines.push("Übungszeit: " + plural(min, "Minute", "Minuten") + " an " + plural(nDays, "Tag", "Tagen"));
@@ -1469,6 +2201,13 @@ function reportText() {
     var help = vs.filter(function (v) { return v.hilfe === 2; }).length;
     lines.push("Wörter: " + vs.length + " · davon richtig: " + right + " (" + (vs.length ? Math.round(right / vs.length * 100) : 0) + " %)" +
       (help ? " · mit Silbenhilfe: " + help : ""));
+    if (ls.length) lines.push("Lückensätze: " + ls.length + " · davon richtig: " + ls.filter(zaehltRichtig).length);
+    ds.forEach(function (d) {
+      if (d.modus === "papier") { lines.push("Diktat „" + d.titel + "“ auf Papier geschrieben (Foto folgt)"); return; }
+      var prev = state.diktate.slice(0, state.diktate.indexOf(d)).filter(function (x) { return x.id === d.id && x.modus === "app"; }).slice(-1)[0];
+      lines.push("Diktat „" + d.titel + "“: " + plural(d.fehler, "Fehler", "Fehler") + " bei " + d.woerter + " Wörtern" +
+        (prev ? " (vorher " + prev.fehler + ")" : " (erstes Mal)"));
+    });
     var am = ampel(), groups = { "sicher": [], "wackelig": [], "mehr üben": [] };
     Object.keys(am).forEach(function (t) { groups[am[t].stufe].push(t); });
     if (Object.keys(am).length) {
@@ -1478,17 +2217,30 @@ function reportText() {
       if (groups["mehr üben"].length) lines.push("Mehr üben: " + groups["mehr üben"].join(", "));
     }
     var kc = {};
-    vs.forEach(function (v) { v.kategorien.forEach(function (k) { kc[k] = (kc[k] || 0) + 1; }); });
+    alle.forEach(function (v) { if (v.quelle !== "luecke") v.kategorien.forEach(function (k) { kc[k] = (kc[k] || 0) + 1; }); });
     var top = Object.keys(kc).sort(function (x, y) { return kc[y] - kc[x] || x.localeCompare(y); }).slice(0, 3);
     if (top.length) lines.push("", "Häufigste Fehler: " + top.map(function (k) { return k + " (" + kc[k] + ")"; }).join(", "));
     var bx = boxes();
-    var seenW = uniq(vs.map(function (v) { return v.wort; }));
+    var seenW = uniq(alle.filter(function (v) { return v.quelle !== "luecke"; }).map(function (v) { return v.wort; }));
     var hang = seenW.filter(function (w) { return bx[w] === 1; });
     lines.push("");
     lines.push(hang.length ? "Wörter, die noch hängen:\n" + hang.join(", ") : "Keine Wörter, die noch hängen.");
   }
-  var neu = state.meineWoerter.filter(function (m) { return m.tag >= startKey && m.tag <= endKey && !wordIndex[m.wort]; });
+  var log = state.stufenLog.filter(function (l) { return inP(l.tag); });
+  if (log.length) {
+    lines.push("", "Stufen:");
+    log.forEach(function (l) {
+      if (l.grund === "auf") lines.push("↑ " + unitName(l.unit) + ": Stufe " + l.von + " → " + l.nach + " (" + l.richtig + " von " + l.gesamt + " richtig an " + l.tage + " Tagen)");
+      if (l.grund === "ab") lines.push("↓ " + unitName(l.unit) + ": Stufe " + l.von + " → " + l.nach + " (Wiederholungsrunde, " + l.richtig + " von " + l.gesamt + " richtig)");
+      if (l.grund === "manuell") lines.push("✋ " + unitName(l.unit) + ": selbst von Stufe " + l.von + " auf " + l.nach + " " +
+        (l.nach < l.von ? "HERUNTERGESETZT" : "hochgesetzt") + " (" + fmtKey(l.tag) + ")");
+    });
+  }
+  var neu = state.meineWoerter.filter(function (m) { return inP(m.tag) && !wordIndex[m.wort]; });
   if (neu.length) lines.push("", "Neue eigene Wörter (bitte prüfen, ob richtig geschrieben):", neu.map(function (m) { return m.wort; }).join(", "));
+  state.wochenfragen.filter(function (f) { return inP(f.tag); }).forEach(function (f) {
+    lines.push("", "Wochenfrage: " + f.frage, "„" + f.antwort + "“");
+  });
   lines.push("", "HD · Version " + APP_VERSION);
   return lines.join("\n");
 }
@@ -1590,10 +2342,11 @@ function onImportFile(ev) {
   reader.readAsText(file);
 }
 function renderData() {
-  var n = state.versuche.length;
+  var n = state.versuche.filter(counted).length;
   var days = {}; state.versuche.forEach(function (v) { days[v.tag] = true; });
   $("dataInfo").textContent = "Auf diesem Gerät gespeichert: " + plural(n, "Übung", "Übungen") +
-    " an " + plural(Object.keys(days).length, "Tag", "Tagen") + ", " + plural(state.meineWoerter.length, "eigenes Wort", "eigene Wörter") + "." +
+    " an " + plural(Object.keys(days).length, "Tag", "Tagen") + ", " + plural(state.diktate.length, "Diktat", "Diktate") + ", " +
+    plural(state.meineWoerter.length, "eigenes Wort", "eigene Wörter") + "." +
     (storageOk ? "" : " Achtung: Speichern ist gerade nicht möglich.");
   $("exportShareBtn").hidden = !canShareFile();
 }
@@ -1638,26 +2391,69 @@ function wire() {
   $("checkBtn").addEventListener("click", check);
   $("nextBtn").addEventListener("click", next);
   $("hintBtn").addEventListener("click", showHint);
-  $("againBtn").addEventListener("click", function () { navStack = ["start", "auswahl"]; startRound(); });
+  $("againBtn").addEventListener("click", function () {
+    if (lastKind === "luecke") { navStack = ["start", "lueckewahl"]; startLuecke(); }
+    else { navStack = ["start", "auswahl"]; startRound(); }
+  });
   $("wordInput").addEventListener("keydown", function (ev) {
     if (ev.key === "Enter" && !ev.isComposing) {
       ev.preventDefault();
       if (round && round.checked && norm($("wordInput").value) === currentWord()) next(); else check();
     }
   });
+  // Diktat
+  $("chipModus").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-modus]") : null;
+    if (!b) return;
+    state.settings.diktatModus = b.getAttribute("data-modus"); saveState(); renderDiktatWahl();
+  });
+  $("diktatList").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-text]") : null;
+    if (b) startDiktat(b.getAttribute("data-text"));
+  });
+  $("dNochmal").addEventListener("click", diktatNochmal);
+  $("dWeiter").addEventListener("click", diktatWeiter);
+  $("dAlles").addEventListener("click", diktatAlles);
+  $("dFertig").addEventListener("click", diktatFertig);
+  // Lückensatz
+  $("lueckewahl").addEventListener("click", function (ev) {
+    if (onStufeChip(ev, renderLueckeWahl)) return;
+    var b = ev.target.closest ? ev.target.closest("[data-p]") : null;
+    if (!b) return;
+    state.settings.paar = b.getAttribute("data-p"); saveState(); renderLueckeWahl();
+  });
+  $("lStart").addEventListener("click", startLuecke);
+  $("lOptions").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-opt]") : null;
+    if (b) answerLuecke(b.getAttribute("data-opt"));
+  });
+  $("lCheck").addEventListener("click", function () { answerLuecke($("lInput").value); });
+  $("lInput").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && !ev.isComposing) { ev.preventDefault(); if (lRun && lRun.answered) nextLuecke(); else answerLuecke($("lInput").value); }
+  });
+  $("lNext").addEventListener("click", nextLuecke);
+  $("lSpeak").addEventListener("click", function () { var l = currentLuecke(); if (l) speak(lueckeSpokenText(l)); });
+  // Wochenfrage, Meldung
+  $("wfSend").addEventListener("click", sendWochenfrage);
+  $("wfLater").addEventListener("click", laterWochenfrage);
+  $("mOk").addEventListener("click", nextModal);
+  // Meine Wörter
   $("meineAdd").addEventListener("click", addOwnWord);
   $("meineInput").addEventListener("keydown", function (ev) { if (ev.key === "Enter" && !ev.isComposing) { ev.preventDefault(); addOwnWord(); } });
   $("meineList").addEventListener("click", function (ev) {
     var b = ev.target.closest ? ev.target.closest("[data-del]") : null;
     if (b) deleteOwnWord(b.getAttribute("data-del"));
   });
-  var rate = $("rate");
-  rate.min = CONFIG.tempoMin; rate.max = CONFIG.tempoMax;
-  rate.value = state.settings.rate;
-  function showRate() { $("rateOut").textContent = String(state.settings.rate).replace(".", ",") + "×"; }
+  // Tempo (alle Regler gekoppelt)
+  function showRate() {
+    $$(".rate").forEach(function (r) { r.min = CONFIG.tempoMin; r.max = CONFIG.tempoMax; r.value = state.settings.rate; });
+    $$(".rateOut").forEach(function (o) { o.textContent = String(state.settings.rate).replace(".", ",") + "×"; });
+  }
   showRate();
-  rate.addEventListener("input", function () { state.settings.rate = clampRate(rate.value); showRate(); });
-  rate.addEventListener("change", function () { state.settings.rate = clampRate(rate.value); showRate(); saveState(); });
+  $$(".rate").forEach(function (rate) {
+    rate.addEventListener("input", function () { state.settings.rate = clampRate(rate.value); showRate(); });
+    rate.addEventListener("change", function () { state.settings.rate = clampRate(rate.value); showRate(); saveState(); });
+  });
   $("shareBtn").addEventListener("click", share);
   $("copyBtn").addEventListener("click", function () { copyText(reportText()); });
   $("exportBtn").addEventListener("click", exportDownload);
@@ -1677,12 +2473,15 @@ registerSW();
 window.__test = {
   version: APP_VERSION, schema: SCHEMA_VERSION, storageKey: STORAGE_KEY,
   config: CONFIG, data: DATA, content: content, kategorien: KATEGORIEN, themen: themenListe(),
-  validate: validate, compare: compare, classify: classify, sanitize: sanitize,
-  filterWords: filterWords, drawRound: drawRound, boxes: boxes, ampel: ampel, spokenText: spokenText,
+  validate: validate, compare: compare, classify: classify, sanitize: sanitize, compareDiktat: compareDiktat,
+  filterWords: filterWords, drawRound: drawRound, drawRoundStufe: drawRoundStufe, eligible: eligible, boxes: boxes,
+  ampel: ampel, spokenText: spokenText, lueckeSpokenText: lueckeSpokenText, stufeInfo: stufeInfo, evaluateUnit: evaluateUnit,
+  unitsOf: unitsOf, isoWeek: isoWeek, meldungFor: meldungFor,
   reportText: reportText, importText: importText, exportJson: exportJson,
   state: function () { return JSON.parse(JSON.stringify(state)); },
   storageOk: function () { return storageOk; },
   speakLog: speakLog, currentWord: currentWord, currentEntry: function () { return currentEntry(); },
+  currentLuecke: function () { return currentLuecke(); },
   setNow: function (iso) { testHooks.fakeNow = iso; },
   timeTick: timeTick, markActivity: markActivity
 };
