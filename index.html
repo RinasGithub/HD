@@ -165,6 +165,17 @@ svg.gallows .part.on{visibility:visible}
 .wtable th{color:var(--muted);font-weight:400;text-align:left;padding:4px 2px;border-bottom:1px solid #3a2e2c}
 .wtable td{padding:6px 2px;border-bottom:1px solid #2e2524}
 .wtable td.n,.wtable th.n{text-align:right;white-space:nowrap}
+/* Meine Textwörter */
+.twgroup{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid #2e2524}
+.twgroup:last-child{border-bottom:0}
+.twkat{align-self:flex-start;min-height:44px;padding:0 14px;border-radius:22px;background:var(--panel);border:1px solid #5a3a3a;font-weight:700}
+.twkat[aria-pressed="true"]{background:var(--line);border-color:var(--line)}
+.twrow{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 6px;cursor:pointer}
+.twrow input{width:26px;height:26px;accent-color:var(--line);flex-shrink:0}
+.twrow .twwort{font-size:1.15rem;flex:1;min-width:0;overflow-wrap:anywhere}
+.twrow .twstat{font-size:.85rem;color:var(--muted);white-space:nowrap}
+.switch{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}
+.switch input{width:26px;height:26px;accent-color:var(--line);flex-shrink:0}
 /* Seekarte */
 .mapwrap{position:relative;border:1px solid var(--line);border-radius:6px;overflow:auto;-webkit-overflow-scrolling:touch;
   height:62vh;min-height:360px;background:#030303}
@@ -264,6 +275,7 @@ svg.gallows .part.on{visibility:visible}
     </div>
     <div class="menu">
     <button class="btn" data-go="auswahl"><span class="ico">🎧</span>Üben</button>
+    <button class="btn" data-go="textwoerter"><span class="ico">✍️</span>Meine Textwörter</button>
     <button class="btn" data-go="diktatwahl"><span class="ico">📝</span>Diktat</button>
     <button class="btn" data-go="lueckewahl"><span class="ico">🧩</span>Lückensatz</button>
     <button class="btn" data-go="spiele"><span class="ico">🎮</span>Spiele</button>
@@ -442,6 +454,19 @@ svg.gallows .part.on{visibility:visible}
     <button class="btn" id="lNext" hidden><span class="ico">➡️</span>Nächster Satz</button>
   </section>
 
+  <!-- MEINE TEXTWÖRTER -->
+  <section class="screen" id="textwoerter">
+    <button class="back" data-back>‹ Zurück</button>
+    <h2>Meine Textwörter</h2>
+    <div class="muted">Wörter aus deinen eigenen Texten. Hak an, was du üben willst – oder tipp auf eine Gruppe, dann sind alle Wörter darin dabei.</div>
+    <div class="count" id="twCount" aria-live="polite"></div>
+    <label class="switch"><input type="checkbox" id="twAehnlich"><span>Ähnliche Wörter dazunehmen (gleiche Regel)</span></label>
+    <button class="btn primary" id="twUeben">🎧 Üben</button>
+    <button class="btn" id="twDiktat"><span class="ico">📝</span>Mein Diktat</button>
+    <button class="btn" id="twLuecke"><span class="ico">🧩</span>Lückensätze aus meinen Texten</button>
+    <div class="panel" id="twList"></div>
+  </section>
+
   <!-- SPIELE -->
   <section class="screen" id="spiele">
     <button class="back" data-back>‹ Zurück</button>
@@ -614,8 +639,8 @@ svg.gallows .part.on{visibility:visible}
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.5.0";
-var SCHEMA_VERSION = 5;
+var APP_VERSION = "0.6.0";
+var SCHEMA_VERSION = 6;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
@@ -646,7 +671,12 @@ var CONFIG = {
   galgenFehlversuche: 6,
   memoryPaare: 6,
   spielMin: { galgen: 1, salat: 1, memory: 6 },
-  inselStufe: 3,              // Insel erobert, wenn die Stufen-Automatik diese Stufe erreicht
+  inselStufe: 3,
+  textSitztRichtig: 3,        // Textwort „sitzt“: so oft richtig …
+  textSitztTage: 2,           // … an so vielen verschiedenen Tagen
+  textMaxEigene: 10,          // mit ähnlichen Wörtern: höchstens so viele eigene Wörter pro Runde
+  meinDiktatMaxSaetze: 5,
+  teilMaxWoerter: 6,          // Satzteile im „Mein Diktat“              // Insel erobert, wenn die Stufen-Automatik diese Stufe erreicht
   memoryWortMs: 1500,         // gefundenes Wort so lange groß zeigen
   bootFahrtMaxMs: 2400
 };
@@ -1329,7 +1359,126 @@ var DATA = {
     {"id": "w10", "frage": "Gab es diese Woche einen Moment, in dem Schreiben leichter war als früher?"}
     /*WOCHENFRAGEN-END*/
   ],
-  inseln: []
+  inseln: [],
+  // Textwörter: mit tools/xlsx_to_data.py aus der Excel übertragen
+  // (nur richtige Schreibweisen – keine Falschschreibungen, Quellen oder Daten, das Repo ist öffentlich)
+  textwoerter: [
+    /*TEXTWOERTER-START*/
+    {"wort": "immer", "kategorien": ["Doppelkonsonant"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["Zimmer", "Himmel", "Sommer", "schwimmen", "Stimme", "Nummer"], "satz": "Wenn ich in mein Zimmer komme, liegt der Hund immer schon im Bett und schnarcht wie ein Elefant."},
+    {"wort": "Treppe runter", "kategorien": ["Doppelkonsonant", "Zusammenschreibung"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["Mappe", "Suppe", "Gruppe", "Kappe", "Puppe", "Klappe"], "satz": "Der Ritter fällt die Treppe runter, landet in der Suppe und trägt jetzt eine Nudel als Kappe."},
+    {"wort": "komme", "kategorien": ["Doppelkonsonant"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["kommen", "Sonne", "rennen", "Tonne", "Kanne", "Pfanne"], "satz": "Wenn ich in mein Zimmer komme, liegt der Hund immer schon im Bett und schnarcht wie ein Elefant."},
+    {"wort": "tippe", "kategorien": ["Doppelkonsonant", "Kleinschreibung"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["kippen", "Rippe", "wippen", "schnappen", "klappen"], "satz": "Ich tippe so schnell auf dem Handy, dass mein Daumen fast Feuer fängt."},
+    {"wort": "schnell", "kategorien": ["Doppelkonsonant", "schl/schn"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["Ball", "hell", "Fell", "Stall", "bellen", "Schnee", "Schnabel", "schneiden"], "satz": "Ich tippe so schnell auf dem Handy, dass mein Daumen fast Feuer fängt."},
+    {"wort": "gefallen", "kategorien": ["Doppelkonsonant"], "regel": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer).", "aehnliche": ["fallen", "Falle", "alle", "Halle", "knallen", "Kralle"], "satz": "Das Pony ist in die Falle gefallen – zum Glück war sie voller Stroh."},
+    {"wort": "gucke", "kategorien": ["ck", "g/k Anfang"], "regel": "Nach kurzem Vokal schreibt man ck statt kk (Rü-cken).", "aehnliche": ["Rücken", "packen", "Decke", "Ecke", "Socke", "Schnecke"], "satz": "Ich gucke unter die Decke: Da steckt eine Schnecke in meiner Socke!"},
+    {"wort": "zurück", "kategorien": ["ck"], "regel": "Nach kurzem Vokal schreibt man ck statt kk (Rü-cken).", "aehnliche": ["Brücke", "Stück", "Glück", "Lücke", "Mücke", "drücken"], "satz": "Der Ritter rief: „Schnell zurück zur Brücke! Nur noch ein Stück – was für ein Glück!“"},
+    {"wort": "steckt", "kategorien": ["ck", "e/ä"], "regel": "Nach kurzem Vokal schreibt man ck statt kk (Rü-cken).", "aehnliche": ["Fleck", "Sack", "Zweck", "schmeckt", "weckt", "Bett", "Netz"], "satz": "Ich gucke unter die Decke: Da steckt eine Schnecke in meiner Socke!"},
+    {"wort": "nicke", "kategorien": ["ck"], "regel": "Nach kurzem Vokal schreibt man ck statt kk (Rü-cken).", "aehnliche": ["dick", "Blick", "Trick", "Strick", "schicken", "Picknick"], "satz": "Ich nicke nur, denn mein Mund ist voll mit Zucker und dickem Kuchen."},
+    {"wort": "ohne", "kategorien": ["Dehnungs-h"], "regel": "Langer Vokal vor l, m, n, r hat oft ein h. Wortfamilie hilft: wohnen -> Wohnung.", "aehnliche": ["Sohn", "Bohne", "wohnen", "Lohn", "Mohn"], "satz": "Mein Bruder backt ohne Mehl, und der Kuchen ist so hart, dass der Lehrer sich einen Zahn ausbeißt."},
+    {"wort": "geschah", "kategorien": ["h am Ende"], "regel": "Wort verlängern: geschah -> geschehen, froh -> fröhlich.", "aehnliche": ["sah", "nah", "froh", "Stroh", "Reh", "Schuh", "Kuh"], "satz": "Was geschah? Der Hund sah eine Kuh mit Schuh im Stroh."},
+    {"wort": "Wohnung", "kategorien": ["Dehnungs-h"], "regel": "Langer Vokal vor l, m, n, r hat oft ein h. Wortfamilie hilft: wohnen -> Wohnung.", "aehnliche": ["wohnen", "Fohlen", "Sohle", "Kohle", "hohl"], "satz": "In unserer Wohnung wohnt ein Sohn, der Bohnen mehr hasst als Fehler."},
+    {"wort": "Mehl", "kategorien": ["Dehnungs-h"], "regel": "Langer Vokal vor l, m, n, r hat oft ein h. Wortfamilie hilft: wohnen -> Wohnung.", "aehnliche": ["mehr", "sehr", "Fehler", "Lehrer", "zehn", "Kehle"], "satz": "Mein Bruder backt ohne Mehl, und der Kuchen ist so hart, dass der Lehrer sich einen Zahn ausbeißt."},
+    {"wort": "wieder", "kategorien": ["ie"], "regel": "Langes i wird meistens ie geschrieben.", "aehnliche": ["Wiese", "Riese", "Biene", "Spiel", "Ziel", "siegen"], "satz": "Schon wieder spielt die Biene Fangen mit dem Riesen auf der Wiese."},
+    {"wort": "Sie", "kategorien": ["ie", "Großschreibung"], "regel": "Langes i wird meistens ie geschrieben.", "aehnliche": ["sie", "die", "wie", "nie", "hier", "Tier", "Ihnen"], "satz": "Entschuldigung, haben Sie mein Pferd gesehen? Es trägt eine Brille und heißt Kevin."},
+    {"wort": "schließe", "kategorien": ["schl/schn", "ie"], "regel": "sch nicht weglassen: langsam mitsprechen (schl-ie-ßen).", "aehnliche": ["Schlüssel", "schlafen", "Schlange", "schlecht", "fließen", "gießen", "genießen"], "satz": "Ich schließe die Tür, aber die Schlange hat den Schlüssel schon verschluckt."},
+    {"wort": "vielen", "kategorien": ["v statt f", "ie"], "regel": "Merkwörter mit v: viel, vier, vor, von, Vogel, Vater, ver-, vor-.", "aehnliche": ["viel", "vier", "Vogel", "Vater", "voll", "vorbei", "vergessen"], "satz": "Der Vogel sagt: „Mit vielen Grüßen fliege ich vielleicht vorbei, wenn ich nicht zu voll bin.“"},
+    {"wort": "vielleicht", "kategorien": ["v statt f", "Doppelkonsonant"], "regel": "Merkwörter mit v: viel, vier, vor, von, Vogel, Vater, ver-, vor-.", "aehnliche": ["von", "vor", "Vorsicht", "verlieren", "Vieh"], "satz": "Der Vogel sagt: „Mit vielen Grüßen fliege ich vielleicht vorbei, wenn ich nicht zu voll bin.“"},
+    {"wort": "auf", "kategorien": ["f statt v"], "regel": "auf, Hof, Schiff schreibt man mit f. v nur in Merkwörtern.", "aehnliche": ["Hof", "Schiff", "Ufer", "Hufe", "Ofen", "Tafel"], "satz": "Ich tippe so schnell auf dem Handy, dass mein Daumen fast Feuer fängt."},
+    {"wort": "aufgefallen", "kategorien": ["Zusammenschreibung", "f statt v"], "regel": "Bildet es ein neues Wort mit eigener Bedeutung, schreibt man zusammen.", "aehnliche": ["aufgepasst", "aufgehört", "aufgeräumt", "aufgestanden"], "satz": "Ist dir aufgefallen, dass der Hund auf dem Ofen im Hof schläft?"},
+    {"wort": "gerade", "kategorien": ["g/k Anfang", "Umgangssprache"], "regel": "Genau hinhören: Gabel oder Kabel? Laut deutlich sprechen.", "aehnliche": ["Gabel", "Gasse", "Greis", "Garten", "Gast", "gern", "gerne", "geradeaus", "eben"], "satz": "Es klingelt gerade, und der Gast sagt: „Ich bringe die Gabel für den Garten.“"},
+    {"wort": "sagt", "kategorien": ["g am Ende"], "regel": "Wort verlängern: sagt -> sagen, Tag -> Tage. Man hört dann g.", "aehnliche": ["Tag", "Weg", "Berg", "Zug", "Sieg", "fliegt", "fragt"], "satz": "Der Vogel sagt: „Mit vielen Grüßen fliege ich vielleicht vorbei, wenn ich nicht zu voll bin.“"},
+    {"wort": "klingelt", "kategorien": ["k Anfang"], "regel": "Genau hinhören: klingeln beginnt hart mit k.", "aehnliche": ["Klinge", "klettern", "Klasse", "klug", "Kleid"], "satz": "Es klingelt gerade, und der Gast sagt: „Ich bringe die Gabel für den Garten.“"},
+    {"wort": "Nasenspitze", "kategorien": ["sp/st", "tz"], "regel": "Am Wortanfang spricht man schp/scht, schreibt aber sp/st.", "aehnliche": ["Sport", "Spiel", "Sprung", "spät", "Spinne", "Katze", "Platz", "Mütze"], "satz": "Beim Spiel landet der Salzstreuer auf meiner Nasenspitze, und alle im Stall lachen."},
+    {"wort": "Salzstreuer", "kategorien": ["sp/st", "Laut dazugedichtet"], "regel": "Am Wortanfang spricht man schp/scht, schreibt aber sp/st.", "aehnliche": ["Stall", "Stein", "Straße", "Strand", "Stern", "Stiefel", "Feuer", "teuer"], "satz": "Beim Spiel landet der Salzstreuer auf meiner Nasenspitze, und alle im Stall lachen."},
+    {"wort": "blinzele", "kategorien": ["z nach l/n/r"], "regel": "Nach l, n, r steht nie tz, sondern z (Salz, ganz, Herz).", "aehnliche": ["Pilz", "Holz", "Salz", "Herz", "ganz", "Kerze"], "satz": "Ich blinzele nach links und rechts, aber ich sehe nichts – nur einen Keks im Salz."},
+    {"wort": "nichts", "kategorien": ["ts"], "regel": "ts am Wortende in Merkwörtern: nichts, rechts, nachts.", "aehnliche": ["rechts", "nachts", "stets", "bereits", "Rätsel"], "satz": "Ich blinzele nach links und rechts, aber ich sehe nichts – nur einen Keks im Salz."},
+    {"wort": "links", "kategorien": ["ks/x"], "regel": "Meist ks oder chs. x nur in Merkwörtern (Hexe, Text, Axt).", "aehnliche": ["Keks", "Klecks", "Text", "Hexe", "Axt", "sechs"], "satz": "Ich blinzele nach links und rechts, aber ich sehe nichts – nur einen Keks im Salz."},
+    {"wort": "bisher", "kategorien": ["Zusammenschreibung"], "regel": "Bildet es ein neues Wort mit eigener Bedeutung, schreibt man zusammen.", "aehnliche": ["bislang", "vorher", "nachher", "bereits"], "satz": "Ein Pferd vor unserer Wohnungstür hat mich bisher am meisten überrascht."},
+    {"wort": "Wohnungstür", "kategorien": ["Zusammenschreibung", "Dehnungs-h"], "regel": "Bildet es ein neues Wort mit eigener Bedeutung, schreibt man zusammen.", "aehnliche": ["Haustür", "Zimmertür", "Stalltür", "Autotür"], "satz": "Ein Pferd vor unserer Wohnungstür hat mich bisher am meisten überrascht."},
+    {"wort": "überrascht", "kategorien": ["Zusammenschreibung"], "regel": "Bildet es ein neues Wort mit eigener Bedeutung, schreibt man zusammen.", "aehnliche": ["überholen", "überlegen", "übernehmen", "überqueren"], "satz": "Ein Pferd vor unserer Wohnungstür hat mich bisher am meisten überrascht."},
+    {"wort": "rechts", "kategorien": ["Kleinschreibung"], "regel": "Richtungswörter (rechts, links, oben) schreibt man klein.", "aehnliche": ["links", "oben", "unten", "vorne", "hinten"], "satz": "Ich blinzele nach links und rechts, aber ich sehe nichts – nur einen Keks im Salz."},
+    {"wort": "Dingdong", "kategorien": ["Großschreibung"], "regel": "Satzanfang, Nomen und Anrede (Sie, Ihnen) schreibt man groß.", "aehnliche": [], "satz": "Dingdong! Wer steht vor der Haustür? Ein Känguru mit Rucksack."},
+    {"wort": "schaue", "kategorien": ["Verb-Endung"], "regel": "ich-Form endet auf -e: ich schaue, ich gehe.", "aehnliche": ["laufe", "sehe", "rufe", "stehe", "nehme", "ziehe"], "satz": "Ich schaue, ich gehe, ich laufe – und dann reiße ich vor Schreck den Vorhang runter."},
+    {"wort": "gehe", "kategorien": ["Verb-Endung"], "regel": "ich-Form endet auf -e: ich schaue, ich gehe.", "aehnliche": ["laufe", "sehe", "rufe", "stehe", "nehme"], "satz": "Ich schaue, ich gehe, ich laufe – und dann reiße ich vor Schreck den Vorhang runter."},
+    {"wort": "reiße", "kategorien": ["Verb-Endung"], "regel": "ich-Form endet auf -e: ich schaue, ich gehe.", "aehnliche": ["beiße", "heiße", "schließe", "gieße"], "satz": "Ich schaue, ich gehe, ich laufe – und dann reiße ich vor Schreck den Vorhang runter."}
+    /*TEXTWOERTER-END*/
+  ],
+  diktatsaetze: [
+    /*DIKTATSAETZE-START*/
+    {"id": "S01", "satz": "Wenn ich in mein Zimmer komme, liegt der Hund immer schon im Bett und schnarcht wie ein Elefant.", "woerter": ["immer", "komme"], "kategorie": "Doppelkonsonant"},
+    {"id": "S02", "satz": "Der Ritter fällt die Treppe runter, landet in der Suppe und trägt jetzt eine Nudel als Kappe.", "woerter": ["Treppe runter"], "kategorie": "Doppelkonsonant"},
+    {"id": "S03", "satz": "Ich tippe so schnell auf dem Handy, dass mein Daumen fast Feuer fängt.", "woerter": ["tippe", "schnell"], "kategorie": "Doppelkonsonant"},
+    {"id": "S04", "satz": "Das Pony ist in die Falle gefallen – zum Glück war sie voller Stroh.", "woerter": ["gefallen"], "kategorie": "Doppelkonsonant"},
+    {"id": "S05", "satz": "Die Kanne kippt, die Pfanne klappert, und alle in der Halle rennen weg.", "woerter": [], "kategorie": "Doppelkonsonant"},
+    {"id": "S06", "satz": "Der Ritter rief: „Schnell zurück zur Brücke! Nur noch ein Stück – was für ein Glück!“", "woerter": ["zurück"], "kategorie": "ck"},
+    {"id": "S07", "satz": "Ich gucke unter die Decke: Da steckt eine Schnecke in meiner Socke!", "woerter": ["gucke", "steckt"], "kategorie": "ck"},
+    {"id": "S08", "satz": "Ich nicke nur, denn mein Mund ist voll mit Zucker und dickem Kuchen.", "woerter": ["nicke"], "kategorie": "ck"},
+    {"id": "S09", "satz": "Mein Bruder backt ohne Mehl, und der Kuchen ist so hart, dass der Lehrer sich einen Zahn ausbeißt.", "woerter": ["ohne", "Mehl"], "kategorie": "Dehnungs-h"},
+    {"id": "S10", "satz": "In unserer Wohnung wohnt ein Sohn, der Bohnen mehr hasst als Fehler.", "woerter": ["Wohnung"], "kategorie": "Dehnungs-h"},
+    {"id": "S11", "satz": "Was geschah? Der Hund sah eine Kuh mit Schuh im Stroh.", "woerter": ["geschah"], "kategorie": "h am Ende"},
+    {"id": "S12", "satz": "Schon wieder spielt die Biene Fangen mit dem Riesen auf der Wiese.", "woerter": ["wieder"], "kategorie": "ie"},
+    {"id": "S13", "satz": "Entschuldigung, haben Sie mein Pferd gesehen? Es trägt eine Brille und heißt Kevin.", "woerter": ["Sie"], "kategorie": "ie"},
+    {"id": "S14", "satz": "Ich schließe die Tür, aber die Schlange hat den Schlüssel schon verschluckt.", "woerter": ["schließe"], "kategorie": "schl/schn"},
+    {"id": "S15", "satz": "Der Vogel sagt: „Mit vielen Grüßen fliege ich vielleicht vorbei, wenn ich nicht zu voll bin.“", "woerter": ["vielen", "vielleicht"], "kategorie": "v statt f"},
+    {"id": "S16", "satz": "Ist dir aufgefallen, dass der Hund auf dem Ofen im Hof schläft?", "woerter": ["aufgefallen", "auf"], "kategorie": "f statt v"},
+    {"id": "S17", "satz": "Es klingelt gerade, und der Gast sagt: „Ich bringe die Gabel für den Garten.“", "woerter": ["klingelt", "gerade", "sagt"], "kategorie": "g/k Anfang"},
+    {"id": "S18", "satz": "Beim Spiel landet der Salzstreuer auf meiner Nasenspitze, und alle im Stall lachen.", "woerter": ["Salzstreuer", "Nasenspitze"], "kategorie": "sp/st"},
+    {"id": "S19", "satz": "Ich blinzele nach links und rechts, aber ich sehe nichts – nur einen Keks im Salz.", "woerter": ["blinzele", "links", "rechts", "nichts"], "kategorie": "ks/x"},
+    {"id": "S20", "satz": "Ein Pferd vor unserer Wohnungstür hat mich bisher am meisten überrascht.", "woerter": ["Wohnungstür", "bisher", "überrascht"], "kategorie": "Zusammenschreibung"},
+    {"id": "S21", "satz": "Dingdong! Wer steht vor der Haustür? Ein Känguru mit Rucksack.", "woerter": ["Dingdong"], "kategorie": "Großschreibung"},
+    {"id": "S22", "satz": "Ich schaue, ich gehe, ich laufe – und dann reiße ich vor Schreck den Vorhang runter.", "woerter": ["schaue", "gehe", "reiße"], "kategorie": "Verb-Endung"}
+    /*DIKTATSAETZE-END*/
+  ],
+  textLuecken: [
+    /*TEXTLUECKEN-START*/
+    {"id": "t01", "satz": "Ich hoffe, ___ du morgen zum Training kommst.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t02", "satz": "___ Pferd steht im Stall.", "lösung": "Das", "optionen": "Das|Dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t03", "satz": "Er merkt, ___ er die Eier vergessen hat.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t04", "satz": "Das Boot, ___ am Steg liegt, gehört uns.", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t05", "satz": "Mama sagt, ___ wir um sechs essen.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t06", "satz": "Ich glaube, ___ der Hund Hunger hat.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t07", "satz": "Siehst du ___ Schwert dort?", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t08", "satz": "___ ist mein Lieblingsspiel.", "lösung": "Das", "optionen": "Das|Dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t09", "satz": "Es ist schön, ___ du da bist.", "lösung": "dass", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "t10", "satz": "Das Zelt, ___ wir gekauft haben, ist groß.", "lösung": "das", "optionen": "das|dass", "paar": "das/dass", "regel": "das/dass"},
+    {"id": "tf01", "satz": "Ich spiele Volleyball mit ___ Känguru.", "lösung": "einem", "optionen": "einem|einen", "paar": "Fall-Endung", "regel": "Fall-Endung"},
+    {"id": "tf02", "satz": "Der Hund versteckt ___ Knochen im Bett.", "lösung": "seinen", "optionen": "seinen|seinem", "paar": "Fall-Endung", "regel": "Fall-Endung"},
+    {"id": "tf03", "satz": "Mama fährt mit ___ Boot zur Schule.", "lösung": "dem", "optionen": "dem|den", "paar": "Fall-Endung", "regel": "Fall-Endung"},
+    {"id": "tf04", "satz": "Ich sehe ___ Ritter auf dem Dach.", "lösung": "einen", "optionen": "einen|einem", "paar": "Fall-Endung", "regel": "Fall-Endung"},
+    {"id": "tf05", "satz": "Er gibt ___ Igel die Hand.", "lösung": "dem", "optionen": "dem|den", "paar": "Fall-Endung", "regel": "Fall-Endung"}
+    /*TEXTLUECKEN-END*/
+  ],
+  textRegeln: [
+    /*TEXTREGELN-START*/
+    {"id": "Doppelkonsonant", "text": "Nach kurzem, betontem Vokal folgt meist ein doppelter Mitlaut. Probe: in Silben sprechen (im-mer)."},
+    {"id": "ck", "text": "Nach kurzem Vokal schreibt man ck statt kk (Rü-cken)."},
+    {"id": "Dehnungs-h", "text": "Langer Vokal vor l, m, n, r hat oft ein h. Wortfamilie hilft: wohnen -> Wohnung."},
+    {"id": "h am Ende", "text": "Wort verlängern: geschah -> geschehen, froh -> fröhlich."},
+    {"id": "h im Wort", "text": "Wort zerlegen: da + hinter = dahinter."},
+    {"id": "ie", "text": "Langes i wird meistens ie geschrieben."},
+    {"id": "v statt f", "text": "Merkwörter mit v: viel, vier, vor, von, Vogel, Vater, ver-, vor-."},
+    {"id": "f statt v", "text": "auf, Hof, Schiff schreibt man mit f. v nur in Merkwörtern."},
+    {"id": "g/k Anfang", "text": "Genau hinhören: Gabel oder Kabel? Laut deutlich sprechen."},
+    {"id": "g am Ende", "text": "Wort verlängern: sagt -> sagen, Tag -> Tage. Man hört dann g."},
+    {"id": "k Anfang", "text": "Genau hinhören: klingeln beginnt hart mit k."},
+    {"id": "sp/st", "text": "Am Wortanfang spricht man schp/scht, schreibt aber sp/st."},
+    {"id": "schl/schn", "text": "sch nicht weglassen: langsam mitsprechen (schl-ie-ßen)."},
+    {"id": "z nach l/n/r", "text": "Nach l, n, r steht nie tz, sondern z (Salz, ganz, Herz)."},
+    {"id": "tz", "text": "Nach kurzem Vokal schreibt man tz (Kat-ze, Spit-ze)."},
+    {"id": "ts", "text": "ts am Wortende in Merkwörtern: nichts, rechts, nachts."},
+    {"id": "e/ä", "text": "ä nur, wenn es ein verwandtes Wort mit a gibt (Ball -> Bälle). Sonst e."},
+    {"id": "ks/x", "text": "Meist ks oder chs. x nur in Merkwörtern (Hexe, Text, Axt)."},
+    {"id": "Zusammenschreibung", "text": "Bildet es ein neues Wort mit eigener Bedeutung, schreibt man zusammen."},
+    {"id": "Großschreibung", "text": "Satzanfang, Nomen und Anrede (Sie, Ihnen) schreibt man groß."},
+    {"id": "Kleinschreibung", "text": "Richtungswörter (rechts, links, oben) schreibt man klein."},
+    {"id": "Fall-Endung", "text": "Wem? -> dem/einem (Dativ, z. B. nach mit, von, zu). Wen? -> den/einen (Akkusativ). Endung genau prüfen."},
+    {"id": "Verb-Endung", "text": "ich-Form endet auf -e: ich schaue, ich gehe."},
+    {"id": "das/dass", "text": "Kann man dieses oder welches einsetzen -> das. Sonst dass."},
+    {"id": "Laut dazugedichtet", "text": "Langsam mitsprechen und jeden Laut prüfen. Kein Laut zu viel."},
+    {"id": "Umgangssprache", "text": "Schriftsprache statt Gesprochenes: grade -> gerade."},
+    {"id": "Zeichensetzung", "text": "Wörtliche Rede in Anführungszeichen: „Hallo“, sagt er."}
+    /*TEXTREGELN-END*/
+  ]
 };
 
 // ================= Hilfsfunktionen =================
@@ -1382,6 +1531,11 @@ function validate(data) {
     if (!r || typeof r.id !== "string" || !r.id || typeof r.text !== "string" || !r.text) { errors.push("Regeln Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
     regelIds[r.id] = true; regeln.push(r);
   });
+  var textRegeln = [];
+  list(data.textRegeln).forEach(function (r, i) {
+    if (!r || typeof r.id !== "string" || !r.id || typeof r.text !== "string" || !r.text) { errors.push("Textregeln Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
+    textRegeln.push(r); regelIds[r.id] = true;
+  });
   var themenOk = {}; THEMEN.concat([VERWECHSLUNG]).forEach(function (t) { themenOk[t] = true; });
   var woerter = [], seen = {};
   list(data.woerter).forEach(function (e, i) {
@@ -1420,7 +1574,7 @@ function validate(data) {
     texte.push({ id: x.id, titel: x.titel, welt: x.welt, stufe: x.stufe, text: norm(x.text), teile: teile });
   });
   var luecken = [], lIds = {};
-  list(data.lueckensaetze).forEach(function (x, i) {
+  list(data.lueckensaetze).concat(list(data.textLuecken)).forEach(function (x, i) {
     var nr = "Lückensätze Zeile " + (i + 1) + (x && x.id ? " (" + x.id + ")" : "");
     if (!x || typeof x.id !== "string" || !x.id || typeof x.satz !== "string" || typeof x["lösung"] !== "string" || typeof x.optionen !== "string" || typeof x.paar !== "string") { errors.push(nr + ": Pflichtfeld fehlt"); return; }
     if (lIds[x.id]) { errors.push(nr + ": ID doppelt"); return; }
@@ -1443,14 +1597,45 @@ function validate(data) {
     if (!f || typeof f.id !== "string" || !f.id || typeof f.frage !== "string" || !f.frage) { errors.push("Wochenfragen Zeile " + (i + 1) + ": Pflichtfeld fehlt"); return; }
     fragen.push({ id: f.id, frage: f.frage });
   });
+  // Textwörter (X1, X4): Wort muss in seinem Satz stehen
+  function satzEnthaelt(satz, wort) {
+    var tk = norm(satz).split(" ").map(function (x) { return x.replace(/^[^A-Za-zÄÖÜäöüß0-9]+|[^A-Za-zÄÖÜäöüß0-9]+$/g, ""); });
+    var wt = wort.split(" ");
+    for (var a = 0; a + wt.length <= tk.length; a++) if (tk.slice(a, a + wt.length).join(" ") === wt.join(" ")) return true;
+    return false;
+  }
+  var EINZELWORT = /^[A-Za-zÄÖÜäöüß]+([ -][A-Za-zÄÖÜäöüß]+)*$/;
+  var textwoerter = [], twSeen = {};
+  list(data.textwoerter).forEach(function (t, i) {
+    var nr = "Textwörter Zeile " + (i + 1) + (t && t.wort ? " („" + t.wort + "“)" : "");
+    if (!t || typeof t.wort !== "string" || !EINZELWORT.test(t.wort)) { errors.push(nr + ": Wort ungültig"); return; }
+    if (twSeen[t.wort]) { errors.push(nr + ": Wort doppelt"); return; }
+    if (!Array.isArray(t.kategorien) || !t.kategorien.length || t.kategorien.some(function (k) { return typeof k !== "string" || !k; })) { errors.push(nr + ": Kategorie fehlt"); return; }
+    if (typeof t.satz !== "string" || !satzEnthaelt(t.satz, t.wort)) { errors.push(nr + ": Satz fehlt oder enthält das Wort nicht"); return; }
+    twSeen[t.wort] = true;
+    textwoerter.push({ wort: t.wort, kategorien: t.kategorien.slice(), regel: typeof t.regel === "string" ? t.regel : "", satz: norm(t.satz),
+      aehnliche: (Array.isArray(t.aehnliche) ? t.aehnliche : []).filter(function (a) { return typeof a === "string" && /^[A-Za-zÄÖÜäöüß-]+$/.test(a) && a !== t.wort; }) });
+  });
+  var diktatsaetze = [];
+  list(data.diktatsaetze).forEach(function (x, i) {
+    var nr = "Diktatsätze Zeile " + (i + 1) + (x && x.id ? " (" + x.id + ")" : "");
+    if (!x || typeof x.id !== "string" || !x.id || typeof x.satz !== "string" || !norm(x.satz) || !Array.isArray(x.woerter)) { errors.push(nr + ": Pflichtfeld fehlt"); return; }
+    if (x.woerter.some(function (w) { return typeof w !== "string" || !satzEnthaelt(x.satz, w); })) { errors.push(nr + ": Wort steht nicht im Satz"); return; }
+    diktatsaetze.push({ id: x.id, satz: norm(x.satz), woerter: x.woerter.slice(), kategorie: typeof x.kategorie === "string" ? x.kategorie : "" });
+  });
   return { welten: welten, regeln: regeln, woerter: woerter, texte: texte, luecken: luecken, meldungen: meldungen,
-    wochenfragen: fragen, errors: errors };
+    wochenfragen: fragen, textwoerter: textwoerter, diktatsaetze: diktatsaetze, textRegeln: textRegeln, errors: errors };
 }
 
-var content = { welten: [], regeln: [], woerter: [], texte: [], luecken: [], meldungen: {}, wochenfragen: [], errors: [] };
+var content = { welten: [], regeln: [], woerter: [], texte: [], luecken: [], meldungen: {}, wochenfragen: [],
+  textwoerter: [], diktatsaetze: [], textRegeln: [], errors: [] };
 try { content = validate(DATA); } catch (err) { content.errors = ["Inhalte konnten nicht gelesen werden: " + err.message]; }
 function themenListe() { return THEMEN.slice(); }
-function regelText(id) { for (var i = 0; i < content.regeln.length; i++) if (content.regeln[i].id === id) return content.regeln[i].text; return ""; }
+function regelText(id) {
+  var alle = content.regeln.concat(content.textRegeln);
+  for (var i = 0; i < alle.length; i++) if (alle[i].id === id) return alle[i].text;
+  return "";
+}
 var wordIndex = {};
 content.woerter.forEach(function (w) { wordIndex[w.wort] = w; });
 function findWord(wort) { return wordIndex[wort] || null; }
@@ -1462,7 +1647,7 @@ function defaultAuswahl() { return { welten: ["alle"], thema: "egal", silben: "e
 function emptyState() {
   return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
     settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle",
-      spielAuswahl: defaultAuswahl(), salatStufe: 1, titelreihe: "matrose" },
+      spielAuswahl: defaultAuswahl(), salatStufe: 1, titelreihe: "matrose", textAuswahl: [], textAehnliche: false },
     versuche: [], meineWoerter: [], zeiten: {}, stufen: {}, stufenLog: [], diktate: [], wochenfragen: [],
     wochenfrageSpaeter: "", letzteMeldung: "", spiele: [], levelGesehen: null, karte: null };
 }
@@ -1498,6 +1683,8 @@ function sanitize(obj) {
   st.settings.spielAuswahl.silben = "egal";
   if ([1, 2, 3].indexOf(set.salatStufe) >= 0) st.settings.salatStufe = set.salatStufe;
   if (TITELREIHEN[set.titelreihe]) st.settings.titelreihe = set.titelreihe;
+  if (Array.isArray(set.textAuswahl)) st.settings.textAuswahl = uniq(set.textAuswahl.filter(isStr));
+  st.settings.textAehnliche = set.textAehnliche === true;
   obj.versuche.forEach(function (v) {
     if (!v || !isStr(v.wort) || typeof v.richtig !== "boolean" || !isStr(v.tag) || !DAY_RE.test(v.tag)) return;
     var kat = Array.isArray(v.kategorien) ? v.kategorien.filter(function (k) { return KATEGORIEN.indexOf(k) >= 0; })
@@ -1925,6 +2112,8 @@ function spokenText(w) {
 }
 function onlyWordHint(w) {
   if (w.artikel) return "Schreib nur das Wort – ohne „" + w.artikel + "“.";
+  if (w.wort.indexOf(" ") > 0) return "Schreib nur die " + w.wort.split(" ").length + " Wörter, nicht den ganzen Satz.";
+  if (w.text && !w.ansage && w.nomen === "ja") return "Schreib nur das Wort. Es ist ein Nomen.";
   if (w.ansage) return "Schreib nur das eine Wort, nicht den ganzen Satz.";
   return "";
 }
@@ -1966,6 +2155,7 @@ function show(id) {
   if (id === "spielwahl") renderSpielwahl();
   if (id === "fortschritt") renderFortschritt();
   if (id === "karte") showKarte();
+  if (id === "textwoerter") renderTextwoerter();
   $("icard").hidden = true;
   if (id === "bericht") renderReport();
   if (id === "daten") renderData();
@@ -2160,7 +2350,8 @@ function showWord() {
   round.checked = false; round.recorded = false; round.hilfe = 0;
   $("counter").textContent = "Wort " + (round.idx + 1) + " von " + round.words.length;
   var a = state.settings.auswahl;
-  $("uebenInfo").textContent = a.thema === "egal" ? "Wort hören und schreiben" : (a.thema === "fehler" ? "Meine Fehlerwörter" : a.thema);
+  $("uebenInfo").textContent = round.kind === "text" ? "Meine Textwörter" :
+    (a.thema === "egal" ? "Wort hören und schreiben" : (a.thema === "fehler" ? "Meine Fehlerwörter" : a.thema));
   $("onlyWord").textContent = onlyWordHint(w);
   $("wordInput").value = "";
   $("result").textContent = "";
@@ -2176,8 +2367,11 @@ function showHint() {
   if (round.hilfe === 0) {
     round.hilfe = 1;
     var box = $("hintTips"); box.textContent = "";
-    var ids = w.themen.length ? w.themen.slice(0, 2) : ["allgemein"];
-    ids.forEach(function (id) { var t = regelText(id); if (t) box.appendChild(el("div", "muted", t)); });
+    if (w.regel) box.appendChild(el("div", "muted", w.regel));
+    else {
+      var ids = w.themen.length ? w.themen.slice(0, 2) : ["allgemein"];
+      ids.forEach(function (id) { var t = regelText(id); if (t) box.appendChild(el("div", "muted", t)); });
+    }
     $("hintBox").hidden = false;
     if (w.eigen) { $("hintBtn").hidden = true; return; }
     $("hintBtnText").textContent = "Silben zeigen (zählt als Hilfe)";
@@ -2233,7 +2427,7 @@ function check() {
 function next() {
   if (!round) return;
   round.idx++;
-  if (round.idx >= round.words.length) { showDone(round.results, round.events, "uebung"); return; }
+  if (round.idx >= round.words.length) { showDone(round.results, round.events, round.kind || "uebung"); return; }
   showWord();
 }
 function showDone(rs, events, kind) {
@@ -2306,8 +2500,8 @@ function renderDiktatWahl() {
   });
 }
 function textById(id) { for (var i = 0; i < content.texte.length; i++) if (content.texte[i].id === id) return content.texte[i]; return null; }
-function startDiktat(id) {
-  var t = textById(id); if (!t) return;
+function startDiktat(id) { var t = textById(id); if (t) startDiktatText(t); }
+function startDiktatText(t) {
   dRun = { text: t, idx: 0, modus: state.settings.diktatModus, events: [] };
   $("dTitel").textContent = t.titel;
   $("dInput").value = ""; $("dMsg").textContent = "";
@@ -2354,7 +2548,7 @@ function diktatFertig() {
     richtig: res.items.filter(function (it) { return it.status === "ok"; }).length, eingabe: norm(input) });
   res.items.forEach(function (it) {
     if (!it.soll) return;
-    var w = findWord(it.soll), ok = it.status === "ok";
+    var w = findWord(it.soll) || textEntryFor(it.soll), ok = it.status === "ok";
     var v = { wort: it.soll, richtig: ok, hilfe: 0, eingabe: it.ist, zeit: d.toISOString(), tag: dayKey(d),
       kategorien: ok ? [] : (it.ist ? classify(it.soll, it.ist) : []), themen: w ? w.themen.slice() : [], welt: w ? w.welt : "",
       quelle: "diktat", silbenZahl: silbenOf(w) };
@@ -2389,8 +2583,10 @@ function paare() { return uniq(content.luecken.map(function (l) { return l.paar;
 function renderLueckeWahl() {
   var cp = $("chipPaar"); cp.textContent = "";
   var cur = state.settings.paar;
-  if (cur !== "alle" && paare().indexOf(cur) < 0) cur = state.settings.paar = "alle";
+  var hatText = content.luecken.some(function (l) { return l.id.charAt(0) === "t"; });
+  if (cur !== "alle" && !(cur === "text" && hatText) && paare().indexOf(cur) < 0) cur = state.settings.paar = "alle";
   cp.appendChild(chip("alle", "data-p", "alle", cur === "alle"));
+  if (hatText) cp.appendChild(chip("✍️ aus meinen Texten", "data-p", "text", cur === "text"));
   paare().forEach(function (p) { cp.appendChild(chip(p, "data-p", p, cur === p)); });
   renderStufeBox($("lStufe"), VERWECHSLUNG);
   var st = stufeInfo(VERWECHSLUNG).stufe;
@@ -2400,7 +2596,7 @@ function renderLueckeWahl() {
 }
 function lueckenPool() {
   var p = state.settings.paar;
-  return content.luecken.filter(function (l) { return p === "alle" || l.paar === p; });
+  return content.luecken.filter(function (l) { return p === "alle" || (p === "text" ? l.id.charAt(0) === "t" : l.paar === p); });
 }
 function startLuecke() {
   var pool = lueckenPool(); if (!pool.length) return;
@@ -2456,7 +2652,7 @@ function answerLuecke(given) {
   $("lInput").disabled = true; $("lCheck").disabled = true;
   var d = now();
   var v = { wort: l.loesung, richtig: ok, hilfe: 0, eingabe: given, zeit: d.toISOString(), tag: dayKey(d),
-    kategorien: ok ? [] : ["Sonstige"], themen: [VERWECHSLUNG], welt: "", quelle: "luecke", silbenZahl: 0, satzId: l.id };
+    kategorien: ok ? [] : ["Sonstige"], themen: l.paar === "Fall-Endung" ? [] : [VERWECHSLUNG], welt: "", quelle: "luecke", silbenZahl: 0, satzId: l.id };
   recordAttempt(v, lRun.events);
   saveState();
   lRun.results.push(Object.assign({ paar: l.paar }, v));
@@ -3071,6 +3267,129 @@ function renderFortschritt() {
   Object.keys(TITELREIHEN).forEach(function (k) { ft.appendChild(chip(TITELREIHEN[k].join(" → "), "data-titel", k, state.settings.titelreihe === k)); });
 }
 
+// ================= Meine Textwörter (aus eigenen Texten) =================
+// Kategorien aus der Excel, die eindeutig zu einem Thema der App passen (zählen für Ampel/Stufen, X8)
+var KATEGORIE_THEMA = { "Doppelkonsonant": "Doppelte Buchstaben", "ck": "ck/tz", "tz": "ck/tz", "Dehnungs-h": "Dehnung", "ie": "Dehnung",
+  "v statt f": "Merkwörter", "g am Ende": "Verlängern", "e/ä": "Umlaute ableiten", "Großschreibung": "Groß/klein",
+  "Kleinschreibung": "Groß/klein", "das/dass": "Verwechslungswörter" };
+function themenAus(kats) { return uniq(kats.map(function (k) { return KATEGORIE_THEMA[k]; }).filter(Boolean)); }
+var textIndex = {};
+content.textwoerter.forEach(function (t) { textIndex[t.wort] = t; });
+function textEntry(t) {
+  return { wort: t.wort, silben: t.wort, welt: "text", nomen: /^[A-ZÄÖÜ]/.test(t.wort) ? "ja" : "nein", artikel: "",
+    themen: themenAus(t.kategorien), stufe: 1, hinweis: "", fremdwort: "nein", ansage: t.satz, eigen: true, text: true, regel: t.regel };
+}
+function textEntryFor(wort) { return textIndex[wort] ? textEntry(textIndex[wort]) : null; }
+// Ähnliches Wort: aus der Wortliste (mit Artikel/Satz), sonst einzeln mit Regel des Textworts
+function aehnlichEntry(wort, t) {
+  var w = findWord(wort);
+  if (w) return w;
+  var e = textEntry(t);
+  e.wort = wort; e.silben = wort; e.ansage = ""; e.nomen = /^[A-ZÄÖÜ]/.test(wort) ? "ja" : "nein"; e.aehnlich = true;
+  return e;
+}
+function textStatus(wort) {
+  var n = 0, falsch = 0, ok = 0, okTage = {};
+  state.versuche.forEach(function (v) {
+    if (v.wort !== wort || v.quelle === "luecke") return;
+    n++;
+    if (zaehltRichtig(v)) { ok++; okTage[v.tag] = true; } else falsch++;
+  });
+  return { n: n, falsch: falsch, ok: ok, sitzt: ok >= CONFIG.textSitztRichtig && Object.keys(okTage).length >= CONFIG.textSitztTage };
+}
+function textAuswahl() { return state.settings.textAuswahl.filter(function (w) { return !!textIndex[w]; }); }
+function textGruppen() {
+  var gr = [], idx = {};
+  content.textwoerter.forEach(function (t) {
+    var k = t.kategorien[0];
+    if (!(k in idx)) { idx[k] = gr.length; gr.push({ kat: k, woerter: [] }); }
+    gr[idx[k]].woerter.push(t.wort);
+  });
+  return gr;
+}
+function renderTextwoerter() {
+  var list = $("twList"), sel = textAuswahl(); list.textContent = "";
+  textGruppen().forEach(function (g) {
+    var box = el("div", "twgroup");
+    var alle = g.woerter.every(function (w) { return sel.indexOf(w) >= 0; });
+    var hb = el("button", "twkat", g.kat + " (" + g.woerter.length + ")");
+    hb.setAttribute("data-twkat", g.kat); hb.setAttribute("aria-pressed", alle ? "true" : "false");
+    box.appendChild(hb);
+    g.woerter.forEach(function (w) {
+      var st = textStatus(w), lab = el("label", "twrow"), cb = el("input");
+      cb.type = "checkbox"; cb.setAttribute("data-tw", w); cb.checked = sel.indexOf(w) >= 0;
+      lab.appendChild(cb); lab.appendChild(el("span", "twwort", w));
+      lab.appendChild(el("span", "twstat", st.sitzt ? "✓ sitzt" : (st.n ? st.n + "× geübt" : "")));
+      box.appendChild(lab);
+    });
+    list.appendChild(box);
+  });
+  if (!content.textwoerter.length) list.appendChild(el("div", "muted", "Noch keine Textwörter eingetragen."));
+  $("twAehnlich").checked = state.settings.textAehnliche;
+  $("twCount").textContent = sel.length ? plural(sel.length, "Wort", "Wörter") + " ausgewählt" : "Hak mindestens ein Wort an.";
+  $("twUeben").disabled = !sel.length;
+  $("twDiktat").disabled = !meinDiktatSaetze(sel, state.settings.textAehnliche).length;
+  $("twLuecke").hidden = !content.luecken.some(function (l) { return l.id.charAt(0) === "t"; });
+}
+function setTextAuswahl(woerter, an) {
+  var sel = textAuswahl();
+  woerter.forEach(function (w) {
+    var i = sel.indexOf(w);
+    if (an && i < 0) sel.push(w);
+    if (!an && i >= 0) sel.splice(i, 1);
+  });
+  state.settings.textAuswahl = sel;
+  saveState();
+  renderTextwoerter();
+}
+// Runde: ausgewählte Textwörter (Leitner), auf Wunsch mit ähnlichen Wörtern derselben Regel (X3)
+function textRundenWoerter() {
+  var sel = textAuswahl(), eig = sel.map(function (w) { return textEntry(textIndex[w]); }), sim = [], seen = {};
+  sel.forEach(function (w) { seen[w] = true; });
+  if (state.settings.textAehnliche) {
+    sel.forEach(function (w) {
+      textIndex[w].aehnliche.forEach(function (a) { if (!seen[a]) { seen[a] = true; sim.push(aehnlichEntry(a, textIndex[w])); } });
+    });
+  }
+  var n = CONFIG.woerterProRunde;
+  var tw = drawRound(eig, Math.min(eig.length, sim.length ? CONFIG.textMaxEigene : n));
+  return shuffle(tw.concat(drawRound(sim, n - tw.length)));
+}
+function startTextRound() {
+  var words = textRundenWoerter();
+  if (!words.length) { show("textwoerter"); return; }
+  round = { words: words, idx: 0, results: [], events: [], kind: "text" };
+  lastKind = "text";
+  show("ueben");
+  showWord();
+}
+// „Mein Diktat“: Sätze mit den ausgewählten Wörtern (X5)
+function meinDiktatSaetze(sel, aehnliche) {
+  var kats = {};
+  sel.forEach(function (w) { if (textIndex[w]) textIndex[w].kategorien.forEach(function (k) { kats[k] = true; }); });
+  var kand = content.diktatsaetze.map(function (x, i) {
+    return { x: x, i: i, hits: x.woerter.filter(function (w) { return sel.indexOf(w) >= 0; }).length, kat: aehnliche && !!kats[x.kategorie] };
+  }).filter(function (k) { return k.hits > 0 || k.kat; });
+  kand.sort(function (a, b) { return b.hits - a.hits || a.i - b.i; });
+  return kand.slice(0, CONFIG.meinDiktatMaxSaetze).sort(function (a, b) { return a.i - b.i; }).map(function (k) { return k.x; });
+}
+function teileAus(satz) {
+  var tk = norm(satz).split(" "), teile = [], cur = [];
+  tk.forEach(function (t, i) {
+    cur.push(t);
+    if (i === tk.length - 1 || /[,:;–]$/.test(t) || cur.length >= CONFIG.teilMaxWoerter) { teile.push(cur.join(" ")); cur = []; }
+  });
+  return teile;
+}
+function startMeinDiktat() {
+  var ss = meinDiktatSaetze(textAuswahl(), state.settings.textAehnliche);
+  if (!ss.length) return;
+  var teile = [];
+  ss.forEach(function (x) { teile = teile.concat(teileAus(x.satz)); });
+  navStack = ["start", "textwoerter"];
+  startDiktatText({ id: "mein:" + ss.map(function (x) { return x.id; }).join(","), titel: "Mein Diktat", welt: "", stufe: 0, text: teile.join(" "), teile: teile });
+}
+
 // ================= Meine Wörter =================
 function renderMeine() {
   var ul = $("meineList"); ul.textContent = "";
@@ -3167,6 +3486,17 @@ function reportText() {
   state.wochenfragen.filter(function (f) { return inP(f.tag); }).forEach(function (f) {
     lines.push("", "Wochenfrage: " + f.frage, "„" + f.antwort + "“");
   });
+  if (content.textwoerter.length) {
+    var twGeuebt = 0, twSitzt = 0, twSchwer = [];
+    content.textwoerter.forEach(function (t) {
+      var st = textStatus(t.wort);
+      if (st.n) twGeuebt++;
+      if (st.sitzt) twSitzt++;
+      if (st.falsch >= 2 && !st.sitzt) twSchwer.push(t.wort);
+    });
+    if (twGeuebt) lines.push("", "Textwörter: " + twGeuebt + " von " + content.textwoerter.length + " geübt, " + twSitzt + " sitzen" +
+      (twSchwer.length ? ". Schwierig: " + twSchwer.slice(0, 5).join(", ") : ""));
+  }
   var ks = karteStatus(), neuErobert = [];
   INSELN.forEach(function (isl, i) { if (ks.erobert[i] && inP(ks.erobertAm[i])) neuErobert.push(isl.n); });
   lines.push("", "Seekarte: " + ks.anzahl + " von " + INSELN.length + " Inseln erobert" +
@@ -3326,6 +3656,7 @@ function wire() {
   $("hintBtn").addEventListener("click", showHint);
   $("againBtn").addEventListener("click", function () {
     if (lastKind === "luecke") { navStack = ["start", "lueckewahl"]; startLuecke(); }
+    else if (lastKind === "text") { navStack = ["start", "textwoerter"]; startTextRound(); }
     else { navStack = ["start", "auswahl"]; startRound(); }
   });
   $("wordInput").addEventListener("keydown", function (ev) {
@@ -3414,6 +3745,21 @@ function wire() {
   $("sListen").addEventListener("click", function () { if (S) speak(spokenText(S.entry)); });
   $("sTip").addEventListener("click", function () { if (S) $("sMsg").textContent = "Tipp: " + (S.entry.hinweis || "Eins deiner eigenen Wörter."); });
   $("sNext").addEventListener("click", salatNeu);
+  // Meine Textwörter
+  $("twList").addEventListener("change", function (ev) {
+    var cb = ev.target; if (!cb || !cb.hasAttribute || !cb.hasAttribute("data-tw")) return;
+    setTextAuswahl([cb.getAttribute("data-tw")], cb.checked);
+  });
+  $("twList").addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("[data-twkat]") : null;
+    if (!b) return;
+    var g = textGruppen().filter(function (x) { return x.kat === b.getAttribute("data-twkat"); })[0];
+    if (g) setTextAuswahl(g.woerter, b.getAttribute("aria-pressed") !== "true");
+  });
+  $("twAehnlich").addEventListener("change", function () { state.settings.textAehnliche = $("twAehnlich").checked; saveState(); renderTextwoerter(); });
+  $("twUeben").addEventListener("click", function () { navStack = ["start", "textwoerter"]; startTextRound(); });
+  $("twDiktat").addEventListener("click", startMeinDiktat);
+  $("twLuecke").addEventListener("click", function () { state.settings.paar = "text"; saveState(); navStack = ["start", "textwoerter", "lueckewahl"]; startLuecke(); });
   // Seekarte
   $("islands").addEventListener("click", function (ev) {
     var g = ev.target.closest ? ev.target.closest(".island") : null;
@@ -3484,6 +3830,8 @@ window.__test = {
   galgen: function () { return G ? { wort: G.entry.wort, misses: G.misses, done: G.done } : null; },
   salat: function () { return S ? { wort: S.entry.wort, fixed: S.fixed, pieces: S.pieces.map(function (p) { return p.t; }), placed: S.placed.length, awaitCase: S.awaitCase } : null; },
   memory: function () { return M ? { pairs: M.pairs, found: M.found, zuege: M.zuege } : null; },
+  text: { status: textStatus, rundenWoerter: textRundenWoerter, meinDiktat: meinDiktatSaetze, teileAus: teileAus, themenAus: themenAus,
+    auswahl: textAuswahl },
   karte: { inseln: INSELN.map(function (i) { return { n: i.n, unit: i.unit, x: i.x, y: i.y, cap: !!i.cap }; }),
     stops: STOPS.map(function (x) { return { x: x.x, y: x.y, insel: x.insel }; }),
     status: function () { return karteStatus(); }, holes: function () { return karteLetzteLoecher; },
