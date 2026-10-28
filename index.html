@@ -639,8 +639,8 @@ svg.gallows .part.on{visibility:visible}
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.6.1";
-var SCHEMA_VERSION = 6;
+var APP_VERSION = "0.7.0";
+var SCHEMA_VERSION = 7;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
 var CONFIG = {
@@ -654,7 +654,8 @@ var CONFIG = {
   inaktivSekunden: 60,
   woerterProRunde: 15,
   lueckenProRunde: 10,
-  minWoerterUebung: 5,
+  minWoerterUebung: 3,         // darunter: Start nur mit Hinweis (H6)
+  woerterAuffuellenBis: 5,     // so weit wird aus höheren Stufen aufgefüllt
   minFehlerwoerter: 1,        // „Meine Fehlerwörter“ auch mit wenigen Wörtern üben
   ampelMinVersuche: 10,
   leitnerGewichte: { 0: 4, 1: 8, 2: 4, 3: 2, 4: 1, 5: 0.5 },  // Fach → Ziehgewicht (0 = neu)
@@ -1643,7 +1644,9 @@ function silbenOf(w) { return w && !w.eigen ? w.silben.split("|").length : 0; }
 
 // ================= Speicher =================
 var storageOk = true;
-function defaultAuswahl() { return { welten: ["alle"], thema: "egal", silben: "egal" }; }
+function defaultAuswahl() { return { welten: ["alle"], themen: ["egal"], silben: "egal" }; }
+// Ältere Stände kennen nur ein Thema (a.thema); neue eine Liste (a.themen)
+function themenVon(a) { return Array.isArray(a.themen) && a.themen.length ? a.themen : [a.thema || "egal"]; }
 function emptyState() {
   return { app: "HD", schema: SCHEMA_VERSION, appVersion: APP_VERSION, erstellt: now().toISOString(),
     settings: { rate: CONFIG.tempoStandard, auswahl: defaultAuswahl(), diktatModus: "app", paar: "alle",
@@ -1662,7 +1665,8 @@ function cleanAuswahl(a) {
   var d = defaultAuswahl();
   if (!a || typeof a !== "object") return d;
   if (Array.isArray(a.welten) && a.welten.every(isStr)) d.welten = a.welten.slice();
-  if (isStr(a.thema)) d.thema = a.thema;
+  if (Array.isArray(a.themen) && a.themen.length && a.themen.every(isStr)) d.themen = uniq(a.themen);
+  else if (isStr(a.thema)) d.themen = [a.thema];
   if (["egal", "1", "2", "3", "4+"].indexOf(a.silben) >= 0) d.silben = a.silben;
   return d;
 }
@@ -1816,7 +1820,7 @@ function allWords(withDiktat) {
   return list;
 }
 function filterWords(a) {
-  var fehler = a.thema === "fehler";
+  var th = themenVon(a), fehler = th.indexOf("fehler") >= 0, egal = th.indexOf("egal") >= 0;
   var bx = fehler ? boxes() : null;
   var alle = a.welten.indexOf("alle") >= 0;
   return allWords(fehler).filter(function (w) {
@@ -1826,9 +1830,9 @@ function filterWords(a) {
       if (!weltOk) return false;
     }
     if (fehler) { if (bx[w.wort] !== 1) return false; }
-    else if (a.thema !== "egal") {
-      if (w.themen.indexOf(a.thema) < 0) return false;
-      if (a.thema !== "Fremdwörter" && w.fremdwort === "ja") return false;
+    else if (!egal) {
+      if (!th.some(function (t) { return w.themen.indexOf(t) >= 0; })) return false;
+      if (w.fremdwort === "ja" && th.indexOf("Fremdwörter") < 0) return false;
     }
     if (a.silben !== "egal") {
       var n = silbenOf(w);
@@ -1906,28 +1910,42 @@ function setStufeManuell(u, n) {
   saveState();
   return e;
 }
-function unitForAuswahl(a) {
-  if (a.thema === "fehler") return null;
-  if (a.thema !== "egal") return a.thema;
-  if (a.silben !== "egal") return "silben:" + a.silben;
-  return "gesamt";
+// Stufen-Einheiten der Auswahl: die gewählten Themen, sonst Silbenzahl oder Gesamt; „Meine Fehlerwörter“ ohne Stufe
+function unitsForAuswahl(a) {
+  var th = themenVon(a);
+  if (th.indexOf("fehler") >= 0) return null;
+  if (th.indexOf("egal") < 0) return th.slice();
+  if (a.silben !== "egal") return ["silben:" + a.silben];
+  return ["gesamt"];
 }
-// Wörter bis zur aktuellen Stufe; reichen sie nicht, wird mit der nächsten Stufe ergänzt
+function unitForAuswahl(a) { var u = unitsForAuswahl(a); return u ? u[0] : null; }
+// Stufe, die für ein Wort gilt: höchste Stufe unter den gewählten Themen, zu denen es gehört
+function wortStufe(w, units) {
+  var s = 0;
+  units.forEach(function (u) {
+    if (u === "gesamt" || u.indexOf("silben:") === 0 || w.themen.indexOf(u) >= 0) s = Math.max(s, stufeInfo(u).stufe);
+  });
+  return s || 1;
+}
+function stufeFn(S) { return typeof S === "function" ? S : function () { return S; }; }
+// Wörter bis zur jeweiligen Stufe; reichen sie nicht (< woerterAuffuellenBis), wird Stufe für Stufe aus höheren ergänzt
 function eligible(words, S) {
-  var limit = S, res;
+  var f = stufeFn(S), extra = 0, res;
   for (;;) {
-    res = words.filter(function (w) { return w.eigen || w.stufe <= limit; });
-    if (res.length >= CONFIG.minWoerterUebung || limit >= 5) break;
-    limit++;
+    res = words.filter(function (w) { return w.eigen || w.stufe <= f(w) + extra; });
+    if (res.length >= CONFIG.woerterAuffuellenBis || extra >= 4) break;
+    extra++;
   }
-  return { words: res, limit: limit };
+  var fertig = words.filter(function (w) { return w.eigen || w.stufe <= f(w); }).length;
+  return { words: res, extra: res.length > fertig ? extra : 0, limit: typeof S === "number" ? S + extra : extra };
 }
-// 80 % aktuelle Stufe (und ergänzte höhere), 20 % frühere Stufen
+// 80 % aktuelle Stufe (und ergänzte höhere), 20 % frühere Stufen – je Wort nach der Stufe seines Themas
 function drawRoundStufe(words, n, S) {
-  var cur = words.filter(function (w) { return w.eigen || w.stufe >= S; });
-  var low = words.filter(function (w) { return !w.eigen && w.stufe < S; });
+  var f = stufeFn(S);
+  var cur = words.filter(function (w) { return w.eigen || w.stufe >= f(w); });
+  var low = words.filter(function (w) { return !w.eigen && w.stufe < f(w); });
   n = Math.min(n, words.length);
-  var nLow = S > 1 && low.length ? Math.round(n * (1 - CONFIG.mischungAktuell)) : 0;
+  var nLow = low.length ? Math.round(n * (1 - CONFIG.mischungAktuell)) : 0;
   nLow = Math.min(nLow, low.length);
   var nCur = Math.min(n - nLow, cur.length);
   if (nCur + nLow < n) nLow = Math.min(low.length, n - nCur);
@@ -2245,20 +2263,25 @@ function sendWochenfrage() {
 function laterWochenfrage() { state.wochenfrageSpaeter = dayKey(now()); saveState(); renderWochenfrage(); }
 
 // ================= Stufen-Anzeige (Auswahl, Lückensatz) =================
-function renderStufeBox(box, unit) {
+function renderStufeBox(box, units) {
+  if (typeof units === "string") units = [units];
   box.textContent = "";
-  box.hidden = !unit;
-  if (!unit) return;
-  var info = stufeInfo(unit);
-  box.appendChild(el("div", "", "Deine Stufe hier (" + unitName(unit) + "): Stufe " + info.stufe + (info.wiederholung ? " · Wiederholungsrunde" : "")));
-  box.appendChild(el("div", "muted", "Du kannst sie selbst ändern:"));
-  var chips = el("div", "chips");
-  for (var s = 1; s <= CONFIG.stufeMax; s++) {
-    var b = chip("Stufe " + s, "data-stufe", String(s), s === info.stufe);
-    b.setAttribute("data-unit", unit);
-    chips.appendChild(b);
-  }
-  box.appendChild(chips);
+  box.hidden = !units || !units.length;
+  if (box.hidden) return;
+  units.forEach(function (unit) {
+    var info = stufeInfo(unit);
+    var txt = (units.length === 1 ? "Deine Stufe hier (" + unitName(unit) + "): " : unitName(unit) + ": ") + "Stufe " + info.stufe;
+    box.appendChild(el("div", "", txt + (info.wiederholung ? " · Wiederholungsrunde" : "")));
+    var chips = el("div", "chips");
+    chips.setAttribute("data-units-of", unit);
+    for (var s = 1; s <= CONFIG.stufeMax; s++) {
+      var b = chip("Stufe " + s, "data-stufe", String(s), s === info.stufe);
+      b.setAttribute("data-unit", unit);
+      chips.appendChild(b);
+    }
+    box.appendChild(chips);
+  });
+  box.appendChild(el("div", "muted", units.length === 1 ? "Du kannst sie selbst ändern." : "Du kannst jede Stufe selbst ändern."));
 }
 function onStufeChip(ev, rerender) {
   var b = ev.target.closest ? ev.target.closest("[data-stufe]") : null;
@@ -2283,36 +2306,48 @@ function renderAuswahl() {
   cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
   if (content.textwoerter.length) cw.appendChild(chip("✍️ Fehler aus meinen Texten", "data-w", "text", a.welten.indexOf("text") >= 0));
   var ct = $("chipThema"); ct.textContent = "";
-  ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
-  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
-  ct.appendChild(chip("Meine Fehlerwörter", "data-t", "fehler", a.thema === "fehler"));
+  var th = themenVon(a);
+  ct.appendChild(chip("egal", "data-t", "egal", th.indexOf("egal") >= 0));
+  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, th.indexOf(t) >= 0)); });
+  ct.appendChild(chip("Meine Fehlerwörter", "data-t", "fehler", th.indexOf("fehler") >= 0));
   var cs = $("chipSilben"); cs.textContent = "";
   ["egal", "1", "2", "3", "4+"].forEach(function (s) { cs.appendChild(chip(s, "data-s", s, a.silben === s)); });
-  renderStufeBox($("uStufe"), unitForAuswahl(a));
+  renderStufeBox($("uStufe"), unitsForAuswahl(a));
   updateAuswahlCount();
 }
-function minFor(a) { return a.thema === "fehler" ? CONFIG.minFehlerwoerter : CONFIG.minWoerterUebung; }
 function roundPool(a) {
-  var words = filterWords(a), unit = unitForAuswahl(a);
-  if (!unit) return { words: words, stufe: 0, limit: 0 };
-  var S = stufeInfo(unit).stufe, el2 = eligible(words, S);
-  return { words: el2.words, stufe: S, limit: el2.limit };
+  var words = filterWords(a), units = unitsForAuswahl(a);
+  if (!units) return { words: words, sFn: null, extra: 0 };
+  var sFn = function (w) { return wortStufe(w, units); }, e = eligible(words, sFn);
+  return { words: e.words, sFn: sFn, extra: e.extra };
 }
+// H6: 0 Wörter → gesperrt; 1–2 → Start mit Hinweis; ab 3 → normal (vorher Auffüllen aus höheren Stufen)
 function updateAuswahlCount() {
-  var a = state.settings.auswahl;
-  var warn = "", n = 0, extra = "";
-  if (!a.welten.length) warn = "Wähl mindestens eine Welt.";
+  var a = state.settings.auswahl, fehler = themenVon(a).indexOf("fehler") >= 0;
+  var sperre = "", hinweis = "", n = 0, extra = "";
+  if (!a.welten.length) sperre = "Wähl mindestens eine Welt.";
   else {
     var p = roundPool(a); n = p.words.length;
-    if (p.limit > p.stufe && p.stufe) extra = " (mit Wörtern aus Stufe " + p.limit + " ergänzt)";
-    if (n < minFor(a)) {
-      warn = a.thema === "fehler" && n === 0 ? "Gerade hast du keine Fehlerwörter. Stark!" :
-        "Zu wenige Wörter für eine Runde (mindestens " + CONFIG.minWoerterUebung + "). Wähl mehr Welten oder „egal“.";
-    }
+    if (p.extra) extra = " (mit Wörtern aus höheren Stufen ergänzt)";
+    if (n === 0) sperre = fehler ? "Gerade hast du keine Fehlerwörter. Stark!" : "Zu wenige Wörter: keine passenden. Wähl mehr Themen oder Welten.";
+    else if (n < CONFIG.minWoerterUebung && !fehler) hinweis = "Nur " + plural(n, "Wort", "Wörter") + " – wähl mehr Themen oder Welten für mehr Abwechslung.";
   }
   $("auswahlCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") + extra : "";
-  $("auswahlWarn").textContent = warn;
-  $("auswahlStart").disabled = !!warn;
+  $("auswahlWarn").textContent = sperre || hinweis;
+  $("auswahlStart").disabled = !!sperre;
+}
+// Themen umschalten: „egal“ und „Meine Fehlerwörter“ stehen für sich, sonst Mehrfachauswahl (L7)
+function toggleThema(a, t, mitFehler) {
+  var th = themenVon(a).slice();
+  if (t === "egal" || (mitFehler && t === "fehler")) th = [t];
+  else {
+    th = th.filter(function (x) { return x !== "egal" && x !== "fehler"; });
+    var i = th.indexOf(t);
+    if (i >= 0) th.splice(i, 1); else th.push(t);
+    if (!th.length) th = ["egal"];
+  }
+  a.themen = th;
+  delete a.thema;
 }
 function onAuswahlClick(ev) {
   if (onStufeChip(ev, renderAuswahl)) return;
@@ -2328,7 +2363,7 @@ function onAuswahlClick(ev) {
       if (i >= 0) a.welten.splice(i, 1); else a.welten.push(w);
     }
   }
-  if (b.hasAttribute("data-t")) a.thema = b.getAttribute("data-t");
+  if (b.hasAttribute("data-t")) toggleThema(a, b.getAttribute("data-t"), true);
   if (b.hasAttribute("data-s")) a.silben = b.getAttribute("data-s");
   saveState();
   renderAuswahl();
@@ -2339,9 +2374,9 @@ var round = null, lastKind = "uebung";
 function startRound() {
   var a = state.settings.auswahl;
   var p = roundPool(a);
-  if (p.words.length < minFor(a)) { show("auswahl"); return; }
+  if (!p.words.length) { show("auswahl"); return; }
   var n = Math.min(CONFIG.woerterProRunde, p.words.length);
-  var words = p.stufe ? drawRoundStufe(p.words, n, p.stufe) : drawRound(p.words, n);
+  var words = p.sFn ? drawRoundStufe(p.words, n, p.sFn) : drawRound(p.words, n);
   round = { words: words, idx: 0, results: [], events: [] };
   lastKind = "uebung";
   show("ueben");
@@ -2355,7 +2390,7 @@ function showWord() {
   $("counter").textContent = "Wort " + (round.idx + 1) + " von " + round.words.length;
   var a = state.settings.auswahl;
   $("uebenInfo").textContent = round.kind === "text" ? "Meine Textwörter" :
-    (a.thema === "egal" ? "Wort hören und schreiben" : (a.thema === "fehler" ? "Meine Fehlerwörter" : a.thema));
+    (themenVon(a)[0] === "egal" ? "Wort hören und schreiben" : (themenVon(a)[0] === "fehler" ? "Meine Fehlerwörter" : themenVon(a).join(" + ")));
   $("onlyWord").textContent = onlyWordHint(w);
   $("wordInput").value = "";
   $("result").textContent = "";
@@ -2773,15 +2808,16 @@ function renderSpielwahl() {
   cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
   if (content.textwoerter.length) cw.appendChild(chip("✍️ Fehler aus meinen Texten", "data-w", "text", a.welten.indexOf("text") >= 0));
   var ct = $("swThema"); ct.textContent = "";
-  ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
-  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
+  var th = themenVon(a);
+  ct.appendChild(chip("egal", "data-t", "egal", th.indexOf("egal") >= 0));
+  THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, th.indexOf(t) >= 0)); });
   var warn = "", n = 0, min = CONFIG.spielMin[currentGame];
   if (!a.welten.length) warn = "Wähl mindestens eine Welt.";
   else {
     var pool = gamePool(currentGame, a);
     n = currentGame === "memory" ? memoryPairs(pool, 999).length : pool.length;
     if (n < min) warn = "Zu wenige " + (currentGame === "memory" ? "verschiedene Wörter mit zwei oder mehr Silben" : "Wörter") +
-      " (mindestens " + min + "). Wähl mehr Welten oder „egal“.";
+      " (mindestens " + min + "). Wähl mehr Welten oder Themen.";
   }
   $("swCount").textContent = a.welten.length ? plural(n, "passendes Wort", "passende Wörter") : "";
   $("swWarn").textContent = warn;
@@ -2800,7 +2836,7 @@ function onSpielwahlClick(ev) {
       if (i >= 0) a.welten.splice(i, 1); else a.welten.push(w);
     }
   }
-  if (b.hasAttribute("data-t")) a.thema = b.getAttribute("data-t");
+  if (b.hasAttribute("data-t")) toggleThema(a, b.getAttribute("data-t"), false);
   saveState();
   renderSpielwahl();
 }
@@ -3186,8 +3222,8 @@ function uebenAufInsel(i) {
   var u = INSELN[i].unit;
   $("icard").hidden = true;
   if (u === VERWECHSLUNG) { state.settings.paar = "alle"; saveState(); navStack = ["start", "karte", "lueckewahl"]; startLuecke(); return; }
-  var a = { welten: ["alle"], thema: "egal", silben: "egal" };
-  if (THEMEN.indexOf(u) >= 0) a.thema = u;
+  var a = { welten: ["alle"], themen: ["egal"], silben: "egal" };
+  if (THEMEN.indexOf(u) >= 0) a.themen = [u];
   else if (u.indexOf("silben:") === 0) a.silben = u.slice(7);
   else if (u === "welt:alltag") a.welten = ["alltag"];
   state.settings.auswahl = a; saveState();
@@ -3833,7 +3869,7 @@ window.__test = {
   version: APP_VERSION, schema: SCHEMA_VERSION, storageKey: STORAGE_KEY,
   config: CONFIG, data: DATA, content: content, kategorien: KATEGORIEN, themen: themenListe(),
   validate: validate, compare: compare, classify: classify, sanitize: sanitize, compareDiktat: compareDiktat,
-  filterWords: filterWords, drawRound: drawRound, drawRoundStufe: drawRoundStufe, eligible: eligible, boxes: boxes,
+  filterWords: filterWords, roundPool: roundPool, wortStufe: wortStufe, unitsForAuswahl: unitsForAuswahl, drawRound: drawRound, drawRoundStufe: drawRoundStufe, eligible: eligible, boxes: boxes,
   ampel: ampel, spokenText: spokenText, lueckeSpokenText: lueckeSpokenText, stufeInfo: stufeInfo, evaluateUnit: evaluateUnit,
   unitsOf: unitsOf, isoWeek: isoWeek, meldungFor: meldungFor,
   punkte: punkte, levelInfo: levelInfo, serie: serie, gamePool: gamePool, memoryPairs: memoryPairs, salatGesperrt: salatGesperrt,

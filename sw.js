@@ -1,6 +1,6 @@
 "use strict";
 // Muss bei jeder Auslieferung mit APP_VERSION in index.html übereinstimmen (Test T5).
-var VERSION = "0.6.1";
+var VERSION = "0.7.0";
 var CACHE = "hd-v" + VERSION;
 var FILES = [
   "./",
