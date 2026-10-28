@@ -269,7 +269,7 @@ svg.gallows .part.on{visibility:visible}
     <div class="panel wf" id="wfCard" hidden>
       <div class="muted">❓ Frage der Woche</div>
       <div class="q" id="wfFrage"></div>
-      <textarea class="inp" id="wfInput" maxlength="300" rows="2" placeholder="Ein, zwei Sätze …" aria-label="Antwort auf die Frage der Woche" style="min-height:80px"></textarea>
+      <textarea class="inp" id="wfInput" maxlength="300" rows="2" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" writingsuggestions="false" placeholder="Ein, zwei Sätze …" aria-label="Antwort auf die Frage der Woche" style="min-height:80px"></textarea>
       <div class="warn" id="wfMsg" aria-live="polite"></div>
       <div class="row"><button class="btn small" id="wfLater">Später</button><button class="btn primary small" id="wfSend">Antworten</button></div>
     </div>
@@ -365,7 +365,7 @@ svg.gallows .part.on{visibility:visible}
       <input type="range" class="rate" id="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
       <output class="rateOut" id="rateOut"></output></div>
     <input class="inp" id="wordInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
-      spellcheck="false" enterkeyhint="done" placeholder="Hier schreiben …" aria-label="Wort eingeben">
+      spellcheck="false" writingsuggestions="false" enterkeyhint="done" placeholder="Hier schreiben …" aria-label="Wort eingeben">
     <button class="btn primary" id="checkBtn">Prüfen</button>
     <div class="result" id="result" aria-live="polite"></div>
     <div class="muted" id="feedback" aria-live="polite"></div>
@@ -406,7 +406,7 @@ svg.gallows .part.on{visibility:visible}
     <div class="slider"><span>Tempo</span>
       <input type="range" class="rate" min="0.5" max="1.5" step="0.1" aria-label="Tempo">
       <output class="rateOut"></output></div>
-    <textarea class="inp" id="dInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+    <textarea class="inp" id="dInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" writingsuggestions="false"
       placeholder="Hier schreiben …" aria-label="Diktat schreiben"></textarea>
     <div class="note" id="dPapier" hidden>Schreib auf Papier mit. Die App liest vor, prüft aber nicht.</div>
     <div class="warn" id="dMsg" aria-live="polite"></div>
@@ -446,7 +446,7 @@ svg.gallows .part.on{visibility:visible}
     <div class="opts" id="lOptions"></div>
     <div id="lTypeBox" style="display:flex;flex-direction:column;gap:10px">
       <input class="inp" id="lInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
-        spellcheck="false" enterkeyhint="done" placeholder="Wort für die Lücke …" aria-label="Wort für die Lücke">
+        spellcheck="false" writingsuggestions="false" enterkeyhint="done" placeholder="Wort für die Lücke …" aria-label="Wort für die Lücke">
       <button class="btn primary" id="lCheck">Prüfen</button>
     </div>
     <div class="muted" id="lFeedback" aria-live="polite"></div>
@@ -585,7 +585,7 @@ svg.gallows .part.on{visibility:visible}
     <div class="muted">Wörter aus der Schule oder von überall. Du findest sie beim Üben unter der Welt „📒 Meine Wörter“.</div>
     <div class="addrow">
       <input class="inp small" id="meineInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off"
-        spellcheck="false" enterkeyhint="done" placeholder="Neues Wort …" aria-label="Neues Wort">
+        spellcheck="false" writingsuggestions="false" enterkeyhint="done" placeholder="Neues Wort …" aria-label="Neues Wort">
       <button class="btn primary small" id="meineAdd">Dazu</button>
     </div>
     <div class="warn" id="meineMsg" aria-live="polite"></div>
@@ -639,7 +639,7 @@ svg.gallows .part.on{visibility:visible}
 (function () {
 
 // ================= Version & Einstellungen =================
-var APP_VERSION = "0.6.0";
+var APP_VERSION = "0.6.1";
 var SCHEMA_VERSION = 6;
 var STORAGE_KEY = "hd.fortschritt.v1";   // Schlüssel bleibt, Schema-Version steht im Inhalt
 
@@ -1808,8 +1808,10 @@ function diktatEntries() {
   return Object.keys(res).map(function (k) { return res[k]; });
 }
 function allWords(withDiktat) {
-  var list = content.woerter.slice();
-  state.meineWoerter.forEach(function (m) { if (!wordIndex[m.wort]) list.push(ownWordEntry(m.wort)); });
+  var list = content.woerter.slice(), own = {};
+  state.meineWoerter.forEach(function (m) { own[m.wort] = true; if (!wordIndex[m.wort]) list.push(ownWordEntry(m.wort)); });
+  // Textwörter, die nicht schon in der Wortliste stehen (die anderen gehören zusätzlich zur Welt „text“)
+  content.textwoerter.forEach(function (t) { if (!wordIndex[t.wort] && !own[t.wort]) list.push(textEntry(t)); });
   if (withDiktat) list = list.concat(diktatEntries());
   return list;
 }
@@ -1819,7 +1821,8 @@ function filterWords(a) {
   var alle = a.welten.indexOf("alle") >= 0;
   return allWords(fehler).filter(function (w) {
     if (!alle && w.welt !== "diktat") {
-      var weltOk = w.eigen ? a.welten.indexOf("meine") >= 0 : a.welten.indexOf(w.welt) >= 0;
+      var weltOk = w.text ? a.welten.indexOf("text") >= 0 : (w.eigen ? a.welten.indexOf("meine") >= 0 : a.welten.indexOf(w.welt) >= 0);
+      if (!weltOk && textIndex[w.wort] && a.welten.indexOf("text") >= 0) weltOk = true;
       if (!weltOk) return false;
     }
     if (fehler) { if (bx[w.wort] !== 1) return false; }
@@ -2278,6 +2281,7 @@ function renderAuswahl() {
   cw.appendChild(chip("Alle gemischt", "data-w", "alle", a.welten.indexOf("alle") >= 0));
   content.welten.forEach(function (w) { cw.appendChild(chip(w.emoji + " " + w.name, "data-w", w["kürzel"], a.welten.indexOf(w["kürzel"]) >= 0)); });
   cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
+  if (content.textwoerter.length) cw.appendChild(chip("✍️ Fehler aus meinen Texten", "data-w", "text", a.welten.indexOf("text") >= 0));
   var ct = $("chipThema"); ct.textContent = "";
   ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
   THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
@@ -2733,7 +2737,7 @@ function salatGesperrt() {
   return res;
 }
 function gamePool(game, a) {
-  var words = filterWords(a).filter(function (w) { return w.wort.indexOf("-") < 0 && w.welt !== "diktat"; });
+  var words = filterWords(a).filter(function (w) { return w.wort.indexOf("-") < 0 && w.wort.indexOf(" ") < 0 && w.welt !== "diktat"; });
   if (game === "memory") return words.filter(function (w) { return silbenOf(w) >= 2; });
   if (game === "salat") { var sp = salatGesperrt(); return words.filter(function (w) { return Array.from(w.wort).length >= 3 && !sp[w.wort]; }); }
   return words;
@@ -2767,6 +2771,7 @@ function renderSpielwahl() {
   cw.appendChild(chip("Alle gemischt", "data-w", "alle", a.welten.indexOf("alle") >= 0));
   content.welten.forEach(function (w) { cw.appendChild(chip(w.emoji + " " + w.name, "data-w", w["kürzel"], a.welten.indexOf(w["kürzel"]) >= 0)); });
   cw.appendChild(chip("📒 Meine Wörter", "data-w", "meine", a.welten.indexOf("meine") >= 0));
+  if (content.textwoerter.length) cw.appendChild(chip("✍️ Fehler aus meinen Texten", "data-w", "text", a.welten.indexOf("text") >= 0));
   var ct = $("swThema"); ct.textContent = "";
   ct.appendChild(chip("egal", "data-t", "egal", a.thema === "egal"));
   THEMEN.forEach(function (t) { ct.appendChild(chip(t, "data-t", t, a.thema === t)); });
@@ -3277,7 +3282,8 @@ var textIndex = {};
 content.textwoerter.forEach(function (t) { textIndex[t.wort] = t; });
 function textEntry(t) {
   return { wort: t.wort, silben: t.wort, welt: "text", nomen: /^[A-ZÄÖÜ]/.test(t.wort) ? "ja" : "nein", artikel: "",
-    themen: themenAus(t.kategorien), stufe: 1, hinweis: "", fremdwort: "nein", ansage: t.satz, eigen: true, text: true, regel: t.regel };
+    themen: themenAus(t.kategorien), stufe: 1, hinweis: "Aus deinen Texten · " + t.kategorien[0], fremdwort: "nein", ansage: t.satz,
+    eigen: true, text: true, regel: t.regel };
 }
 function textEntryFor(wort) { return textIndex[wort] ? textEntry(textIndex[wort]) : null; }
 // Ähnliches Wort: aus der Wortliste (mit Artikel/Satz), sonst einzeln mit Regel des Textworts
@@ -3646,6 +3652,11 @@ function wire() {
     show(t.getAttribute("data-go"));
   });
   ["keydown", "pointerdown", "input"].forEach(function (evn) { document.addEventListener(evn, markActivity, true); });
+  // Autokorrektur: will die Tastatur ein getipptes Wort ersetzen, wird das abgelehnt (A7)
+  document.addEventListener("beforeinput", function (ev) {
+    var t = ev.target;
+    if (ev.inputType === "insertReplacementText" && t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) ev.preventDefault();
+  }, true);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") saveState(); lastTick = now().getTime(); });
   window.addEventListener("pagehide", saveState);
   $("auswahl").addEventListener("click", onAuswahlClick);
